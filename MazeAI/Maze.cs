@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Forms;
 
 namespace MazeAI
 {
-    class Maze
+    public class Maze
     {
         private string maze;
         public readonly int maze_width;
         public readonly int maze_height;
 
-        private enum DIRECTIONS
+        public enum DIRECTIONS
         {
             NORTH,
             EAST,
@@ -26,6 +27,8 @@ namespace MazeAI
         private const char CHEESE = 'Δ';
 
         private static Random r;
+        private List<AI.Path> aipaths;
+        private StringBuilder sb;
 
         public enum ELEMENT_TYPE
         {
@@ -57,7 +60,7 @@ namespace MazeAI
 
         private readonly MazeElement[,] MazeElements;
 
-        public Maze(int maze_width, int maze_height)
+        public Maze(int maze_width, int maze_height, List<AI.Path> aipaths)
         {
             this.maze_width = maze_width;
             this.maze_height = maze_height;
@@ -71,7 +74,10 @@ namespace MazeAI
             dirs[2] = DIRECTIONS.SOUTH; // SOUTH;
             dirs[3] = DIRECTIONS.WEST; // WEST;
 
+            this.aipaths = aipaths;
+
             r = new Random();
+            sb = new StringBuilder();
         }
 
         public void AddMouse(int x = 1, int y = 1)
@@ -132,6 +138,7 @@ namespace MazeAI
 
             // Set my current location to be an empty passage.   
             maze = ChangeCharacter(maze, XYToIndex(x, y), SPACE);
+            aipaths.Add(new AI.Path(x, y, DIRECTIONS.WEST));
 
             int rand;
             DIRECTIONS dir_temp;
@@ -176,6 +183,7 @@ namespace MazeAI
                     if (maze[XYToIndex(x2, y2)] == BLOCK)
                     {
                         maze = ChangeCharacter(maze, XYToIndex(x2 - dx, y2 - dy), SPACE);
+                        aipaths.Add(new AI.Path(x2 - dx, y2 - dy, dirs[i]));
                         Generate(x2, y2);
                     }
                 }
@@ -196,17 +204,42 @@ namespace MazeAI
             }
         }
 
+        public bool SetPath(int x, int y)
+        {
+            MazeElement me = MazeElements[x, y];
+
+            if (me.element_type == ELEMENT_TYPE.BLOCK)
+            {
+                throw new Exception("Invalid Block Element at " + x + "," + y);
+            }
+
+            if (me.element_state == ELEMENT_STATE.MOUSE)
+            {
+                //Console.WriteLine("Skipped Mouse Element at %d,%d", x, y);
+                return false;
+            }
+            if (me.element_state == ELEMENT_STATE.CHEESE)
+            {
+                //Console.WriteLine("Cheese found at Element at %d,%d!", x, y);
+                return true;
+            }
+
+            me.element_state = ELEMENT_STATE.VISITED;
+            return false;
+        }
+
         public void Display()
         {
             Console.Clear();
 
             for (int y = 0; y < maze_height; ++y)
             {
+                sb.Clear();
                 for (int x = 0; x < maze_width; ++x)
                 {
-                    Console.Write(GetElementChar(MazeElements[x,y]));
+                    sb.Append(GetElementChar(MazeElements[x, y]));
                 }
-                Console.Write(Environment.NewLine);
+                Console.WriteLine(sb.ToString());
             }
         }
 

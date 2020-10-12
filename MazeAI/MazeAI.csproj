@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI.cs" />
     <Compile Include="Maze.cs" />
     <Compile Include="MazeAI.cs">
       <SubType>Form</SubType>
