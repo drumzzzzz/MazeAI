@@ -17,11 +17,16 @@ namespace MazeAI
             InitializeComponent();
 
             //Maze.RandomNumbers.Seed(time(0)); // seed random number generator.
+            Console.BackgroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.White;
 
             Maze maze = new Maze(51, 25);
 
             maze.Reset();
             maze.Generate();
+            maze.Update();
+            maze.AddMouse();
+            maze.AddCheese(1, 50, 1, 24);
             maze.Display();
         }
     }
