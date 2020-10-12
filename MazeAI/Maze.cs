@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace MazeAI
 {
@@ -18,6 +12,7 @@ namespace MazeAI
         public const int SOUTH = 2;
         public const int WEST = 3;
         public char BLOCK = '█';
+        public char SPACE = ' ';
 
         private static Random r;
 
@@ -79,7 +74,7 @@ namespace MazeAI
                 Reset();
 
             // Set my current location to be an empty passage.   
-            grid = ChangeCharacter(grid, XYToIndex(x, y), ' ');
+            grid = ChangeCharacter(grid, XYToIndex(x, y), SPACE);
 
             // Create an local array containing the 4 directions and shuffle their order.   
             int[] dirs = new int[4];
@@ -128,7 +123,7 @@ namespace MazeAI
                 {
                     if (grid[XYToIndex(x2, y2)] == (char)BLOCK)
                     {
-                        grid = ChangeCharacter(grid, XYToIndex(x2 - dx, y2 - dy), ' ');
+                        grid = ChangeCharacter(grid, XYToIndex(x2 - dx, y2 - dy), SPACE);
                         Generate(x2, y2);
                     }
                 }
@@ -153,7 +148,7 @@ namespace MazeAI
                     Console.Write(grid[XYToIndex(x, y)]);
                 }
 
-                Console.Write("\n");
+                Console.Write(Environment.NewLine);
             }
         }
     }
