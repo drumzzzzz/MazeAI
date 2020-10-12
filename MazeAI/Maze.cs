@@ -7,10 +7,21 @@ namespace MazeAI
         private string grid;// = new string(new char[maze_width * maze_height]);
         public readonly int maze_width;
         public readonly int maze_height;
-        public const int NORTH = 0;
-        public const int EAST = 1;
-        public const int SOUTH = 2;
-        public const int WEST = 3;
+        //public const int NORTH = 0;
+        //public const int EAST = 1;
+        //public const int SOUTH = 2;
+        //public const int WEST = 3;
+
+        enum DIRECTIONS
+        {
+            NORTH,
+            EAST,
+            SOUTH,
+            WEST
+        }
+
+        private DIRECTIONS[] dirs;
+
         public char BLOCK = '█';
         public char SPACE = ' ';
 
@@ -30,6 +41,12 @@ namespace MazeAI
             this.maze_height = maze_height;
 
             grid = new string(new char[maze_width * maze_height]);
+
+            dirs = new DIRECTIONS[4];
+            dirs[0] = DIRECTIONS.NORTH; // NORTH;
+            dirs[1] = DIRECTIONS.EAST; // EAST;
+            dirs[2] = DIRECTIONS.SOUTH; // SOUTH;
+            dirs[3] = DIRECTIONS.WEST; // WEST;
         }
 
         public void Reset()
@@ -76,19 +93,15 @@ namespace MazeAI
             // Set my current location to be an empty passage.   
             grid = ChangeCharacter(grid, XYToIndex(x, y), SPACE);
 
-            // Create an local array containing the 4 directions and shuffle their order.   
-            int[] dirs = new int[4];
-            dirs[0] = NORTH;
-            dirs[1] = EAST;
-            dirs[2] = SOUTH;
-            dirs[3] = WEST;
+            int rand;
+            DIRECTIONS dir_temp;
 
             for (int i = 0; i < 4; ++i)
             {
-                int r = NextRandom() & 3;
-                int temp = dirs[r];
-                dirs[r] = dirs[i];
-                dirs[i] = temp;
+                rand = NextRandom() & 3;
+                dir_temp = dirs[rand];
+                dirs[rand] = dirs[i];
+                dirs[i] = dir_temp;
             }
 
             // Loop through every direction and attempt to Visit that direction.   
@@ -100,16 +113,16 @@ namespace MazeAI
                 int dy = 0;
                 switch (dirs[i])
                 {
-                    case NORTH:
+                    case DIRECTIONS.NORTH:
                         dy = -1;
                         break;
-                    case SOUTH:
+                    case DIRECTIONS.SOUTH:
                         dy = 1;
                         break;
-                    case EAST:
+                    case DIRECTIONS.EAST:
                         dx = 1;
                         break;
-                    case WEST:
+                    case DIRECTIONS.WEST:
                         dx = -1;
                         break;
                 }
