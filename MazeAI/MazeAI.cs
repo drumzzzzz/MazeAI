@@ -27,8 +27,11 @@ namespace MazeAI
             Console.ForegroundColor = ConsoleColor.White;
             Console.CursorVisible = false;
             Console.OutputEncoding = new UnicodeEncoding();
+            Console.WindowHeight = 50;
+            Console.WindowWidth = 75;
             isExit = false;
             isFound = false;
+            ConsoleHelper.SetCurrentFont("Consolas", 25);
         }
 
         private void DisplayMessage(string msg)
@@ -47,7 +50,7 @@ namespace MazeAI
                     break;
                 }
                 maze.Display();
-                Thread.Sleep(10);
+                Thread.Sleep(100);
             }
         }
 

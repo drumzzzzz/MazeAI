@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI.cs" />
+    <Compile Include="ConsoleHelper.cs" />
     <Compile Include="Maze.cs" />
     <Compile Include="MazeAI.cs">
       <SubType>Form</SubType>
