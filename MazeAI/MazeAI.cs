@@ -18,12 +18,11 @@ namespace MazeAI
 
             //Maze.RandomNumbers.Seed(time(0)); // seed random number generator.
 
-            Maze maze = new Maze();
+            Maze maze = new Maze(51, 25);
 
-            maze.ResetGrid();
-            maze.Visit(1, 1);
-            maze.PrintGrid();
-
+            maze.Reset();
+            maze.Generate();
+            maze.Display();
         }
     }
 }
