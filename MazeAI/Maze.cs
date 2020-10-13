@@ -1,17 +1,24 @@
-﻿using System;
+﻿#region Using Statements
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+
+#endregion
 
 namespace MazeAI
 {
     public class Maze
     {
-        private string maze;
-        public readonly int maze_width;
-        public readonly int maze_height;
+        #region Declarations
 
-        public enum DIRECTIONS
+        private string maze;
+        private readonly int maze_width;
+        private readonly int maze_height;
+
+        public enum DIRECTION
         {
             NORTH,
             EAST,
@@ -19,7 +26,7 @@ namespace MazeAI
             WEST
         }
 
-        private readonly DIRECTIONS[] dirs;
+        private readonly DIRECTION[] dirs;
         private const char BLOCK = '█';
         private const char VISITED = '×';
         private const char SPACE = '░';
@@ -28,11 +35,17 @@ namespace MazeAI
         private const char SCANNED = ':';
 
         private static Random r;
-        private readonly List<AI.Path> aipaths;
+        private readonly List<MazePath.Path> aipaths;
         private readonly StringBuilder sb;
         private readonly MazeObject[,] MazeObjects;
+        private MazeObject oMouse;
+        private MazeObject oCheese;
 
-        public Maze(int maze_width, int maze_height, List<AI.Path> aipaths)
+        #endregion
+
+        #region Initialization
+
+        public Maze(int maze_width, int maze_height, List<MazePath.Path> aipaths)
         {
             this.maze_width = maze_width;
             this.maze_height = maze_height;
@@ -40,11 +53,11 @@ namespace MazeAI
             maze = new string(new char[maze_width * maze_height]);
             MazeObjects = new MazeObject[maze_width,maze_height];
 
-            dirs = new DIRECTIONS[4];
-            dirs[0] = DIRECTIONS.NORTH; // NORTH;
-            dirs[1] = DIRECTIONS.EAST; // EAST;
-            dirs[2] = DIRECTIONS.SOUTH; // SOUTH;
-            dirs[3] = DIRECTIONS.WEST; // WEST;
+            dirs = new DIRECTION[4];
+            dirs[0] = DIRECTION.NORTH; // NORTH;
+            dirs[1] = DIRECTION.EAST; // EAST;
+            dirs[2] = DIRECTION.SOUTH; // SOUTH;
+            dirs[3] = DIRECTION.WEST; // WEST;
 
             this.aipaths = aipaths;
 
@@ -55,6 +68,12 @@ namespace MazeAI
         public void AddMouse(int x = 1, int y = 1)
         {
             MazeObjects[x, y].object_state = OBJECT_STATE.MOUSE;
+
+            oMouse = new MazeObject(OBJECT_TYPE.BLOCK, x, y)
+            {
+                object_state = OBJECT_STATE.MOUSE,
+                isVisited = true
+            };
         }
 
         public void AddCheese(int x_min, int x_max, int y_min, int y_max)
@@ -70,6 +89,7 @@ namespace MazeAI
                     MazeObjects[x, y].object_state != OBJECT_STATE.MOUSE)
                 {
                     MazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
+                    oCheese = MazeObjects[x, y];
                     return;
                 }
             }
@@ -83,35 +103,18 @@ namespace MazeAI
             }
         }
 
-
-        // Convert linear chars to x/y
-        private int XYToIndex(int x, int y)
-        {
-            return y * maze_width + x;
-        }
-
-        private bool IsInBounds(int x, int y)
-        {
-            // Returns "true" if x and y are both in-bounds.   
-            if (x < 0 || x >= maze_width)
-                return false;
-
-            return (y >= 0 && y < maze_height);
-        }
-
+        // Starting at the given index, recursively visits every direction randomly
         public void Generate(int x = 1, int y = 1)
         {
-            // Starting at the given index, recursively visits every direction in a    
-            // randomized order. 
             if (x == 1 && y == 1)
                 Reset();
 
             // Set my current location to be an empty passage.   
             maze = ChangeCharacter(maze, XYToIndex(x, y), SPACE);
-            aipaths.Add(new AI.Path(x, y, DIRECTIONS.WEST));
+            aipaths.Add(new MazePath.Path(x, y, DIRECTION.WEST));
 
             int rand;
-            DIRECTIONS dir_temp;
+            DIRECTION dir_temp;
 
             for (int i = 0; i < 4; i++)
             {
@@ -130,16 +133,16 @@ namespace MazeAI
 
                 switch (dirs[i])
                 {
-                    case DIRECTIONS.NORTH:
+                    case DIRECTION.NORTH:
                         dy = -1;
                         break;
-                    case DIRECTIONS.SOUTH:
+                    case DIRECTION.SOUTH:
                         dy = 1;
                         break;
-                    case DIRECTIONS.EAST:
+                    case DIRECTION.EAST:
                         dx = 1;
                         break;
-                    case DIRECTIONS.WEST:
+                    case DIRECTION.WEST:
                         dx = -1;
                         break;
                 }
@@ -153,7 +156,7 @@ namespace MazeAI
                     if (maze[XYToIndex(x2, y2)] == BLOCK)
                     {
                         maze = ChangeCharacter(maze, XYToIndex(x2 - dx, y2 - dy), SPACE);
-                        aipaths.Add(new AI.Path(x2 - dx, y2 - dy, dirs[i]));
+                        aipaths.Add(new MazePath.Path(x2 - dx, y2 - dy, dirs[i]));
                         Generate(x2, y2);
                     }
                 }
@@ -171,9 +174,11 @@ namespace MazeAI
             }
         }
 
+        #endregion
+
         #region Scanning
 
-        public MazeObject ScanObjects(int x, int y)
+        public bool ScanObjects(int x, int y)
         {
             OBJECT_STATE os;
             int scan_count = 0;
@@ -188,7 +193,7 @@ namespace MazeAI
                 os = CheckScannedObject(x_idx, y);
 
                 if (os == OBJECT_STATE.CHEESE)
-                    return MazeObjects[x_idx, y];
+                    return true;
                 if (os == OBJECT_STATE.SCANNED)
                 {
                     scanned_count++;
@@ -207,7 +212,7 @@ namespace MazeAI
                 os = CheckScannedObject(x_idx, y);
 
                 if (os == OBJECT_STATE.CHEESE)
-                    return MazeObjects[x_idx, y];
+                    return true;
                 if (os == OBJECT_STATE.SCANNED)
                 {
                     scanned_count++;
@@ -226,7 +231,7 @@ namespace MazeAI
                 os = CheckScannedObject(x, y_idx);
 
                 if (os == OBJECT_STATE.CHEESE)
-                    return MazeObjects[x, y_idx];
+                    return true;
                 if (os == OBJECT_STATE.SCANNED)
                 {
                     scanned_count++;
@@ -245,7 +250,7 @@ namespace MazeAI
                 os = CheckScannedObject(x, y_idx);
 
                 if (os == OBJECT_STATE.CHEESE)
-                    return MazeObjects[x, y_idx];
+                    return true;
                 if (os == OBJECT_STATE.SCANNED)
                 {
                     scanned_count++;
@@ -257,7 +262,7 @@ namespace MazeAI
 
             Console.WriteLine("Scan {0} Scanned {1}", scan_count, scanned_count);
 
-            return null;
+            return false;
         }
 
         private OBJECT_STATE CheckScannedObject(int x, int y)
@@ -280,6 +285,56 @@ namespace MazeAI
         }
 
         #endregion
+
+        #region Movement
+
+        public bool ProcessMouseMove()
+        {
+            
+            int x = oMouse.x;
+            int y = oMouse.y;
+
+            // Can mouse see the cheese?
+            if (ScanObjects(x, y))
+                return true;
+
+            List<MazeObject> mazeobjects = CheckNode(x, y);
+
+            MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            if (mouse == null)
+                throw new Exception("Mouse Object Null!");
+
+            if (mazeobjects.Count == 2) // One direction
+            {
+                MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE);
+                if (mo == null)
+                    throw new Exception("Maze Object Null!");
+
+                oMouse.x = mo.x;
+                oMouse.y = mo.y;
+                mo.object_state = OBJECT_STATE.MOUSE;
+                mouse.isVisited = true;
+                mouse.object_state = OBJECT_STATE.VISITED;
+            }
+            else if (mazeobjects.Count == 3) // Two directions
+            {
+                MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE);
+                if (mo == null) 
+                    throw new Exception("Maze Object Null!");
+
+                mo.object_state = OBJECT_STATE.MOUSE;
+                oMouse.x = mo.x;
+                oMouse.y = mo.y;
+                mo.object_state = OBJECT_STATE.MOUSE;
+                mouse.isVisited = true;
+                mouse.object_state = OBJECT_STATE.VISITED;
+                ;
+                ;
+            }
+
+            Display();
+            return false;
+        }
 
         public List<MazeObject> CheckNode(int x, int y)
         {
@@ -307,11 +362,6 @@ namespace MazeAI
             return mazeobjects;
         }
 
-        private OBJECT_TYPE GetObjectType(int x, int y)
-        {
-            return (maze[XYToIndex(x, y)] == SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
-        }
-
         public bool SetPath(int x, int y)
         {
             MazeObject mo = MazeObjects[x, y];
@@ -330,6 +380,8 @@ namespace MazeAI
             return false;
         }
 
+        #endregion
+
         #region Rendering
 
         public void Display()
@@ -346,6 +398,10 @@ namespace MazeAI
                 Console.WriteLine(sb.ToString());
             }
         }
+
+        #endregion
+
+        #region Object Tools
 
         private static char GetObjectChar(MazeObject me)
         {
@@ -366,9 +422,29 @@ namespace MazeAI
                 case OBJECT_STATE.CHEESE: return CHEESE;
                 case OBJECT_STATE.MOUSE: return MOUSE;
             }
-            
+
             Console.WriteLine("Invalid Character - type:" + me.object_type + " state:" + me.object_state);
             return SPACE;
+        }
+
+        // Convert linear chars to x/y
+        private int XYToIndex(int x, int y)
+        {
+            return y * maze_width + x;
+        }
+
+        private bool IsInBounds(int x, int y)
+        {
+            // Returns "true" if x and y are both in-bounds.   
+            if (x < 0 || x >= maze_width)
+                return false;
+
+            return (y >= 0 && y < maze_height);
+        }
+
+        private OBJECT_TYPE GetObjectType(int x, int y)
+        {
+            return (maze[XYToIndex(x, y)] == SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
         }
 
         public static string ChangeCharacter(string sourceString, int charIndex, char newChar)

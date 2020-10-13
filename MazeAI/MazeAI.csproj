@@ -49,7 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AI.cs" />
+    <Compile Include="MazePath.cs" />
     <Compile Include="ConsoleHelper.cs" />
     <Compile Include="frmAISearch.cs">
       <SubType>Form</SubType>

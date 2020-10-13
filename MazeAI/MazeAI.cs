@@ -15,8 +15,8 @@ namespace MazeAI
     {
         private Thread searchThread;
         private Maze maze;
-        private AI ai;
-        private AI.Path aipath;
+        private MazePath ai;
+        private MazePath.Path aipath;
         private bool isExit;
         private bool isFound;
         private frmAISearch oFrmAiSearch;
@@ -44,46 +44,61 @@ namespace MazeAI
         {
             List<MazeObject> elements = new List<MazeObject>();
 
-            foreach (AI.Path aip in ai.Paths)
+            while (!isFound)
             {
-                if (maze.SetPath(aip.x, aip.y))
+                if (maze.ProcessMouseMove())
                 {
-                    aipath = aip;
-                    isFound = true;
                     maze.Display();
                     Console.WriteLine("Cheese found via path!");
-                    break;
-                }
-                //maze.Display();
-
-                elements.Clear();
-                elements = maze.CheckNode(aip.x, aip.y);
-
-                if (elements.Count >= 4)
-                {
-                    Console.WriteLine("Node at {0}, {1}", aip.x, aip.y);
-                    ;
-                    ;
-                }
-
-                MazeObject me = maze.ScanObjects(aip.x, aip.y);
-                if (me != null)
-                {
-                    aipath = new AI.Path(me.x, me.y, Maze.DIRECTIONS.WEST);
                     isFound = true;
-                    maze.Display();
-                    Console.WriteLine("Cheese found via scan!");
                     break;
                 }
+
                 maze.Display();
-                Thread.Sleep(10);
+                Thread.Sleep(200);
             }
+
+            //foreach (MazePath.Path aip in ai.Paths)
+            //{
+            //    if (maze.SetPath(aip.x, aip.y))
+            //    {
+            //        aipath = aip;
+            //        isFound = true;
+            //        maze.Display();
+            //        Console.WriteLine("Cheese found via path!");
+            //        break;
+            //    }
+            //    //maze.Display();
+
+            //    //elements.Clear();
+            //    //elements = maze.CheckNode(aip.x, aip.y);
+
+            //    //if (elements.Count >= 4)
+            //    //{
+            //    //    Console.WriteLine("Node at {0}, {1}", aip.x, aip.y);
+            //    //    ;
+            //    //    ;
+            //    //}
+
+            //    //MazeObject me = maze.ScanObjects(aip.x, aip.y);
+            //    //if (me != null)
+            //    //{
+            //    //    aipath = new MazePath.Path(me.x, me.y, Maze.DIRECTION.WEST);
+            //    //    isFound = true;
+            //    //    maze.Display();
+            //    //    Console.WriteLine("Cheese found via scan!");
+            //    //    break;
+            //    //}
+            //    maze.Display();
+            //    Thread.Sleep(10);
+            //}
+
         }
 
         private void MazeAI_Shown(object sender, EventArgs e)
         {
             searchThread = new Thread(AISearch);
-            ai = new AI();
+            ai = new MazePath();
             maze = new Maze(51, 25, ai.Paths);
             maze.Reset();
             maze.Generate();

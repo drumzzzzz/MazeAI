@@ -8,11 +8,11 @@ using System.Windows.Forms;
 
 namespace MazeAI
 {
-    public class AI
+    public class MazePath
     {
         public List<Path> Paths { get; set; }
 
-        public AI()
+        public MazePath()
         {
             Paths = new List<Path>();
         }
@@ -21,9 +21,9 @@ namespace MazeAI
         {
             public int x { get; set; }
             public int y { get; set; }
-            public Maze.DIRECTIONS direction { get; set; }
+            public Maze.DIRECTION direction { get; set; }
 
-            public Path(int x, int y, Maze.DIRECTIONS direction)
+            public Path(int x, int y, Maze.DIRECTION direction)
             {
                 this.x = x;
                 this.y = y;
