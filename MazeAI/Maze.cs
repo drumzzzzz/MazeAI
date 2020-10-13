@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Windows.Forms;
 
@@ -25,10 +26,11 @@ namespace MazeAI
         private const char SPACE = '░';
         private const char MOUSE = 'ô';
         private const char CHEESE = 'Δ';
+        private const char SCANNED = ':';
 
         private static Random r;
-        private List<AI.Path> aipaths;
-        private StringBuilder sb;
+        private readonly List<AI.Path> aipaths;
+        private readonly StringBuilder sb;
 
         public enum ELEMENT_TYPE
         {
@@ -41,20 +43,28 @@ namespace MazeAI
             NONE,
             VISITED,
             MOUSE,
-            CHEESE
+            CHEESE,
+            SCANNED
         }
 
-        private class MazeElement
+        public class MazeElement
         {
             public ELEMENT_TYPE element_type { get; set; }
             public bool isVisited { get; set; }
             public ELEMENT_STATE element_state { get; set; }
 
-            public MazeElement(ELEMENT_TYPE element_type)
+            public int x { get; set; }
+            public int y { get; set; }
+            public bool isScanned { get; set; }
+
+            public MazeElement(ELEMENT_TYPE element_type, int x, int y)
             {
                 this.element_type = element_type;
                 element_state = ELEMENT_STATE.NONE;
                 isVisited = false;
+                isScanned = false;
+                this.x = x;
+                this.y = y;
             }
         }
 
@@ -192,16 +202,152 @@ namespace MazeAI
 
         public void Update()
         {
-            char type;
-
             for (int y = 0; y < maze_height; ++y)
             {
                 for (int x = 0; x < maze_width; ++x)
                 {
-                    type = maze[XYToIndex(x, y)];
-                    MazeElements[x, y] = new MazeElement(GetElementType(type));
+                    // MazeElements[x, y] = new MazeElement(GetElementType(x, y));
+                    MazeElements[x, y] = new MazeElement(GetElementType(x, y), x, y);
                 }
             }
+        }
+
+        public MazeElement ScanElements(int x, int y)
+        {
+            ELEMENT_STATE es;
+            int scan_count = 0;
+            int scanned_count = 0;
+
+            // Scan West
+            for (int x_idx = x - 1; x_idx > 0; x_idx--)
+            {
+                if (!isScanValid(x_idx, y))
+                    break;
+
+                es = CheckScannedElement(x_idx, y);
+
+                if (es == ELEMENT_STATE.CHEESE)
+                    return MazeElements[x_idx, y];
+                if (es == ELEMENT_STATE.SCANNED)
+                {
+                    scanned_count++;
+                    break;
+                }
+
+                scan_count++;
+            }
+
+            // Scan East
+            for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
+            {
+                if (!isScanValid(x_idx, y))
+                    break;
+
+                es = CheckScannedElement(x_idx, y);
+
+                if (es == ELEMENT_STATE.CHEESE)
+                    return MazeElements[x_idx, y];
+                if (es == ELEMENT_STATE.SCANNED)
+                {
+                    scanned_count++;
+                    break;
+                }
+
+                scan_count++;
+            }
+
+            // Scan North
+            for (int y_idx = y - 1; y_idx > 0; y_idx--)
+            {
+                if (!isScanValid(x, y_idx))
+                    break;
+
+                es = CheckScannedElement(x, y_idx);
+
+                if (es == ELEMENT_STATE.CHEESE)
+                    return MazeElements[x, y_idx];
+                if (es == ELEMENT_STATE.SCANNED)
+                {
+                    scanned_count++;
+                    break;
+                }
+
+                scan_count++;
+            }
+
+            // Scan South
+            for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
+            {
+                if (!isScanValid(x, y_idx))
+                    break;
+
+                es = CheckScannedElement(x, y_idx);
+
+                if (es == ELEMENT_STATE.CHEESE)
+                    return MazeElements[x, y_idx];
+                if (es == ELEMENT_STATE.SCANNED)
+                {
+                    scanned_count++;
+                    break;
+                }
+
+                scan_count++;
+            }
+
+            Console.WriteLine("Scan {0} Scanned {1}", scan_count, scanned_count);
+
+            return null;
+        }
+
+        private ELEMENT_STATE CheckScannedElement(int x, int y)
+        {
+            if (MazeElements[x, y].element_state == ELEMENT_STATE.CHEESE)
+                return ELEMENT_STATE.CHEESE;
+
+            if (MazeElements[x, y].isScanned)
+            {
+                return ELEMENT_STATE.SCANNED;
+            }
+
+            MazeElements[x, y].isScanned = true;
+            return ELEMENT_STATE.NONE;
+        }
+
+        private bool isScanValid(int x, int y)
+        {
+            return (IsInBounds(x, y) && MazeElements[x, y].element_type == ELEMENT_TYPE.SPACE);
+        }
+
+        public List<MazeElement> CheckNode(int x, int y)
+        {
+            List<MazeElement> elements = new List<MazeElement>
+            {
+                MazeElements[x, y]
+            };
+
+            for (int x_idx = x - 1; x_idx < x + 2; x_idx+=2)
+            {
+                if (IsInBounds(x_idx, y) && GetElementType(x_idx, y) == ELEMENT_TYPE.SPACE)
+                {
+                    elements.Add(MazeElements[x_idx, y]);
+                }
+            }
+
+            for (int y_idx = y - 1; y_idx < y + 2; y_idx+=2)
+            {
+                if (IsInBounds(x, y_idx) && GetElementType(x, y_idx) == ELEMENT_TYPE.SPACE)
+                {
+                    elements.Add(MazeElements[x, y_idx]);
+                }
+            }
+
+            
+            return elements;
+        }
+
+        private ELEMENT_TYPE GetElementType(int x, int y)
+        {
+            return (maze[XYToIndex(x, y)] == SPACE) ? ELEMENT_TYPE.SPACE : ELEMENT_TYPE.BLOCK;
         }
 
         public bool SetPath(int x, int y)
@@ -250,15 +396,17 @@ namespace MazeAI
                    (charIndex < sourceString.Length - 1 ? sourceString.Substring(charIndex + 1) : "");
         }
 
-        private static ELEMENT_TYPE GetElementType(char type)
-        {
-            return (type == BLOCK) ? ELEMENT_TYPE.BLOCK : ELEMENT_TYPE.SPACE;
-        }
-
         private static char GetElementChar(MazeElement me)
         {
             if (me.element_type == ELEMENT_TYPE.BLOCK)
                 return BLOCK;
+
+            // ToDd: Scan Debug
+            if (me.element_state == ELEMENT_STATE.MOUSE)
+                return MOUSE;
+
+            if (me.isScanned)
+                return SCANNED;
 
             switch (me.element_state)
             {
