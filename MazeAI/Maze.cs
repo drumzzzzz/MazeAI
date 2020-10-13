@@ -40,6 +40,8 @@ namespace MazeAI
         private readonly MazeObject[,] MazeObjects;
         private MazeObject oMouse;
         private MazeObject oCheese;
+        //private MazeObject oLast;
+        private List<MazeObject> oLastNodes;
 
         #endregion
 
@@ -74,6 +76,8 @@ namespace MazeAI
                 object_state = OBJECT_STATE.MOUSE,
                 isVisited = true
             };
+
+            oLastNodes = new List<MazeObject>();
         }
 
         public void AddCheese(int x_min, int x_max, int y_min, int y_max)
@@ -289,10 +293,14 @@ namespace MazeAI
         #region Movement
 
         public bool ProcessMouseMove()
-        {
-            
+        { 
             int x = oMouse.x;
             int y = oMouse.y;
+
+            //if (MazeObjects[x, y].object_state != OBJECT_STATE.MOUSE)
+            //{
+            //    MazeObjects[x, y].object_state = OBJECT_STATE.MOUSE;
+            //}
 
             // Can mouse see the cheese?
             if (ScanObjects(x, y))
@@ -302,38 +310,79 @@ namespace MazeAI
 
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
             if (mouse == null)
+            {
                 throw new Exception("Mouse Object Null!");
+            }
 
             if (mazeobjects.Count == 2) // One direction
             {
                 MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE);
-                if (mo == null)
-                    throw new Exception("Maze Object Null!");
-
-                oMouse.x = mo.x;
-                oMouse.y = mo.y;
-                mo.object_state = OBJECT_STATE.MOUSE;
-                mouse.isVisited = true;
-                mouse.object_state = OBJECT_STATE.VISITED;
+                if (mo != null)
+                {
+                    oMouse.x = mo.x;
+                    oMouse.y = mo.y;
+                    mo.object_state = OBJECT_STATE.MOUSE;
+                    mouse.isVisited = true;
+                    mouse.object_state = OBJECT_STATE.VISITED;
+                }
+                else
+                {
+                    MazeObject oLastNode = GetLastNode();
+                    oMouse.x = oLastNode.x;
+                    oMouse.y = oLastNode.y;
+                    MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
+                    mouse.isVisited = true;
+                    mouse.object_state = OBJECT_STATE.VISITED;
+                }
             }
-            else if (mazeobjects.Count == 3) // Two directions
+            else 
             {
                 MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE);
-                if (mo == null) 
-                    throw new Exception("Maze Object Null!");
+                if (mo != null)
+                {
+                    mo.object_state = OBJECT_STATE.MOUSE;
+                    oMouse.x = mo.x;
+                    oMouse.y = mo.y;
+                    mo.object_state = OBJECT_STATE.MOUSE;
+                    mouse.isVisited = true;
+                    mouse.object_state = OBJECT_STATE.VISITED;
 
-                mo.object_state = OBJECT_STATE.MOUSE;
-                oMouse.x = mo.x;
-                oMouse.y = mo.y;
-                mo.object_state = OBJECT_STATE.MOUSE;
-                mouse.isVisited = true;
-                mouse.object_state = OBJECT_STATE.VISITED;
-                ;
-                ;
+                    if (mazeobjects.Count > 3) // Node
+                    {
+                        AddLastNode(x, y);
+                    }
+                }
+                else
+                {
+                    MazeObject oLastNode = GetLastNode();
+                    oMouse.x = oLastNode.x;
+                    oMouse.y = oLastNode.y;
+                    MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
+                    mouse.isVisited = true;
+                    mouse.object_state = OBJECT_STATE.VISITED;
+                }
             }
 
             Display();
             return false;
+        }
+
+        private MazeObject GetLastNode()
+        {
+            if (oLastNodes.Count == 0)
+                throw new Exception("Last Nodes Empty : Cheese missing?");
+
+            MazeObject mo_item = oLastNodes.Last();
+            int x = mo_item.x;
+            int y = mo_item.y;
+            oLastNodes.RemoveAt(oLastNodes.Count - 1);
+
+            return new MazeObject(OBJECT_TYPE.BLOCK, x, y);
+        }
+
+        private void AddLastNode(int x, int y)
+        {
+            oLastNodes.Add(new MazeObject(OBJECT_TYPE.BLOCK, x, y));
         }
 
         public List<MazeObject> CheckNode(int x, int y)

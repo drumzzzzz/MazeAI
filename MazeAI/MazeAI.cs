@@ -54,45 +54,9 @@ namespace MazeAI
                     break;
                 }
 
-                maze.Display();
-                Thread.Sleep(200);
+                maze.Display(); 
+                Thread.Sleep(50);
             }
-
-            //foreach (MazePath.Path aip in ai.Paths)
-            //{
-            //    if (maze.SetPath(aip.x, aip.y))
-            //    {
-            //        aipath = aip;
-            //        isFound = true;
-            //        maze.Display();
-            //        Console.WriteLine("Cheese found via path!");
-            //        break;
-            //    }
-            //    //maze.Display();
-
-            //    //elements.Clear();
-            //    //elements = maze.CheckNode(aip.x, aip.y);
-
-            //    //if (elements.Count >= 4)
-            //    //{
-            //    //    Console.WriteLine("Node at {0}, {1}", aip.x, aip.y);
-            //    //    ;
-            //    //    ;
-            //    //}
-
-            //    //MazeObject me = maze.ScanObjects(aip.x, aip.y);
-            //    //if (me != null)
-            //    //{
-            //    //    aipath = new MazePath.Path(me.x, me.y, Maze.DIRECTION.WEST);
-            //    //    isFound = true;
-            //    //    maze.Display();
-            //    //    Console.WriteLine("Cheese found via scan!");
-            //    //    break;
-            //    //}
-            //    maze.Display();
-            //    Thread.Sleep(10);
-            //}
-
         }
 
         private void MazeAI_Shown(object sender, EventArgs e)
@@ -117,7 +81,7 @@ namespace MazeAI
             }
 
             if (isFound)
-                DisplayMessage(string.Format("Found the cheese at {0}, {1}!", aipath.x, aipath.y));
+                DisplayMessage("Found the cheese!");
         }
 
         private void btnExit_Click(object sender, EventArgs e)
