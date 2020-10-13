@@ -64,6 +64,7 @@
     <Compile Include="MazeAI.Designer.cs">
       <DependentUpon>MazeAI.cs</DependentUpon>
     </Compile>
+    <Compile Include="MazeObject.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="frmAISearch.resx">

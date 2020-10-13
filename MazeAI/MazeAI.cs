@@ -42,9 +42,7 @@ namespace MazeAI
 
         private void AISearch()
         {
-            List<Maze.MazeElement> elements = new List<Maze.MazeElement>();
-            //oFrmAiSearch = new frmAISearch();
-            //oFrmAiSearch.Show();
+            List<MazeObject> elements = new List<MazeObject>();
 
             foreach (AI.Path aip in ai.Paths)
             {
@@ -52,9 +50,11 @@ namespace MazeAI
                 {
                     aipath = aip;
                     isFound = true;
+                    maze.Display();
+                    Console.WriteLine("Cheese found via path!");
                     break;
                 }
-                maze.Display();
+                //maze.Display();
 
                 elements.Clear();
                 elements = maze.CheckNode(aip.x, aip.y);
@@ -66,12 +66,18 @@ namespace MazeAI
                     ;
                 }
 
-                maze.ScanElements(aip.x, aip.y);
-
-                Thread.Sleep(25);
+                MazeObject me = maze.ScanObjects(aip.x, aip.y);
+                if (me != null)
+                {
+                    aipath = new AI.Path(me.x, me.y, Maze.DIRECTIONS.WEST);
+                    isFound = true;
+                    maze.Display();
+                    Console.WriteLine("Cheese found via scan!");
+                    break;
+                }
+                maze.Display();
+                Thread.Sleep(10);
             }
-
-            //oFrmAiSearch.Close();
         }
 
         private void MazeAI_Shown(object sender, EventArgs e)
