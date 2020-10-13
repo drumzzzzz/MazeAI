@@ -28,11 +28,12 @@ namespace MazeAI
 
         private readonly DIRECTION[] dirs;
         private const char BLOCK = '█';
-        private const char VISITED = '×';
+        private const char VISITED = '+';
         private const char SPACE = '░';
         private const char MOUSE = 'ô';
         private const char CHEESE = 'Δ';
         private const char SCANNED = ':';
+        private const char DEADEND = 'X';
 
         private static Random r;
         private readonly List<MazePath.Path> aipaths;
@@ -40,7 +41,7 @@ namespace MazeAI
         private readonly MazeObject[,] MazeObjects;
         private MazeObject oMouse;
         private MazeObject oCheese;
-        //private MazeObject oLast;
+        
         private List<MazeObject> oLastNodes;
 
         #endregion
@@ -185,8 +186,7 @@ namespace MazeAI
         public bool ScanObjects(int x, int y)
         {
             OBJECT_STATE os;
-            int scan_count = 0;
-            int scanned_count = 0;
+            List<MazeObject> mo = new List<MazeObject>();
 
             // Scan West
             for (int x_idx = x - 1; x_idx > 0; x_idx--)
@@ -198,14 +198,14 @@ namespace MazeAI
 
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
-                if (os == OBJECT_STATE.SCANNED)
-                {
-                    scanned_count++;
-                    break;
-                }
 
-                scan_count++;
+                if (os == OBJECT_STATE.SCANNED)
+                    break;
+
+                mo.Add(MazeObjects[x_idx,y]);
             }
+
+            CheckEndPoints(mo);
 
             // Scan East
             for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
@@ -218,13 +218,12 @@ namespace MazeAI
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
                 if (os == OBJECT_STATE.SCANNED)
-                {
-                    scanned_count++;
                     break;
-                }
 
-                scan_count++;
+                mo.Add(MazeObjects[x_idx, y]);
             }
+
+            CheckEndPoints(mo);
 
             // Scan North
             for (int y_idx = y - 1; y_idx > 0; y_idx--)
@@ -237,34 +236,32 @@ namespace MazeAI
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
                 if (os == OBJECT_STATE.SCANNED)
-                {
-                    scanned_count++;
                     break;
-                }
 
-                scan_count++;
+                mo.Add(MazeObjects[x, y_idx]);
             }
+
+            CheckEndPoints(mo);
 
             // Scan South
             for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
             {
                 if (!isScanValid(x, y_idx))
+                {
                     break;
+                }
 
                 os = CheckScannedObject(x, y_idx);
 
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
                 if (os == OBJECT_STATE.SCANNED)
-                {
-                    scanned_count++;
                     break;
-                }
 
-                scan_count++;
+                mo.Add(MazeObjects[x, y_idx]);
             }
 
-            Console.WriteLine("Scan {0} Scanned {1}", scan_count, scanned_count);
+            CheckEndPoints(mo);
 
             return false;
         }
@@ -288,6 +285,51 @@ namespace MazeAI
             return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE);
         }
 
+        private void CheckEndPoints(List<MazeObject> mos)
+        {
+            if (mos.Count != 0)
+            {
+                for (int i = mos.Count - 1; i>0; i--)
+                {
+                    if (GetPerimiter(mos[i]) == 1)
+                    {
+                        mos[i].isDeadEnd = true;
+                    }
+                    else
+                        break;
+                }
+
+                mos.Clear();
+            }
+        }
+
+        private int GetPerimiter(MazeObject mo)
+        {
+            int x = mo.x;
+            int y = mo.y;
+            int count = 0;
+            
+            // Scan West
+            if (isScanValid(x - 1, y))
+                count++;
+
+            // Scan East
+            if (isScanValid(x + 1, y))
+                count++;
+     
+
+            // Scan North
+            if (isScanValid(x, y - 1))
+                count++;
+ 
+
+            // Scan South
+            if (isScanValid(x, y + 1))
+                count++;
+
+            return count;
+        }
+
         #endregion
 
         #region Movement
@@ -297,11 +339,6 @@ namespace MazeAI
             int x = oMouse.x;
             int y = oMouse.y;
 
-            //if (MazeObjects[x, y].object_state != OBJECT_STATE.MOUSE)
-            //{
-            //    MazeObjects[x, y].object_state = OBJECT_STATE.MOUSE;
-            //}
-
             // Can mouse see the cheese?
             if (ScanObjects(x, y))
                 return true;
@@ -309,6 +346,7 @@ namespace MazeAI
             List<MazeObject> mazeobjects = CheckNode(x, y);
 
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            
             if (mouse == null)
             {
                 throw new Exception("Mouse Object Null!");
@@ -325,11 +363,23 @@ namespace MazeAI
                     mouse.isVisited = true;
                     mouse.object_state = OBJECT_STATE.VISITED;
                 }
-                else
+                else 
                 {
+                    mo = mazeobjects.FirstOrDefault(o => o.object_state != OBJECT_STATE.MOUSE);
+
+                    if (mo == null)
+                        throw new Exception("Object was null!");
+
+                    oMouse.x = mo.x;
+                    oMouse.y = mo.y;
+                    MazeObjects[mo.x, mo.y].object_state = OBJECT_STATE.MOUSE;
+
                     MazeObject oLastNode = GetLastNode();
-                    oMouse.x = oLastNode.x;
-                    oMouse.y = oLastNode.y;
+                    if (oLastNode.x == mo.x && oLastNode.y == mo.y)
+                        RemoveLastNode();
+
+                    //oMouse.x = oLastNode.x;
+                    //oMouse.y = oLastNode.y;
                     MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
                     mouse.isVisited = true;
                     mouse.object_state = OBJECT_STATE.VISITED;
@@ -360,6 +410,7 @@ namespace MazeAI
                     MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
                     mouse.isVisited = true;
                     mouse.object_state = OBJECT_STATE.VISITED;
+                    RemoveLastNode();
                 }
             }
 
@@ -370,14 +421,17 @@ namespace MazeAI
         private MazeObject GetLastNode()
         {
             if (oLastNodes.Count == 0)
-                throw new Exception("Last Nodes Empty : Cheese missing?");
+                throw new Exception("Last Nodes Empty!");
 
-            MazeObject mo_item = oLastNodes.Last();
-            int x = mo_item.x;
-            int y = mo_item.y;
+            return oLastNodes.Last();
+        }
+
+        private void RemoveLastNode()
+        {
+            if (oLastNodes.Count == 0)
+                throw new Exception("Last Nodes Empty!");
+
             oLastNodes.RemoveAt(oLastNodes.Count - 1);
-
-            return new MazeObject(OBJECT_TYPE.BLOCK, x, y);
         }
 
         private void AddLastNode(int x, int y)
@@ -460,6 +514,9 @@ namespace MazeAI
             // ToDd: Scan Debug
             if (me.object_state == OBJECT_STATE.MOUSE)
                 return MOUSE;
+
+            if (me.isDeadEnd)
+                return DEADEND;
 
             if (me.isScanned)
                 return SCANNED;

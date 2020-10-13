@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MazeAI
@@ -69,7 +64,6 @@ namespace MazeAI
             maze.Update();
             maze.AddMouse();
             maze.AddCheese(1, 50, 1, 24);
-            //maze.Display();
 
             DisplayMessage("Searching for cheese ...");
 

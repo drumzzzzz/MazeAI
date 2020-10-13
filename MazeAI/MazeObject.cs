@@ -30,6 +30,7 @@ namespace MazeAI
         public int x { get; set; }
         public int y { get; set; }
         public bool isScanned { get; set; }
+        public bool isDeadEnd { get; set; }
 
         public MazeObject(OBJECT_TYPE element_type, int x, int y)
         {
@@ -37,6 +38,7 @@ namespace MazeAI
             object_state = OBJECT_STATE.NONE;
             isVisited = false;
             isScanned = false;
+            isDeadEnd = false;
             this.x = x;
             this.y = y;
         }
