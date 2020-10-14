@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -31,6 +33,12 @@ namespace MazeAI
         private const int MAZE_MARGIN_PX = 25;
         private SKColor BlockColor;
         private SKColor SpaceColor;
+        private SKPaint BlockPaint;
+        private SKPaint SpacePaint;
+        private SKData MazeData;
+        private SKCanvas canvas;
+        private SKSurface surface;
+        private SKBitmap Cheese_Bitmap;
         private const float LINE_WIDTH = 1;
 
         public MazeAI()
@@ -70,6 +78,69 @@ namespace MazeAI
                 green: (byte)255,
                 blue: (byte)255,
                 alpha: (byte)255);
+
+            BlockPaint = new SKPaint
+            {
+                Color = BlockColor,
+                StrokeWidth = LINE_WIDTH,
+                IsAntialias = true,
+                Style = SKPaintStyle.Fill
+            };
+
+            SpacePaint = new SKPaint
+            {
+                Color = SpaceColor,
+                StrokeWidth = LINE_WIDTH,
+                IsAntialias = true,
+                Style = SKPaintStyle.Fill
+            };
+        }
+
+        public enum BitmapAlignment
+        {
+            Start,
+            Center,
+            End
+        }
+
+        static SKRect CalculateDisplayRect(SKRect dest, float bmpWidth, float bmpHeight,
+            BitmapAlignment horizontal, BitmapAlignment vertical)
+        {
+            float x = 0;
+            float y = 0;
+
+            switch (horizontal)
+            {
+                case BitmapAlignment.Center:
+                    x = (dest.Width - bmpWidth) / 2;
+                    break;
+
+                case BitmapAlignment.Start:
+                    break;
+
+                case BitmapAlignment.End:
+                    x = dest.Width - bmpWidth;
+                    break;
+            }
+
+            switch (vertical)
+            {
+                case BitmapAlignment.Center:
+                    y = (dest.Height - bmpHeight) / 2;
+                    break;
+
+                case BitmapAlignment.Start:
+                    break;
+
+                case BitmapAlignment.End:
+                    y = dest.Height - bmpHeight;
+                    break;
+            }
+
+            x += dest.Left;
+            y += dest.Top;
+
+            return new SKRect(x, y, x + bmpWidth, y + bmpHeight);
         }
 
         private void DrawMaze()
@@ -80,31 +151,17 @@ namespace MazeAI
                 colorType: SKColorType.Rgba8888,
                 alphaType: SKAlphaType.Premul);
 
-            var surface = SKSurface.Create(imageInfo);
-            var canvas = surface.Canvas;
-
+            surface = SKSurface.Create(imageInfo);
+            canvas = surface.Canvas;
             canvas.Clear(SKColor.Parse("#003366"));
 
-            MazeObject[,] MazeObjects = maze.GetMazeObjects();
+            SKBitmap b = Resources.cheese.ToSKBitmap();
+
+            SKImageInfo resizeInfo = new SKImageInfo(MAZE_SCALE_WIDTH_PX, MAZE_SCALE_HEIGHT_PX);
+            Cheese_Bitmap = b.Resize(resizeInfo, SKFilterQuality.High);
 
             float y_pos;
             float x_pos;
-
-            var BlockPaint = new SKPaint
-            {
-                Color = BlockColor,
-                StrokeWidth = LINE_WIDTH,
-                IsAntialias = true,
-                Style = SKPaintStyle.Fill
-            };
-
-            var SpacePaint = new SKPaint
-            {
-                Color = SpaceColor,
-                StrokeWidth = LINE_WIDTH,
-                IsAntialias = true,
-                Style = SKPaintStyle.Fill
-            };
 
             // Height
             for (int y_idx = 0; y_idx < MAZE_HEIGHT; y_idx++)
@@ -117,38 +174,38 @@ namespace MazeAI
                     x_pos = x_idx * MAZE_SCALE_WIDTH_PX;
 
                     OBJECT_TYPE ot = maze.GetObjectType(x_idx, y_idx);
+
                     canvas.DrawRect(x_pos,y_pos,(float)MAZE_SCALE_WIDTH_PX,(float) MAZE_SCALE_HEIGHT_PX,
                             (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
+
+                    if (maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
+                    { 
+                        canvas.DrawBitmap(Cheese_Bitmap,x_pos,y_pos);
+                    }
+                    
                 }
             }
-
-            //for (int i = 0; i < 100; i++)
+            canvas.SaveLayer();
+            //canvas.Clear(SKColor.Parse("#003366"));
+            //SKImage image = surface.Snapshot();
+            //MazeData = image.Encode();
+            //UpdateMaze();
+            //using (SKImage image = surface.Snapshot())
+            //using (SKData data = image.Encode())
+            //using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(data.ToArray()))
             //{
-            //    float lineWidth = rand.Next(1, 10);
-            //    var lineColor = new SKColor(
-            //        red: (byte)rand.Next(255),
-            //        green: (byte)rand.Next(255),
-            //        blue: (byte)rand.Next(255),
-            //        alpha: (byte)rand.Next(255));
-
-            //    var linePaint = new SKPaint
-            //    {
-            //        Color = lineColor,
-            //        StrokeWidth = lineWidth,
-            //        IsAntialias = true,
-            //        Style = SKPaintStyle.Stroke
-            //    };
-
-            //    int x1 = rand.Next(imageInfo.Width);
-            //    int y1 = rand.Next(imageInfo.Height);
-            //    int x2 = rand.Next(imageInfo.Width);
-            //    int y2 = rand.Next(imageInfo.Height);
-            //    canvas.DrawLine(x1, y1, x2, y2, linePaint);
+            //    pbxMaze.Image?.Dispose();
+            //    pbxMaze.Image = new Bitmap(mStream, false);
             //}
+        }
 
-            using (SKImage image = surface.Snapshot())
-            using (SKData data = image.Encode())
-            using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(data.ToArray()))
+        private void UpdateMaze()
+        {
+            canvas.Clear(SKColor.Parse("#003366"));
+            SKImage image = surface.Snapshot();
+            MazeData = image.Encode();
+
+            using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(MazeData.ToArray()))
             {
                 pbxMaze.Image?.Dispose();
                 pbxMaze.Image = new Bitmap(mStream, false);
@@ -181,54 +238,7 @@ namespace MazeAI
             }
         }
 
-        private void Draw()
-        {
-            var imageInfo = new SKImageInfo(
-                width: pbxMaze.Width,
-                height: pbxMaze.Height,
-                colorType: SKColorType.Rgba8888,
-                alphaType: SKAlphaType.Premul);
-
-            var surface = SKSurface.Create(imageInfo);
-            var canvas = surface.Canvas;
-
-            canvas.Clear(SKColor.Parse("#003366"));
-
-            for (int i = 0; i < 100; i++)
-            {
-                float lineWidth = rand.Next(1, 10);
-                var lineColor = new SKColor(
-                    red: (byte)rand.Next(255),
-                    green: (byte)rand.Next(255),
-                    blue: (byte)rand.Next(255),
-                    alpha: (byte)rand.Next(255));
-
-                var linePaint = new SKPaint
-                {
-                    Color = lineColor,
-                    StrokeWidth = lineWidth,
-                    IsAntialias = true,
-                    Style = SKPaintStyle.Stroke
-                };
-
-                int x1 = rand.Next(imageInfo.Width);
-                int y1 = rand.Next(imageInfo.Height);
-                int x2 = rand.Next(imageInfo.Width);
-                int y2 = rand.Next(imageInfo.Height);
-                canvas.DrawLine(x1, y1, x2, y2, linePaint);
-            }
-
-            using (SKImage image = surface.Snapshot())
-            using (SKData data = image.Encode())
-            using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(data.ToArray()))
-            {
-                pbxMaze.Image?.Dispose();
-                pbxMaze.Image = new Bitmap(mStream, false);
-            }
-
-        }
-
-        private void MazeAI_Shown(object sender, EventArgs e)
+        private void RunProcess()
         {
             searchThread = new Thread(AISearch);
             ai = new MazePath();
@@ -241,20 +251,23 @@ namespace MazeAI
 
             DrawMaze();
 
-            //Draw();
-
             DisplayMessage("Searching for cheese ...");
 
             searchThread.Start();
 
             while (!isExit && !isFound)
             {
-                //Draw();
+                UpdateMaze();
                 Application.DoEvents();
             }
 
             if (isFound)
                 DisplayMessage("Found the cheese!");
+        }
+
+        private void MazeAI_Shown(object sender, EventArgs e)
+        {
+            RunProcess();
         }
 
         private void btnExit_Click(object sender, EventArgs e)

@@ -563,6 +563,11 @@ namespace MazeAI
             return (maze[XYToIndex(x, y)] == SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
         }
 
+        public OBJECT_STATE GetObjectState(int x, int y)
+        {
+            return (MazeObjects[x, y].object_state);
+        }
+
         public static string ChangeCharacter(string sourceString, int charIndex, char newChar)
         {
             return (charIndex > 0 ? sourceString.Substring(0, charIndex) : "")
