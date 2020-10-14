@@ -21,9 +21,9 @@ namespace MazeAI
         {
             public int x { get; set; }
             public int y { get; set; }
-            public Maze.DIRECTION direction { get; set; }
+            public DIRECTION direction { get; set; }
 
-            public Path(int x, int y, Maze.DIRECTION direction)
+            public Path(int x, int y, DIRECTION direction)
             {
                 this.x = x;
                 this.y = y;

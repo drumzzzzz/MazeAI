@@ -1,28 +1,28 @@
-﻿using System;
+﻿#region Using Statements
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
+#endregion
 
 namespace MazeAI
 {
     public partial class MazeAI : Form
     {
+        #region Declarations
+
         private Thread searchThread;
         private Maze maze;
         private MazePath ai;
-        private MazePath.Path aipath;
         private bool isExit;
         private bool isFound;
-        private frmAISearch oFrmAiSearch;
-        private Random rand;
 
         private const int MAZE_WIDTH = 51;
         private const int MAZE_HEIGHT = 25;
@@ -42,8 +42,12 @@ namespace MazeAI
         private SKSurface surface;
         private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
-        private SKBitmap Mouse_Bitmap;
+        private SKBitmap[] Mouse_Bitmaps;
         private const float LINE_WIDTH = 1;
+
+        #endregion
+
+        #region Initialization
 
         public MazeAI()
         {
@@ -57,9 +61,10 @@ namespace MazeAI
             isExit = false;
             isFound = false;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
-            rand = new Random(0);
             InitMaze();
         }
+
+        #endregion
 
         #region Graphics Rendering
 
@@ -100,53 +105,6 @@ namespace MazeAI
             };
         }
 
-        public enum BitmapAlignment
-        {
-            Start,
-            Center,
-            End
-        }
-
-        static SKRect CalculateDisplayRect(SKRect dest, float bmpWidth, float bmpHeight,
-            BitmapAlignment horizontal, BitmapAlignment vertical)
-        {
-            float x = 0;
-            float y = 0;
-
-            switch (horizontal)
-            {
-                case BitmapAlignment.Center:
-                    x = (dest.Width - bmpWidth) / 2;
-                    break;
-
-                case BitmapAlignment.Start:
-                    break;
-
-                case BitmapAlignment.End:
-                    x = dest.Width - bmpWidth;
-                    break;
-            }
-
-            switch (vertical)
-            {
-                case BitmapAlignment.Center:
-                    y = (dest.Height - bmpHeight) / 2;
-                    break;
-
-                case BitmapAlignment.Start:
-                    break;
-
-                case BitmapAlignment.End:
-                    y = dest.Height - bmpHeight;
-                    break;
-            }
-
-            x += dest.Left;
-            y += dest.Top;
-
-            return new SKRect(x, y, x + bmpWidth, y + bmpHeight);
-        }
-
         private void DrawMaze()
         {
             var imageInfo = new SKImageInfo(
@@ -166,9 +124,26 @@ namespace MazeAI
             Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
             resizeInfo.Height = 60;
             resizeInfo.Width = 30;
-            SKBitmap m = Resources.mouse.ToSKBitmap();
-            Mouse_Bitmap = m.Resize(resizeInfo, SKFilterQuality.Medium);
-            //Mouse_Bitmap = Resources.mouse.ToSKBitmap();
+
+            Mouse_Bitmaps = new SKBitmap[4];
+
+            SKBitmap[] mbmps = new SKBitmap[]
+            {
+                Resources.mouse_north.ToSKBitmap(),
+                Resources.mouse_east.ToSKBitmap(),
+                Resources.mouse_south.ToSKBitmap(), 
+                Resources.mouse_west.ToSKBitmap()
+            }; 
+
+            Mouse_Bitmaps[(int) DIRECTION.NORTH] = Resources.mouse_north.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.EAST] = Resources.mouse_east.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.SOUTH] = Resources.mouse_south.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.WEST] = Resources.mouse_west.ToSKBitmap();
+
+            for (int i = 0; i < 4; i++)
+            {
+                Mouse_Bitmaps[i] = mbmps[i].Resize(resizeInfo, SKFilterQuality.Medium);
+            }
 
             float x_pos, y_pos;
             OBJECT_TYPE ot;
@@ -203,7 +178,9 @@ namespace MazeAI
             canvas.DrawImage(backimage,0,0);
 
             Point p = maze.GetMousePosition();
-            canvas.DrawBitmap(Mouse_Bitmap, p.X * MAZE_SCALE_WIDTH_PX, p.Y * MAZE_SCALE_HEIGHT_PX);
+            int direction = maze.GetMouseDirection();
+
+            canvas.DrawBitmap(Mouse_Bitmaps[direction], p.X * MAZE_SCALE_WIDTH_PX, p.Y * MAZE_SCALE_HEIGHT_PX);
             
             SKImage image = surface.Snapshot();
             MazeData = image.Encode();
@@ -217,28 +194,11 @@ namespace MazeAI
 
         #endregion
 
-        private void DisplayMessage(string msg)
+        #region Processing
+
+        private void MazeAI_Shown(object sender, EventArgs e)
         {
-            //txtMaze.Text += msg + Environment.NewLine;
-        }
-
-        private void AISearch()
-        {
-            List<MazeObject> elements = new List<MazeObject>();
-
-            while (!isFound)
-            {
-                if (maze.ProcessMouseMove())
-                {
-                    maze.Display();
-                    Console.WriteLine("Cheese found via path!");
-                    isFound = true;
-                    break;
-                }
-
-                maze.Display(); 
-                Thread.Sleep(50);
-            }
+            RunProcess();
         }
 
         private void RunProcess()
@@ -268,14 +228,39 @@ namespace MazeAI
                 DisplayMessage("Found the cheese!");
         }
 
-        private void MazeAI_Shown(object sender, EventArgs e)
+        private void AISearch()
         {
-            RunProcess();
+            List<MazeObject> elements = new List<MazeObject>();
+
+            while (!isFound)
+            {
+                if (maze.ProcessMouseMove())
+                {
+                    maze.Display();
+                    Console.WriteLine("Cheese found via path!");
+                    isFound = true;
+                    break;
+                }
+
+                maze.Display(); 
+                Thread.Sleep(50);
+            }
         }
+
+        #endregion
+
+        #region Controls
 
         private void btnExit_Click(object sender, EventArgs e)
         {
             isExit = true;
         }
+
+        private void DisplayMessage(string msg)
+        {
+            //txtMaze.Text += msg + Environment.NewLine;
+        }
+
+        #endregion
     }
 }

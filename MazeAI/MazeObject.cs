@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace MazeAI
 {
+    public enum DIRECTION
+    {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
+    }
+
     public enum OBJECT_TYPE
     {
         SPACE,
@@ -26,6 +34,7 @@ namespace MazeAI
         public OBJECT_TYPE object_type { get; set; }
         public bool isVisited { get; set; }
         public OBJECT_STATE object_state { get; set; }
+        public DIRECTION direction { get; set; }
 
         public int x { get; set; }
         public int y { get; set; }
@@ -41,6 +50,7 @@ namespace MazeAI
             isDeadEnd = false;
             this.x = x;
             this.y = y;
+            direction = DIRECTION.SOUTH;
         }
     }
 }

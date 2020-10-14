@@ -152,6 +152,18 @@
   <ItemGroup>
     <None Include="Resources\mouse.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mouse_east.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mouse_west.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mouse_north.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mouse_south.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets" Condition="Exists('..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

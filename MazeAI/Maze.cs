@@ -19,14 +19,6 @@ namespace MazeAI
         private readonly int maze_width;
         private readonly int maze_height;
 
-        public enum DIRECTION
-        {
-            NORTH,
-            EAST,
-            SOUTH,
-            WEST
-        }
-
         private readonly DIRECTION[] dirs;
         private const char BLOCK = '█';
         private const char VISITED = '+';
@@ -363,6 +355,8 @@ namespace MazeAI
                                                                 o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
                 if (mo != null)
                 {
+                    oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
+
                     oMouse.x = mo.x;
                     oMouse.y = mo.y;
                     mo.object_state = OBJECT_STATE.MOUSE;
@@ -376,6 +370,8 @@ namespace MazeAI
                     if (mo == null)
                         throw new Exception("Object was null!");
 
+                    oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
+
                     oMouse.x = mo.x;
                     oMouse.y = mo.y;
                     MazeObjects[mo.x, mo.y].object_state = OBJECT_STATE.MOUSE;
@@ -388,7 +384,6 @@ namespace MazeAI
                     MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
                     mouse.isVisited = true;
                     mouse.object_state = OBJECT_STATE.VISITED;
-                    // RemoveLastNode();
                 }
             }
             else 
@@ -396,6 +391,7 @@ namespace MazeAI
                 MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE);
                 if (mo != null)
                 {
+                    oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
                     mo.object_state = OBJECT_STATE.MOUSE;
                     oMouse.x = mo.x;
                     oMouse.y = mo.y;
@@ -404,13 +400,14 @@ namespace MazeAI
                     mouse.object_state = OBJECT_STATE.VISITED;
 
                     if (mazeobjects.Count > 3) // Node
-                    {
                         AddLastNode(x, y);
-                    }
                 }
                 else
                 {
                     MazeObject oLastNode = GetLastNode();
+
+                    oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, oLastNode.x, oLastNode.y);
+
                     oMouse.x = oLastNode.x;
                     oMouse.y = oLastNode.y;
                     MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
@@ -422,6 +419,21 @@ namespace MazeAI
 
             Display();
             return false;
+        }
+
+        private DIRECTION GetMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
+        {
+            if (x_last != x_curr)
+            {
+                return (x_last > x_curr) ? DIRECTION.WEST : DIRECTION.EAST;
+            }
+
+            if (y_last != y_curr)
+            {
+                return (y_last > y_curr) ? DIRECTION.NORTH : DIRECTION.SOUTH;
+            }
+
+            return oMouse.direction;
         }
 
         private MazeObject GetLastNode()
@@ -495,17 +507,17 @@ namespace MazeAI
 
         public void Display()
         {
-            Console.Clear();
+            //Console.Clear();
 
-            for (int y = 0; y < maze_height; ++y)
-            {
-                sb.Clear();
-                for (int x = 0; x < maze_width; ++x)
-                {
-                    sb.Append(GetObjectChar(MazeObjects[x, y]));
-                }
-                Console.WriteLine(sb.ToString());
-            }
+            //for (int y = 0; y < maze_height; ++y)
+            //{
+            //    sb.Clear();
+            //    for (int x = 0; x < maze_width; ++x)
+            //    {
+            //        sb.Append(GetObjectChar(MazeObjects[x, y]));
+            //    }
+            //    Console.WriteLine(sb.ToString());
+            //}
         }
 
         #endregion
@@ -515,6 +527,11 @@ namespace MazeAI
         public Point GetMousePosition()
         {
             return new Point(oMouse.x, oMouse.y);
+        }
+
+        public int GetMouseDirection()
+        {
+            return (int)oMouse.direction;
         }
 
         public MazeObject[,] GetMazeObjects()
