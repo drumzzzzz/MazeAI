@@ -28,9 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.txtMaze = new System.Windows.Forms.RichTextBox();
             this.btnExit = new System.Windows.Forms.Button();
+            this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
+            this.skiaView = new SkiaSharp.Views.Desktop.SKControl();
             this.SuspendLayout();
+            // 
+            // skiaView
+            // 
+            this.skiaView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.skiaView.Location = new System.Drawing.Point(0, 0);
+            this.skiaView.Name = "skiaView";
+            this.skiaView.Size = new System.Drawing.Size(774, 529);
+            this.skiaView.TabIndex = 0;
+            this.skiaView.Text = "skControl1";
+            this.skiaView.PaintSurface += new System.EventHandler<SkiaSharp.Views.Desktop.SKPaintSurfaceEventArgs>(this.skiaView_PaintSurface);
             // 
             // txtMaze
             // 
@@ -62,11 +76,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(779, 603);
             this.Controls.Add(this.btnExit);
+            this.Controls.Add(this.skiaView);
             this.Controls.Add(this.txtMaze);
             this.Name = "MazeAI";
             this.Text = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.Shown += new System.EventHandler(this.MazeAI_Shown);
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -75,6 +91,8 @@
 
         private System.Windows.Forms.RichTextBox txtMaze;
         private System.Windows.Forms.Button btnExit;
+        private System.Windows.Forms.BindingSource bindingSource1;
+        private SkiaSharp.Views.Desktop.SKControl skiaView;
     }
 }
 
