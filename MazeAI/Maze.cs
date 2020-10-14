@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 #endregion
 
-namespace MazeAI
+namespace MouseAI
 {
     public class Maze
     {
@@ -103,13 +102,13 @@ namespace MazeAI
             }
         }
 
-        // Starting at the given index, recursively visits every direction randomly
+        // Starting at the given index, recursively visit every direction randomly
         public void Generate(int x = 1, int y = 1)
         {
             if (x == 1 && y == 1)
                 Reset();
 
-            // Set my current location to be an empty passage.   
+            // Set current location to empty
             maze = ChangeCharacter(maze, XYToIndex(x, y), SPACE);
             aipaths.Add(new MazePath.Path(x, y, DIRECTION.WEST));
 
@@ -147,7 +146,7 @@ namespace MazeAI
                         break;
                 }
 
-                // Find coordinates 2 spaces from direction
+                // Find the coords 2 spaces away
                 int x2 = x + (dx << 1);
                 int y2 = y + (dy << 1);
 
@@ -483,24 +482,6 @@ namespace MazeAI
             return mazeobjects;
         }
 
-        public bool SetPath(int x, int y)
-        {
-            MazeObject mo = MazeObjects[x, y];
-
-            if (mo.object_type == OBJECT_TYPE.BLOCK)
-            {
-                throw new Exception("Invalid Block Object at " + x + "," + y);
-            }
-
-            if (mo.object_state == OBJECT_STATE.MOUSE || mo.object_state == OBJECT_STATE.CHEESE)
-            {
-                return false;
-            }
-
-            mo.object_state = OBJECT_STATE.VISITED;
-            return false;
-        }
-
         #endregion
 
         #region Rendering
@@ -534,47 +515,13 @@ namespace MazeAI
             return (int)oMouse.direction;
         }
 
-        public MazeObject[,] GetMazeObjects()
-        {
-            return MazeObjects;
-        }
-
-        private static char GetObjectChar(MazeObject me)
-        {
-            if (me.object_type == OBJECT_TYPE.BLOCK)
-                return BLOCK;
-
-            // ToDd: Scan Debug
-            if (me.object_state == OBJECT_STATE.MOUSE)
-                return MOUSE;
-
-            if (me.isDeadEnd)
-                return DEADEND;
-
-            if (me.isScanned)
-                return SCANNED;
-
-            switch (me.object_state)
-            {
-                case OBJECT_STATE.NONE: return SPACE;
-                case OBJECT_STATE.VISITED: return VISITED;
-                case OBJECT_STATE.CHEESE: return CHEESE;
-                case OBJECT_STATE.MOUSE: return MOUSE;
-            }
-
-            Console.WriteLine("Invalid Character - type:" + me.object_type + " state:" + me.object_state);
-            return SPACE;
-        }
-
-        // Convert linear chars to x/y
         private int XYToIndex(int x, int y)
         {
             return y * maze_width + x;
         }
 
         private bool IsInBounds(int x, int y)
-        {
-            // Returns "true" if x and y are both in-bounds.   
+        {    
             if (x < 0 || x >= maze_width)
                 return false;
 

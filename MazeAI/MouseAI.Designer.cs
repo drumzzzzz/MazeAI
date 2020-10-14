@@ -1,6 +1,6 @@
-﻿namespace MazeAI
+﻿namespace MouseAI
 {
-    partial class MazeAI
+    partial class MouseAI
     {
         /// <summary>
         /// Required designer variable.

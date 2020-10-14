@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MazeAI {
+namespace MouseAI {
     using System;
     
     

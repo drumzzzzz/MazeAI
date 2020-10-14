@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MazeAI.Properties
+namespace MouseAI.Properties
 {
 
 

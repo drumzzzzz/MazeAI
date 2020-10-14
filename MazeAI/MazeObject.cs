@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MazeAI
+﻿
+namespace MouseAI
 {
     public enum DIRECTION
     {
@@ -32,12 +27,11 @@ namespace MazeAI
     public class MazeObject
     {
         public OBJECT_TYPE object_type { get; set; }
-        public bool isVisited { get; set; }
         public OBJECT_STATE object_state { get; set; }
         public DIRECTION direction { get; set; }
-
         public int x { get; set; }
         public int y { get; set; }
+        public bool isVisited { get; set; }
         public bool isScanned { get; set; }
         public bool isDeadEnd { get; set; }
 

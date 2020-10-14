@@ -12,9 +12,9 @@ using SkiaSharp.Views.Desktop;
 
 #endregion
 
-namespace MazeAI
+namespace MouseAI
 {
-    public partial class MazeAI : Form
+    public partial class MouseAI : Form
     {
         #region Declarations
 
@@ -49,7 +49,7 @@ namespace MazeAI
 
         #region Initialization
 
-        public MazeAI()
+        public MouseAI()
         {
             InitializeComponent();
             Console.BackgroundColor = ConsoleColor.Blue;

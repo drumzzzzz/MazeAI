@@ -90,18 +90,12 @@
   <ItemGroup>
     <Compile Include="MazePath.cs" />
     <Compile Include="ConsoleHelper.cs" />
-    <Compile Include="frmAISearch.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmAISearch.Designer.cs">
-      <DependentUpon>frmAISearch.cs</DependentUpon>
-    </Compile>
     <Compile Include="Maze.cs" />
-    <Compile Include="MazeAI.cs">
+    <Compile Include="MouseAI.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MazeAI.Designer.cs">
-      <DependentUpon>MazeAI.cs</DependentUpon>
+    <Compile Include="MouseAI.Designer.cs">
+      <DependentUpon>MouseAI.cs</DependentUpon>
     </Compile>
     <Compile Include="MazeObject.cs" />
     <Compile Include="Program.cs" />
@@ -111,11 +105,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="frmAISearch.resx">
-      <DependentUpon>frmAISearch.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MazeAI.resx">
-      <DependentUpon>MazeAI.cs</DependentUpon>
+    <EmbeddedResource Include="MouseAI.resx">
+      <DependentUpon>MouseAI.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -148,9 +139,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\cheese.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\mouse.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\mouse_east.png" />
