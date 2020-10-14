@@ -75,6 +75,7 @@ namespace MazeAI
             oMouse = new MazeObject(OBJECT_TYPE.BLOCK, x, y)
             {
                 object_state = OBJECT_STATE.MOUSE,
+                object_type = OBJECT_TYPE.SPACE,
                 isVisited = true
             };
 
@@ -94,6 +95,7 @@ namespace MazeAI
                     MazeObjects[x, y].object_state != OBJECT_STATE.MOUSE)
                 {
                     MazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
+                    MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
                     oCheese = MazeObjects[x, y];
                     return;
                 }
@@ -509,6 +511,11 @@ namespace MazeAI
 
         #region Object Tools
 
+        public MazeObject[,] GetMazeObjects()
+        {
+            return MazeObjects;
+        }
+
         private static char GetObjectChar(MazeObject me)
         {
             if (me.object_type == OBJECT_TYPE.BLOCK)
@@ -551,7 +558,7 @@ namespace MazeAI
             return (y >= 0 && y < maze_height);
         }
 
-        private OBJECT_TYPE GetObjectType(int x, int y)
+        public OBJECT_TYPE GetObjectType(int x, int y)
         {
             return (maze[XYToIndex(x, y)] == SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
         }
