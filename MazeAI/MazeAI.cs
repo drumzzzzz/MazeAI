@@ -36,9 +36,13 @@ namespace MazeAI
         private SKPaint BlockPaint;
         private SKPaint SpacePaint;
         private SKData MazeData;
+        private SKCanvas offscreen;
         private SKCanvas canvas;
+        private SKSurface buffer;
         private SKSurface surface;
+        private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
+        private SKBitmap Mouse_Bitmap;
         private const float LINE_WIDTH = 1;
 
         public MazeAI()
@@ -151,17 +155,23 @@ namespace MazeAI
                 colorType: SKColorType.Rgba8888,
                 alphaType: SKAlphaType.Premul);
 
+            buffer = SKSurface.Create(imageInfo);
             surface = SKSurface.Create(imageInfo);
             canvas = surface.Canvas;
-            canvas.Clear(SKColor.Parse("#003366"));
+            offscreen = buffer.Canvas;
+            offscreen.Clear(SKColor.Parse("#003366"));
 
-            SKBitmap b = Resources.cheese.ToSKBitmap();
+            SKImageInfo resizeInfo = new SKImageInfo(90, 190);
+            SKBitmap c = Resources.Cheese.ToSKBitmap();
+            Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
+            resizeInfo.Height = 60;
+            resizeInfo.Width = 30;
+            SKBitmap m = Resources.mouse.ToSKBitmap();
+            Mouse_Bitmap = m.Resize(resizeInfo, SKFilterQuality.Medium);
+            //Mouse_Bitmap = Resources.mouse.ToSKBitmap();
 
-            SKImageInfo resizeInfo = new SKImageInfo(MAZE_SCALE_WIDTH_PX, MAZE_SCALE_HEIGHT_PX);
-            Cheese_Bitmap = b.Resize(resizeInfo, SKFilterQuality.High);
-
-            float y_pos;
-            float x_pos;
+            float x_pos, y_pos;
+            OBJECT_TYPE ot;
 
             // Height
             for (int y_idx = 0; y_idx < MAZE_HEIGHT; y_idx++)
@@ -173,39 +183,32 @@ namespace MazeAI
                 {
                     x_pos = x_idx * MAZE_SCALE_WIDTH_PX;
 
-                    OBJECT_TYPE ot = maze.GetObjectType(x_idx, y_idx);
+                    ot = maze.GetObjectType(x_idx, y_idx);
 
-                    canvas.DrawRect(x_pos,y_pos,(float)MAZE_SCALE_WIDTH_PX,(float) MAZE_SCALE_HEIGHT_PX,
+                    offscreen.DrawRect(x_pos,y_pos,(float)MAZE_SCALE_WIDTH_PX,(float) MAZE_SCALE_HEIGHT_PX,
                             (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
 
                     if (maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
-                    { 
-                        canvas.DrawBitmap(Cheese_Bitmap,x_pos,y_pos);
-                    }
-                    
+                        offscreen.DrawBitmap(Cheese_Bitmap,x_pos,y_pos);
                 }
             }
-            canvas.SaveLayer();
-            //canvas.Clear(SKColor.Parse("#003366"));
-            //SKImage image = surface.Snapshot();
-            //MazeData = image.Encode();
-            //UpdateMaze();
-            //using (SKImage image = surface.Snapshot())
-            //using (SKData data = image.Encode())
-            //using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(data.ToArray()))
-            //{
-            //    pbxMaze.Image?.Dispose();
-            //    pbxMaze.Image = new Bitmap(mStream, false);
-            //}
+            offscreen.Save();
+            backimage = buffer.Snapshot();
+            UpdateMaze();
         }
 
         private void UpdateMaze()
         {
             canvas.Clear(SKColor.Parse("#003366"));
+            canvas.DrawImage(backimage,0,0);
+
+            Point p = maze.GetMousePosition();
+            canvas.DrawBitmap(Mouse_Bitmap, p.X * MAZE_SCALE_WIDTH_PX, p.Y * MAZE_SCALE_HEIGHT_PX);
+            
             SKImage image = surface.Snapshot();
             MazeData = image.Encode();
 
-            using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(MazeData.ToArray()))
+            using (MemoryStream mStream = new MemoryStream(MazeData.ToArray()))
             {
                 pbxMaze.Image?.Dispose();
                 pbxMaze.Image = new Bitmap(mStream, false);
