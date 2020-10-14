@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -18,9 +19,7 @@ namespace MazeAI
         private bool isExit;
         private bool isFound;
         private frmAISearch oFrmAiSearch;
-
-        private SKSize scaledSize;
-        private SKCanvas canvas;
+        private Random rand;
 
         public MazeAI()
         {
@@ -34,39 +33,12 @@ namespace MazeAI
             isExit = false;
             isFound = false;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
-        }
-
-        private void skiaView_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
-        {
-            // the the canvas and properties
-            canvas = e.Surface.Canvas;
-
-            // get the screen density for scaling
-            var scale = 1f;
-            scaledSize = new SKSize(e.Info.Width / scale, e.Info.Height / scale);
-
-            // handle the device screen density
-            canvas.Scale(scale);
-
-            // make sure the canvas is blank
-            canvas.Clear(SKColors.White);
-
-            // draw some text
-            var paint = new SKPaint
-            {
-                Color = SKColors.Black,
-                IsAntialias = true,
-                Style = SKPaintStyle.Fill,
-                TextAlign = SKTextAlign.Center,
-                TextSize = 24
-            };
-            var coord = new SKPoint(scaledSize.Width / 2, (scaledSize.Height + paint.TextSize) / 2);
-            canvas.DrawText("SkiaSharp", coord, paint);
+            rand = new Random(0);
         }
 
         private void DisplayMessage(string msg)
         {
-            txtMaze.Text += msg + Environment.NewLine;
+            //txtMaze.Text += msg + Environment.NewLine;
         }
 
         private void AISearch()
@@ -90,20 +62,49 @@ namespace MazeAI
 
         private void Draw()
         {
-            // get the screen density for scaling
-            var scale = 1f;
-            
-            // draw some text
-            var paint = new SKPaint
+            var imageInfo = new SKImageInfo(
+                width: pictureBox1.Width,
+                height: pictureBox1.Height,
+                colorType: SKColorType.Rgba8888,
+                alphaType: SKAlphaType.Premul);
+
+            var surface = SKSurface.Create(imageInfo);
+            var canvas = surface.Canvas;
+
+            canvas.Clear(SKColor.Parse("#003366"));
+
+            for (int i = 0; i < 100; i++)
             {
-                Color = SKColors.Black,
-                IsAntialias = true,
-                Style = SKPaintStyle.Fill,
-                TextAlign = SKTextAlign.Center,
-                TextSize = 24
-            };
-            var coord = new SKPoint(scaledSize.Width / 2, (scaledSize.Height + paint.TextSize) / 2);
-            canvas.DrawText("Hello World!", coord, paint);
+                float lineWidth = rand.Next(1, 10);
+                var lineColor = new SKColor(
+                    red: (byte)rand.Next(255),
+                    green: (byte)rand.Next(255),
+                    blue: (byte)rand.Next(255),
+                    alpha: (byte)rand.Next(255));
+
+                var linePaint = new SKPaint
+                {
+                    Color = lineColor,
+                    StrokeWidth = lineWidth,
+                    IsAntialias = true,
+                    Style = SKPaintStyle.Stroke
+                };
+
+                int x1 = rand.Next(imageInfo.Width);
+                int y1 = rand.Next(imageInfo.Height);
+                int x2 = rand.Next(imageInfo.Width);
+                int y2 = rand.Next(imageInfo.Height);
+                canvas.DrawLine(x1, y1, x2, y2, linePaint);
+            }
+
+            using (SKImage image = surface.Snapshot())
+            using (SKData data = image.Encode())
+            using (System.IO.MemoryStream mStream = new System.IO.MemoryStream(data.ToArray()))
+            {
+                pictureBox1.Image?.Dispose();
+                pictureBox1.Image = new Bitmap(mStream, false);
+            }
+
         }
 
         private void MazeAI_Shown(object sender, EventArgs e)
@@ -117,7 +118,7 @@ namespace MazeAI
             maze.AddMouse();
             maze.AddCheese(1, 50, 1, 24);
 
-            Draw();
+            //Draw();
 
             DisplayMessage("Searching for cheese ...");
 
@@ -125,6 +126,7 @@ namespace MazeAI
 
             while (!isExit && !isFound)
             {
+                Draw();
                 Application.DoEvents();
             }
 

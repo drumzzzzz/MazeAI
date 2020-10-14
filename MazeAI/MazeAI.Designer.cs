@@ -29,36 +29,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.txtMaze = new System.Windows.Forms.RichTextBox();
             this.btnExit = new System.Windows.Forms.Button();
-            this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
-            this.skiaView = new SkiaSharp.Views.Desktop.SKControl();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // skiaView
-            // 
-            this.skiaView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.skiaView.Location = new System.Drawing.Point(0, 0);
-            this.skiaView.Name = "skiaView";
-            this.skiaView.Size = new System.Drawing.Size(774, 529);
-            this.skiaView.TabIndex = 0;
-            this.skiaView.Text = "skControl1";
-            this.skiaView.PaintSurface += new System.EventHandler<SkiaSharp.Views.Desktop.SKPaintSurfaceEventArgs>(this.skiaView_PaintSurface);
-            // 
-            // txtMaze
-            // 
-            this.txtMaze.DetectUrls = false;
-            this.txtMaze.Font = new System.Drawing.Font("Comic Sans MS", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMaze.Location = new System.Drawing.Point(12, 12);
-            this.txtMaze.Name = "txtMaze";
-            this.txtMaze.ReadOnly = true;
-            this.txtMaze.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.txtMaze.ShortcutsEnabled = false;
-            this.txtMaze.Size = new System.Drawing.Size(755, 537);
-            this.txtMaze.TabIndex = 0;
-            this.txtMaze.Text = "";
-            this.txtMaze.WordWrap = false;
             // 
             // btnExit
             // 
@@ -70,29 +44,33 @@
             this.btnExit.UseVisualStyleBackColor = true;
             this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Purple;
+            this.pictureBox1.Location = new System.Drawing.Point(12, 41);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(600, 400);
+            this.pictureBox1.TabIndex = 4;
+            this.pictureBox1.TabStop = false;
+            // 
             // MazeAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(779, 603);
             this.Controls.Add(this.btnExit);
-            this.Controls.Add(this.skiaView);
-            this.Controls.Add(this.txtMaze);
+            this.Controls.Add(this.pictureBox1);
             this.Name = "MazeAI";
             this.Text = "Form1";
-            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.Shown += new System.EventHandler(this.MazeAI_Shown);
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
-        private System.Windows.Forms.RichTextBox txtMaze;
         private System.Windows.Forms.Button btnExit;
-        private System.Windows.Forms.BindingSource bindingSource1;
-        private SkiaSharp.Views.Desktop.SKControl skiaView;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 
