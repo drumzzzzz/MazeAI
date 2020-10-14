@@ -287,16 +287,19 @@ namespace MazeAI
 
         private void CheckEndPoints(List<MazeObject> mos)
         {
-            if (mos.Count != 0)
+            if (mos.Count != 0 && GetPerimiter(mos.Last()) == 1)
             {
-                for (int i = mos.Count - 1; i>0; i--)
+                mos.Last().isDeadEnd = true;
+
+                if (mos.Count > 1)
                 {
-                    if (GetPerimiter(mos[i]) == 1)
+                    for (int i = mos.Count - 2; i > -1; i--)
                     {
-                        mos[i].isDeadEnd = true;
+                        if (GetPerimiter(mos[i]) <= 2)
+                            mos[i].isDeadEnd = true;
+                        else
+                            break;
                     }
-                    else
-                        break;
                 }
 
                 mos.Clear();
@@ -316,8 +319,7 @@ namespace MazeAI
             // Scan East
             if (isScanValid(x + 1, y))
                 count++;
-     
-
+            
             // Scan North
             if (isScanValid(x, y - 1))
                 count++;
@@ -354,7 +356,8 @@ namespace MazeAI
 
             if (mazeobjects.Count == 2) // One direction
             {
-                MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE);
+                MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && 
+                                                                o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
                 if (mo != null)
                 {
                     oMouse.x = mo.x;
@@ -375,14 +378,14 @@ namespace MazeAI
                     MazeObjects[mo.x, mo.y].object_state = OBJECT_STATE.MOUSE;
 
                     MazeObject oLastNode = GetLastNode();
+
                     if (oLastNode.x == mo.x && oLastNode.y == mo.y)
                         RemoveLastNode();
 
-                    //oMouse.x = oLastNode.x;
-                    //oMouse.y = oLastNode.y;
                     MazeObjects[oLastNode.x, oLastNode.y].object_state = OBJECT_STATE.MOUSE;
                     mouse.isVisited = true;
                     mouse.object_state = OBJECT_STATE.VISITED;
+                    // RemoveLastNode();
                 }
             }
             else 
