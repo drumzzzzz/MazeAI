@@ -20,17 +20,19 @@ namespace MouseAI
 
         private readonly DIRECTION[] dirs;
         private const char BLOCK = '█';
-        private const char VISITED = '●';
+        private const char VISITED = '>';
         private const char SPACE = '░';
         private const char MOUSE = 'ô';
         private const char CHEESE = 'Δ';
         private const char SCANNED = ':';
         private const char DEADEND = 'X';
         private const char JUNCTION = '+';
+        private const char PATH = '●';
 
         private static Random r;
         private readonly StringBuilder sb;
         private readonly MazeObject[,] MazeObjects;
+        private List<MazeObject> PathObjects;
         private MazeObject oMouse;
 
         #endregion
@@ -53,6 +55,7 @@ namespace MouseAI
 
             r = new Random();
             sb = new StringBuilder();
+            PathObjects = new List<MazeObject>();
         }
 
         public void AddMouse(int x = 1, int y = 1)
@@ -338,13 +341,13 @@ namespace MouseAI
             }
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && 
                                                             o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
-            //MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
-            //                                                o.object_state != OBJECT_STATE.MOUSE);
+
             if (mo != null)
             {
                 if (mazeobjects.Count >= 4)
                 {
                     mouse.isJunction = true;
+                    CleanPathObjects();
                 }
 
                 oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
@@ -353,8 +356,10 @@ namespace MouseAI
                 oMouse.y = mo.y;
                 mo.object_state = OBJECT_STATE.MOUSE;
                 mo.dtLastVisit = DateTime.UtcNow;
+                mo.isPath = true;
                 mouse.isVisited = true;
                 mouse.object_state = OBJECT_STATE.VISITED;
+                PathObjects.Add(mo);
             }
             else
             {
@@ -387,6 +392,31 @@ namespace MouseAI
 
             Display();
             return false;
+        }
+
+        private void CleanPathObjects()
+        {
+            for (int i = PathObjects.Count - 1; i > -1; i--)
+            {
+                if (PathObjects[i].isDeadEnd)
+                {
+                    PathObjects[i].isPath = false;
+                    PathObjects.RemoveAt(i);
+                }
+                else if (PathObjects[i].isJunction)
+                {
+                    List<MazeObject> mo = CheckNode(PathObjects[i].x, PathObjects[i].y);
+
+                    if (mo == null)
+                        throw  new Exception("Objects is null!");
+
+                    if (mo.Count(x => x.isDeadEnd) == mo.Count - 1)
+                    {
+                        PathObjects[i].isDeadEnd = true;
+                        PathObjects.RemoveAt(i);
+                    }
+                }
+            }
         }
 
         private DIRECTION GetMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
@@ -464,6 +494,9 @@ namespace MouseAI
 
             if (mo.isDeadEnd)
                 return DEADEND;
+
+            if (mo.isPath)
+                return PATH;
 
             if (mo.isJunction)
                 return JUNCTION;
