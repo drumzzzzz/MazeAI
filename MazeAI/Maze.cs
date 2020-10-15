@@ -329,7 +329,10 @@ namespace MouseAI
 
             // Can mouse see the cheese?
             if (ScanObjects(x, y))
+            {
+                CleanPathObjects();
                 return true;
+            }
 
             List<MazeObject> mazeobjects = CheckNode(x, y);
 

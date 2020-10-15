@@ -225,7 +225,9 @@ namespace MouseAI
             }
 
             if (isFound)
+            {
                 DisplayMessage("Found the cheese!");
+            }
         }
 
         private void AISearch()
@@ -241,7 +243,7 @@ namespace MouseAI
                 }
 
                 maze.Display(); 
-                Thread.Sleep(50);
+                Thread.Sleep(30);
             }
         }
 
