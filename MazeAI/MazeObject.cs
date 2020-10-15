@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace MouseAI
 {
     public enum DIRECTION
@@ -34,6 +36,7 @@ namespace MouseAI
         public bool isVisited { get; set; }
         public bool isScanned { get; set; }
         public bool isDeadEnd { get; set; }
+        public DateTime dtLastVisit { get; set; }
 
         public MazeObject(OBJECT_TYPE element_type, int x, int y)
         {

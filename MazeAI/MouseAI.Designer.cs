@@ -43,16 +43,17 @@
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
             // 
-            // MazeAI
+            // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(779, 603);
             this.Controls.Add(this.pbxMaze);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
-            this.Name = "MazeAI";
+            this.Name = "MouseAI";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "Maze AI";
+            this.Text = "MouseAI";
+            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.Shown += new System.EventHandler(this.MazeAI_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).EndInit();
             this.ResumeLayout(false);

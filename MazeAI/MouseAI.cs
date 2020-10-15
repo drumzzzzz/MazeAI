@@ -230,8 +230,6 @@ namespace MouseAI
 
         private void AISearch()
         {
-            List<MazeObject> elements = new List<MazeObject>();
-
             while (!isFound)
             {
                 if (maze.ProcessMouseMove())

@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{253775D1-36A2-49AF-9AE8-FB95408C9664}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MazeAI</RootNamespace>
-    <AssemblyName>MazeAI</AssemblyName>
+    <RootNamespace>MouseAI</RootNamespace>
+    <AssemblyName>MouseAI</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -116,6 +116,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
