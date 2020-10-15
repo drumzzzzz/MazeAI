@@ -270,26 +270,37 @@ namespace MouseAI
             return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE);
         }
 
+        private int GetScanValid(int x, int y)
+        {
+            return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE) ? 1 : 0;
+        }
+
         private void CheckEndPoints(IList<MazeObject> mos)
         {
-            return;
+            // If there are objects and the last point is a dead end
             if (mos.Count != 0 && GetPerimiter(mos.Last()) == 1)
             {
-                mos.Last().isDeadEnd = true;
+                SetEndpoint(mos.Last());
 
-                if (mos.Count > 1)
+                for (int i = mos.Count - 2; i > -1; i--)
                 {
-                    for (int i = mos.Count - 2; i > -1; i--)
-                    {
-                        if (GetPerimiter(mos[i]) <= 2)
-                            mos[i].isDeadEnd = true;
-                        else
-                            break;
-                    }
-                }
+                    if (mos[i].object_state == OBJECT_STATE.MOUSE)
+                        break;
 
-                mos.Clear();
+                    if (GetPerimiter(mos[i]) == 2)
+                        SetEndpoint(mos[i]);
+                    else
+                        break;
+                }
             }
+            mos.Clear();
+        }
+
+        private void SetEndpoint(MazeObject mo)
+        {
+            mo.isDeadEnd = true;
+            mo.isVisited = true;
+            mo.dtLastVisit = DateTime.UtcNow;
         }
 
         private int GetPerimiter(MazeObject mo)
@@ -298,22 +309,27 @@ namespace MouseAI
             int y = mo.y;
             int count = 0;
 
-            // Scan West
-            if (isScanValid(x - 1, y))
-                count++;
+            // Scan West, East, North, South Respectively
+            count += GetScanValid(x - 1, y);
+            count += GetScanValid(x + 1, y);
+            count += GetScanValid(x, y - 1);
+            count += GetScanValid(x, y + 1);
 
-            // Scan East
-            if (isScanValid(x + 1, y))
-                count++;
+            //// Scan West
+            //if (isScanValid(x - 1, y))
+            //    count++;
 
-            // Scan North
-            if (isScanValid(x, y - 1))
-                count++;
+            //// Scan East
+            //if (isScanValid(x + 1, y))
+            //    count++;
 
+            //// Scan North
+            //if (isScanValid(x, y - 1))
+            //    count++;
 
-            // Scan South
-            if (isScanValid(x, y + 1))
-                count++;
+            //// Scan South
+            //if (isScanValid(x, y + 1))
+            //    count++;
 
             return count;
         }
@@ -331,6 +347,8 @@ namespace MouseAI
             if (ScanObjects(x, y))
             {
                 CleanPathObjects();
+                //ClearPaths();
+                Display();
                 return true;
             }
 
