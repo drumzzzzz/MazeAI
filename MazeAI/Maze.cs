@@ -20,15 +20,15 @@ namespace MouseAI
 
         private readonly DIRECTION[] dirs;
         private const char BLOCK = '█';
-        private const char VISITED = '+';
+        private const char VISITED = '●';
         private const char SPACE = '░';
         private const char MOUSE = 'ô';
         private const char CHEESE = 'Δ';
         private const char SCANNED = ':';
         private const char DEADEND = 'X';
+        private const char JUNCTION = '+';
 
         private static Random r;
-        private readonly List<MazePath.Path> aipaths;
         private readonly StringBuilder sb;
         private readonly MazeObject[,] MazeObjects;
         private MazeObject oMouse;
@@ -50,8 +50,6 @@ namespace MouseAI
             dirs[1] = DIRECTION.EAST; // EAST;
             dirs[2] = DIRECTION.SOUTH; // SOUTH;
             dirs[3] = DIRECTION.WEST; // WEST;
-
-            this.aipaths = aipaths;
 
             r = new Random();
             sb = new StringBuilder();
@@ -83,7 +81,6 @@ namespace MouseAI
                 {
                     MazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
                     MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
-                    // oCheese = MazeObjects[x, y];
                     return;
                 }
             }
@@ -105,7 +102,6 @@ namespace MouseAI
 
             // Set current location to empty
             maze = ChangeCharacter(maze, XYToIndex(x, y), SPACE);
-            aipaths.Add(new MazePath.Path(x, y, DIRECTION.WEST));
 
             int rand;
             DIRECTION dir_temp;
@@ -150,7 +146,6 @@ namespace MouseAI
                     if (maze[XYToIndex(x2, y2)] == BLOCK)
                     {
                         maze = ChangeCharacter(maze, XYToIndex(x2 - dx, y2 - dy), SPACE);
-                        aipaths.Add(new MazePath.Path(x2 - dx, y2 - dy, dirs[i]));
                         Generate(x2, y2);
                     }
                 }
@@ -272,8 +267,9 @@ namespace MouseAI
             return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE);
         }
 
-        private void CheckEndPoints(List<MazeObject> mos)
+        private void CheckEndPoints(IList<MazeObject> mos)
         {
+            return;
             if (mos.Count != 0 && GetPerimiter(mos.Last()) == 1)
             {
                 mos.Last().isDeadEnd = true;
@@ -340,12 +336,17 @@ namespace MouseAI
             {
                 throw new Exception("Mouse Object Null!");
             }
-            //MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && 
-            //                                                o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
-            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
-                                                            o.object_state != OBJECT_STATE.MOUSE);
+            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && 
+                                                            o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
+            //MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
+            //                                                o.object_state != OBJECT_STATE.MOUSE);
             if (mo != null)
             {
+                if (mazeobjects.Count >= 4)
+                {
+                    mouse.isJunction = true;
+                }
+
                 oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
 
                 oMouse.x = mo.x;
@@ -375,6 +376,9 @@ namespace MouseAI
                 oMouse.x = mo_oldest.x;
                 oMouse.y = mo_oldest.y;
                 oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo_oldest.x, mo_oldest.y);
+
+                if (!mouse.isJunction)
+                    mouse.isDeadEnd = true;
 
                 MazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
                 mouse.isVisited = true;
@@ -449,30 +453,36 @@ namespace MouseAI
 
         #region Object Tools
 
-        private static char GetObjectChar(MazeObject me)
+        private static char GetObjectChar(MazeObject mo)
         {
-            if (me.object_type == OBJECT_TYPE.BLOCK)
+            if (mo.object_type == OBJECT_TYPE.BLOCK)
                 return BLOCK;
 
             // ToDd: Scan Debug
-            if (me.object_state == OBJECT_STATE.MOUSE)
+            if (mo.object_state == OBJECT_STATE.MOUSE)
                 return MOUSE;
 
-            if (me.isDeadEnd)
+            if (mo.isDeadEnd)
                 return DEADEND;
 
-            if (me.isScanned)
+            if (mo.isJunction)
+                return JUNCTION;
+
+            if(mo.object_state == OBJECT_STATE.VISITED)
+                return VISITED;
+
+            if (mo.isScanned)
                 return SCANNED;
 
-            switch (me.object_state)
+            switch (mo.object_state)
             {
                 case OBJECT_STATE.NONE: return SPACE;
-                case OBJECT_STATE.VISITED: return VISITED;
+                //case OBJECT_STATE.VISITED: return VISITED;
                 case OBJECT_STATE.CHEESE: return CHEESE;
-                case OBJECT_STATE.MOUSE: return MOUSE;
+                //case OBJECT_STATE.MOUSE: return MOUSE;
             }
 
-            Console.WriteLine("Invalid Character - type:" + me.object_type + " state:" + me.object_state);
+            Console.WriteLine("Invalid Character - type:" + mo.object_type + " state:" + mo.object_state);
             return SPACE;
         }
 

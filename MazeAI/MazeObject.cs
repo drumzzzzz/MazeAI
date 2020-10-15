@@ -36,6 +36,7 @@ namespace MouseAI
         public bool isVisited { get; set; }
         public bool isScanned { get; set; }
         public bool isDeadEnd { get; set; }
+        public bool isJunction { get; set; }
         public DateTime dtLastVisit { get; set; }
 
         public MazeObject(OBJECT_TYPE element_type, int x, int y)
@@ -45,6 +46,7 @@ namespace MouseAI
             isVisited = false;
             isScanned = false;
             isDeadEnd = false;
+            isJunction = false;
             this.x = x;
             this.y = y;
             direction = DIRECTION.SOUTH;
