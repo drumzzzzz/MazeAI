@@ -186,7 +186,9 @@ namespace MouseAI
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
 
-                if (os == OBJECT_STATE.SCANNED)
+                //if (os == OBJECT_STATE.SCANNED)
+                //    break;
+                if (MazeObjects[x_idx, y].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x_idx, y]);
@@ -204,7 +206,9 @@ namespace MouseAI
 
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
-                if (os == OBJECT_STATE.SCANNED)
+                //if (os == OBJECT_STATE.SCANNED)
+                //    break;
+                if (MazeObjects[x_idx, y].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x_idx, y]);
@@ -222,7 +226,9 @@ namespace MouseAI
 
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
-                if (os == OBJECT_STATE.SCANNED)
+                //if (os == OBJECT_STATE.SCANNED)
+                //    break;
+                if (MazeObjects[x, y_idx].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x, y_idx]);
@@ -240,7 +246,10 @@ namespace MouseAI
 
                 if (os == OBJECT_STATE.CHEESE)
                     return true;
-                if (os == OBJECT_STATE.SCANNED)
+
+                //if (os == OBJECT_STATE.SCANNED)
+                //    break;
+                if (MazeObjects[x, y_idx].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x, y_idx]);
@@ -256,12 +265,12 @@ namespace MouseAI
             if (MazeObjects[x, y].object_state == OBJECT_STATE.CHEESE)
                 return OBJECT_STATE.CHEESE;
 
-            if (MazeObjects[x, y].isScanned)
-            {
-                return OBJECT_STATE.SCANNED;
-            }
+            //if (MazeObjects[x, y].isScanned)
+            //{
+            //    return OBJECT_STATE.SCANNED;
+            //}
 
-            MazeObjects[x, y].isScanned = true;
+            //MazeObjects[x, y].isScanned = true;
             return OBJECT_STATE.NONE;
         }
 
@@ -281,12 +290,10 @@ namespace MouseAI
             if (mos.Count != 0 && GetPerimiter(mos.Last()) == 1)
             {
                 SetEndpoint(mos.Last());
+                mos.RemoveAt(mos.Count - 1);
 
-                for (int i = mos.Count - 2; i > -1; i--)
+                for (int i = mos.Count - 1; i > -1; i--)
                 {
-                    if (mos[i].object_state == OBJECT_STATE.MOUSE)
-                        break;
-
                     if (GetPerimiter(mos[i]) == 2)
                         SetEndpoint(mos[i]);
                     else
@@ -314,22 +321,6 @@ namespace MouseAI
             count += GetScanValid(x + 1, y);
             count += GetScanValid(x, y - 1);
             count += GetScanValid(x, y + 1);
-
-            //// Scan West
-            //if (isScanValid(x - 1, y))
-            //    count++;
-
-            //// Scan East
-            //if (isScanValid(x + 1, y))
-            //    count++;
-
-            //// Scan North
-            //if (isScanValid(x, y - 1))
-            //    count++;
-
-            //// Scan South
-            //if (isScanValid(x, y + 1))
-            //    count++;
 
             return count;
         }
@@ -362,7 +353,6 @@ namespace MouseAI
             }
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && 
                                                             o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
-
             if (mo != null)
             {
                 if (mazeobjects.Count >= 4)
