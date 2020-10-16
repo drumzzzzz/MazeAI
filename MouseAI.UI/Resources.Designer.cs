@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MouseAI {
+namespace MouseAI.UI {
     using System;
     
     
@@ -22,7 +22,7 @@ namespace MouseAI {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,10 +36,10 @@ namespace MouseAI {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MouseAI.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MouseAI.UI.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace MouseAI {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,9 +63,9 @@ namespace MouseAI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Cheese {
+        public static System.Drawing.Bitmap cheese {
             get {
-                object obj = ResourceManager.GetObject("Cheese", resourceCulture);
+                object obj = ResourceManager.GetObject("cheese", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,7 +73,7 @@ namespace MouseAI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mouse_east {
+        public static System.Drawing.Bitmap mouse_east {
             get {
                 object obj = ResourceManager.GetObject("mouse_east", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -83,7 +83,7 @@ namespace MouseAI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mouse_north {
+        public static System.Drawing.Bitmap mouse_north {
             get {
                 object obj = ResourceManager.GetObject("mouse_north", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -93,7 +93,7 @@ namespace MouseAI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mouse_south {
+        public static System.Drawing.Bitmap mouse_south {
             get {
                 object obj = ResourceManager.GetObject("mouse_south", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -103,7 +103,7 @@ namespace MouseAI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mouse_west {
+        public static System.Drawing.Bitmap mouse_west {
             get {
                 object obj = ResourceManager.GetObject("mouse_west", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));

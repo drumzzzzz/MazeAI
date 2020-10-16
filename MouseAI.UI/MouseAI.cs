@@ -12,7 +12,7 @@ using SkiaSharp.Views.Desktop;
 
 #endregion
 
-namespace MouseAI
+namespace MouseAI.UI
 {
     public partial class MouseAI : Form
     {
@@ -120,7 +120,7 @@ namespace MouseAI
             offscreen.Clear(SKColor.Parse("#003366"));
 
             SKImageInfo resizeInfo = new SKImageInfo(90, 190);
-            SKBitmap c = Resources.Cheese.ToSKBitmap();
+            SKBitmap c = UI.Resources.cheese.ToSKBitmap();
             Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
             resizeInfo.Height = 60;
             resizeInfo.Width = 30;
@@ -129,16 +129,17 @@ namespace MouseAI
 
             SKBitmap[] mbmps = new SKBitmap[]
             {
-                Resources.mouse_north.ToSKBitmap(),
-                Resources.mouse_east.ToSKBitmap(),
-                Resources.mouse_south.ToSKBitmap(), 
-                Resources.mouse_west.ToSKBitmap()
+                
+                UI.Resources.mouse_north.ToSKBitmap(),
+                UI.Resources.mouse_east.ToSKBitmap(),
+                UI.Resources.mouse_south.ToSKBitmap(), 
+                UI.Resources.mouse_west.ToSKBitmap()
             }; 
 
-            Mouse_Bitmaps[(int) DIRECTION.NORTH] = Resources.mouse_north.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.EAST] = Resources.mouse_east.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.SOUTH] = Resources.mouse_south.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.WEST] = Resources.mouse_west.ToSKBitmap();
+            Mouse_Bitmaps[(int) DIRECTION.NORTH] = UI.Resources.mouse_north.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.EAST] = UI.Resources.mouse_east.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.SOUTH] = UI.Resources.mouse_south.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.WEST] = UI.Resources.mouse_west.ToSKBitmap();
 
             for (int i = 0; i < 4; i++)
             {
