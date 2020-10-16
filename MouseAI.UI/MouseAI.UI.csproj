@@ -175,10 +175,6 @@
       <Project>{8a915bdc-1d48-44f0-9dd8-dcb8117a4670}</Project>
       <Name>MouseAI.BL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MouseAI.PL\MouseAI.PL.csproj">
-      <Project>{f22a2154-9ab6-49b4-a246-2a7a2b524613}</Project>
-      <Name>MouseAI.PL</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets" Condition="Exists('..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets')" />

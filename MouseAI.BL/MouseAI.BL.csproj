@@ -68,5 +68,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MouseAI.PL\MouseAI.PL.csproj">
+      <Project>{f22a2154-9ab6-49b4-a246-2a7a2b524613}</Project>
+      <Name>MouseAI.PL</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

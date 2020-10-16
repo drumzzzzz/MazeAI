@@ -8,7 +8,6 @@ using System.Threading;
 using System.Windows.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
-using MouseAI.PL;
 
 #endregion
 
@@ -62,41 +61,29 @@ namespace MouseAI.UI
             ConsoleHelper.SetCurrentFont("Consolas", 25);
             LoadSettings();
             
-            
             InitMaze();
         }
 
         private void LoadSettings()
         {
-            if (!FileIO.CheckFileName(Settings.SETTINGS_FILE))
+            if (!Settings.isSettings())
             {
-                oSettings = new Settings()
-                {
-                    LastFileName = string.Empty,
-                    isLoadLast = true
-                };
-
-                try
-                {
-                    FileIO.SerializeXml(oSettings, Settings.SETTINGS_FILE);
-                }
-                catch (Exception e)
-                {
-                    DisplayError("Error Creating Settings", e, true);
-                }
-                
-                oSettings = null;
+                oSettings = Settings.Create();
+                if (oSettings == null)
+                    DisplayError(Settings.Error, true);
             }
 
-            try
-            {
-                oSettings = (Settings) FileIO.DeSerializeXml(typeof(Settings), Settings.SETTINGS_FILE);
+            oSettings = Settings.Load();
+            if (oSettings == null)
+                DisplayError(Settings.Error, true);
+        }
 
-            }
-            catch (Exception e)
-            {
+        private void UpdateSettings()
+        {
+            oSettings = Settings.Update(oSettings);
 
-            }
+            if (oSettings == null)
+                DisplayError(Settings.Error, true);
         }
 
         #endregion
@@ -294,10 +281,17 @@ namespace MouseAI.UI
             MessageBox.Show(message);
         }
 
-        private void DisplayError(string message, Exception e, bool isExit)
+        private void DisplayError(string message, bool isAppExit)
+        {
+            MessageBox.Show(string.Format("{0}", message));
+            if (isAppExit)
+                Application.Exit();
+        }
+
+        private void DisplayError(string message, Exception e, bool isAppExit)
         {
             MessageBox.Show(string.Format("{0}:{1}  ", message, e.Message));
-            if (isExit)
+            if (isAppExit)
                 Application.Exit();
         }
 
