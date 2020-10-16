@@ -76,6 +76,8 @@ namespace MouseAI.UI
             oSettings = Settings.Load();
             if (oSettings == null)
                 DisplayError(Settings.Error, true);
+
+            SetMenuItems();
         }
 
         private void UpdateSettings()
@@ -275,6 +277,34 @@ namespace MouseAI.UI
         #endregion
 
         #region Controls
+
+        private void SetMenuItems()
+        {
+            debugToolStripMenuItem.Checked = oSettings.isDebugConsole;
+            autorunToolStripMenuItem.Checked = oSettings.isAutoRun;
+            loadLastToolStripMenuItem.Checked = oSettings.isLoadLast;
+        }
+
+        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            debugToolStripMenuItem.Checked = !debugToolStripMenuItem.Checked;
+            oSettings.isDebugConsole = debugToolStripMenuItem.Checked;
+            UpdateSettings();
+        }
+
+        private void autorunToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            autorunToolStripMenuItem.Checked = !autorunToolStripMenuItem.Checked;
+            oSettings.isAutoRun = autorunToolStripMenuItem.Checked;
+            UpdateSettings();
+        }
+
+        private void loadLastToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            loadLastToolStripMenuItem.Checked = !loadLastToolStripMenuItem.Checked;
+            oSettings.isLoadLast = loadLastToolStripMenuItem.Checked;
+            UpdateSettings();
+        }
 
         private void DisplayMessage(string message)
         {
