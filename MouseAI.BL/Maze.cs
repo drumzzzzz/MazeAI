@@ -32,14 +32,15 @@ namespace MouseAI
         private static Random r;
         private readonly StringBuilder sb;
         private readonly MazeObject[,] MazeObjects;
-        private List<MazeObject> PathObjects;
+        private readonly List<MazeObject> PathObjects;
         private MazeObject oMouse;
+        private string FileName;
 
         #endregion
 
         #region Initialization
 
-        public Maze(int maze_width, int maze_height, List<MazePath.Path> aipaths)
+        public Maze(int maze_width, int maze_height, string FileName)
         {
             this.maze_width = maze_width;
             this.maze_height = maze_height;
@@ -56,6 +57,7 @@ namespace MouseAI
             r = new Random();
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
+            this.FileName = FileName;
         }
 
         public void AddMouse(int x = 1, int y = 1)
@@ -488,6 +490,17 @@ namespace MouseAI
                 }
                 Console.WriteLine(sb.ToString());
             }
+        }
+
+        #endregion
+
+        #region Loading
+
+        public bool LoadMaze()
+        {
+
+
+            return true;
         }
 
         #endregion

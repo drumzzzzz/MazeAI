@@ -20,7 +20,6 @@ namespace MouseAI.UI
         private Settings oSettings;
         private Thread searchThread;
         private Maze maze;
-        private MazePath ai;
         private bool isExit;
         private bool isFound;
 
@@ -45,6 +44,17 @@ namespace MouseAI.UI
         private SKBitmap[] Mouse_Bitmaps;
         private const float LINE_WIDTH = 1;
 
+        public enum RUNSTATE
+        {
+            NONE,
+            READY,
+            RUN,
+            STOP,
+            PAUSE
+        }
+
+        private RUNSTATE RunState;
+
         #endregion
 
         #region Initialization
@@ -60,7 +70,8 @@ namespace MouseAI.UI
             Console.WindowWidth = 75;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
             LoadSettings();
-            
+
+            RunState = RUNSTATE.NONE;
             InitMaze();
         }
 
@@ -94,9 +105,6 @@ namespace MouseAI.UI
 
         private void InitMaze()
         {
-            isExit = false;
-            isFound = false;
-
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2);
@@ -223,26 +231,56 @@ namespace MouseAI.UI
 
         #region Processing
 
+        private void LoadNewMaze()
+        {
+            maze = null;
+            maze = new Maze(51, 25, null);
+            CreateMaze();
+        }
+
+        private void LoadMaze(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+                return;
+
+            maze = new Maze(51, 25, filename);
+
+            if (!maze.LoadMaze())
+                return;
+
+            CreateMaze();
+        }
+
         private void MazeAI_Shown(object sender, EventArgs e)
         {
-            RunProcess();
+            if (oSettings.isAutoRun)
+            {
+                LoadMaze(oSettings.LastFileName);
+            }
+        }
+
+        private void CreateMaze()
+        {
+            try
+            {
+                maze.Reset();
+                maze.Generate();
+                maze.Update();
+                maze.AddMouse();
+                maze.AddCheese(1, 50, 1, 24);
+                DrawMaze();
+                SetRunState(RUNSTATE.READY);
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error Creating Maze", e, false);
+            }
         }
 
         private void RunProcess()
         {
-            searchThread = new Thread(AISearch);
-            ai = new MazePath();
-            maze = new Maze(51, 25, ai.Paths);
-            maze.Reset();
-            maze.Generate();
-            maze.Update();
-            maze.AddMouse();
-            maze.AddCheese(1, 50, 1, 24);
-
-            DrawMaze();
-
             //DisplayMessage("Searching for cheese ...");
-
+            searchThread = new Thread(AISearch);
             searchThread.Start();
 
             while (!isExit && !isFound)
@@ -278,11 +316,86 @@ namespace MouseAI.UI
 
         #region Controls
 
+        private void SetRunState(RUNSTATE r)
+        {
+            RunState = r;
+
+            switch (r)
+            {
+                case RUNSTATE.NONE:
+                    newToolStripMenuItem.Enabled = true;
+                    saveToolStripMenuItem.Enabled = false;
+                    loadLastToolStripMenuItem.Enabled = true;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    return;
+                case RUNSTATE.READY:
+                    newToolStripMenuItem.Enabled = true;
+                    saveToolStripMenuItem.Enabled = true;
+                    loadLastToolStripMenuItem.Enabled = true;
+                    btnRun.Enabled = true;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    return;
+                case RUNSTATE.RUN:
+                    newToolStripMenuItem.Enabled = false;
+                    saveToolStripMenuItem.Enabled = false;
+                    loadLastToolStripMenuItem.Enabled = false;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = true;
+                    btnPause.Enabled = true;
+                    btnStep.Enabled = false;
+                    return;
+                case RUNSTATE.STOP:
+                    newToolStripMenuItem.Enabled = false;
+                    saveToolStripMenuItem.Enabled = false;
+                    loadLastToolStripMenuItem.Enabled = false;
+                    btnRun.Enabled = true;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    return;
+                case RUNSTATE.PAUSE:
+                    newToolStripMenuItem.Enabled = false;
+                    saveToolStripMenuItem.Enabled = false;
+                    loadLastToolStripMenuItem.Enabled = false;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = true;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = true;
+                    return;
+            }
+
+        }
+
         private void SetMenuItems()
         {
             debugToolStripMenuItem.Checked = oSettings.isDebugConsole;
             autorunToolStripMenuItem.Checked = oSettings.isAutoRun;
             loadLastToolStripMenuItem.Checked = oSettings.isLoadLast;
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadNewMaze();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnRun_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
@@ -306,6 +419,10 @@ namespace MouseAI.UI
             UpdateSettings();
         }
 
+        #endregion
+
+        #region Messages
+
         private void DisplayMessage(string message)
         {
             MessageBox.Show(message);
@@ -325,11 +442,7 @@ namespace MouseAI.UI
                 Application.Exit();
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
-        {
-            isExit = true;
-        }
-
         #endregion
+
     }
 }
