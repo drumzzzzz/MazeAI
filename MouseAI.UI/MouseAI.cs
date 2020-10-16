@@ -1,7 +1,6 @@
 ﻿#region Using Statements
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -9,6 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
+using MouseAI.PL;
 
 #endregion
 
@@ -18,6 +18,7 @@ namespace MouseAI.UI
     {
         #region Declarations
 
+        private Settings oSettings;
         private Thread searchThread;
         private Maze maze;
         private MazePath ai;
@@ -58,10 +59,44 @@ namespace MouseAI.UI
             Console.OutputEncoding = new UnicodeEncoding();
             Console.WindowHeight = 50;
             Console.WindowWidth = 75;
-            isExit = false;
-            isFound = false;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
+            LoadSettings();
+            
+            
             InitMaze();
+        }
+
+        private void LoadSettings()
+        {
+            if (!FileIO.CheckFileName(Settings.SETTINGS_FILE))
+            {
+                oSettings = new Settings()
+                {
+                    LastFileName = string.Empty,
+                    isLoadLast = true
+                };
+
+                try
+                {
+                    FileIO.SerializeXml(oSettings, Settings.SETTINGS_FILE);
+                }
+                catch (Exception e)
+                {
+                    DisplayError("Error Creating Settings", e, true);
+                }
+                
+                oSettings = null;
+            }
+
+            try
+            {
+                oSettings = (Settings) FileIO.DeSerializeXml(typeof(Settings), Settings.SETTINGS_FILE);
+
+            }
+            catch (Exception e)
+            {
+
+            }
         }
 
         #endregion
@@ -70,6 +105,9 @@ namespace MouseAI.UI
 
         private void InitMaze()
         {
+            isExit = false;
+            isFound = false;
+
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2);
@@ -77,16 +115,16 @@ namespace MouseAI.UI
             pbxMaze.Left = (MAZE_MARGIN_PX / 2);
             pbxMaze.Top = (MAZE_MARGIN_PX / 2);
             BlockColor = new SKColor(
-                    red: (byte)46,
-                    green: (byte)37,
-                    blue: (byte)217,
-                    alpha: (byte)255);
+                    red: 46,
+                    green: 37,
+                    blue: 217,
+                    alpha: 255);
 
             SpaceColor = new SKColor(
-                red: (byte)255,
-                green: (byte)255,
-                blue: (byte)255,
-                alpha: (byte)255);
+                red: 255,
+                green: 255,
+                blue: 255,
+                alpha: 255);
 
             BlockPaint = new SKPaint
             {
@@ -120,26 +158,25 @@ namespace MouseAI.UI
             offscreen.Clear(SKColor.Parse("#003366"));
 
             SKImageInfo resizeInfo = new SKImageInfo(90, 190);
-            SKBitmap c = UI.Resources.cheese.ToSKBitmap();
+            SKBitmap c = Resources.cheese.ToSKBitmap();
             Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
             resizeInfo.Height = 60;
             resizeInfo.Width = 30;
 
             Mouse_Bitmaps = new SKBitmap[4];
 
-            SKBitmap[] mbmps = new SKBitmap[]
+            SKBitmap[] mbmps = 
             {
-                
-                UI.Resources.mouse_north.ToSKBitmap(),
-                UI.Resources.mouse_east.ToSKBitmap(),
-                UI.Resources.mouse_south.ToSKBitmap(), 
-                UI.Resources.mouse_west.ToSKBitmap()
+                Resources.mouse_north.ToSKBitmap(),
+                Resources.mouse_east.ToSKBitmap(),
+                Resources.mouse_south.ToSKBitmap(), 
+                Resources.mouse_west.ToSKBitmap()
             }; 
 
-            Mouse_Bitmaps[(int) DIRECTION.NORTH] = UI.Resources.mouse_north.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.EAST] = UI.Resources.mouse_east.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.SOUTH] = UI.Resources.mouse_south.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.WEST] = UI.Resources.mouse_west.ToSKBitmap();
+            Mouse_Bitmaps[(int) DIRECTION.NORTH] = Resources.mouse_north.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.EAST] = Resources.mouse_east.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.SOUTH] = Resources.mouse_south.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.WEST] = Resources.mouse_west.ToSKBitmap();
 
             for (int i = 0; i < 4; i++)
             {
@@ -161,7 +198,7 @@ namespace MouseAI.UI
 
                     ot = maze.GetObjectType(x_idx, y_idx);
 
-                    offscreen.DrawRect(x_pos,y_pos,(float)MAZE_SCALE_WIDTH_PX,(float) MAZE_SCALE_HEIGHT_PX,
+                    offscreen.DrawRect(x_pos,y_pos,MAZE_SCALE_WIDTH_PX,MAZE_SCALE_HEIGHT_PX,
                             (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
 
                     if (maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
@@ -215,7 +252,7 @@ namespace MouseAI.UI
 
             DrawMaze();
 
-            DisplayMessage("Searching for cheese ...");
+            //DisplayMessage("Searching for cheese ...");
 
             searchThread.Start();
 
@@ -227,7 +264,7 @@ namespace MouseAI.UI
 
             if (isFound)
             {
-                DisplayMessage("Found the cheese!");
+                //DisplayMessage("Found the cheese!");
             }
         }
 
@@ -252,14 +289,21 @@ namespace MouseAI.UI
 
         #region Controls
 
+        private void DisplayMessage(string message)
+        {
+            MessageBox.Show(message);
+        }
+
+        private void DisplayError(string message, Exception e, bool isExit)
+        {
+            MessageBox.Show(string.Format("{0}:{1}  ", message, e.Message));
+            if (isExit)
+                Application.Exit();
+        }
+
         private void btnExit_Click(object sender, EventArgs e)
         {
             isExit = true;
-        }
-
-        private void DisplayMessage(string msg)
-        {
-            //txtMaze.Text += msg + Environment.NewLine;
         }
 
         #endregion

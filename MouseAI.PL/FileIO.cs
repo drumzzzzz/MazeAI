@@ -1,4 +1,5 @@
 ﻿#region Using Statements
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,11 +7,12 @@ using System.Xml.Serialization;
 using Microsoft.Win32;
 using System.Reflection;
 using System.Linq;
+
 #endregion
 
 namespace MouseAI.PL
 {
-    public class CFileIO
+    public class FileIO
     {
         #region Declarations
 
@@ -230,8 +232,10 @@ namespace MouseAI.PL
 
         #region XML Related
 
-        public static void SerializeXml(object obj, Type type, string filepath) // Saves a supplied object to an XML file
+        public static void SerializeXml(object obj, string filepath) // Saves a supplied object to an XML file
         {
+            Type type = obj.GetType();
+
             XmlSerializer serializer = new XmlSerializer(type);
             StreamWriter writer = new StreamWriter(filepath);
             serializer.Serialize(writer, obj);
@@ -239,7 +243,7 @@ namespace MouseAI.PL
         }
 
         public static object DeSerializeXml(Type type, string filepath) // Loads and deserializes an XML file
-        {                                                               // Returns object loaded with values
+        {
             XmlSerializer serializer = new XmlSerializer(type);
             StreamReader reader = new StreamReader(filepath);
             object obj = serializer.Deserialize(reader);
