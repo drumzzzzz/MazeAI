@@ -159,7 +159,7 @@
             // 
             this.btnStop.Enabled = false;
             this.btnStop.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(459, 9);
+            this.btnStop.Location = new System.Drawing.Point(586, 9);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(75, 23);
             this.btnStop.TabIndex = 8;
@@ -176,17 +176,19 @@
             this.btnPause.TabIndex = 9;
             this.btnPause.Text = "PAUSE";
             this.btnPause.UseVisualStyleBackColor = true;
+            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
             // 
             // btnStep
             // 
             this.btnStep.Enabled = false;
             this.btnStep.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStep.Location = new System.Drawing.Point(550, 9);
+            this.btnStep.Location = new System.Drawing.Point(461, 9);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(75, 23);
             this.btnStep.TabIndex = 10;
             this.btnStep.Text = "STEP";
             this.btnStep.UseVisualStyleBackColor = true;
+            this.btnStep.Click += new System.EventHandler(this.btnStep_Click);
             // 
             // MouseAI
             // 

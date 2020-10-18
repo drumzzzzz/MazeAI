@@ -22,6 +22,7 @@ namespace MouseAI.UI
         private Maze maze;
         private bool isExit;
         private bool isFound;
+        private bool isStep;
 
         private const int MAZE_WIDTH = 51;
         private const int MAZE_HEIGHT = 25;
@@ -50,7 +51,9 @@ namespace MouseAI.UI
             READY,
             RUN,
             STOP,
-            PAUSE
+            PAUSE,
+            STEP,
+            RESET
         }
 
         private RUNSTATE RunState;
@@ -286,6 +289,9 @@ namespace MouseAI.UI
             while (!isExit && !isFound)
             {
                 UpdateMaze();
+                if (RunState == RUNSTATE.STEP && !isStep)
+                    SetRunState(RUNSTATE.PAUSE);
+
                 Application.DoEvents();
             }
 
@@ -299,15 +305,19 @@ namespace MouseAI.UI
         {
             while (!isFound)
             {
-                if (maze.ProcessMouseMove())
+                if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
                 {
+                    if (maze.ProcessMouseMove())
+                    {
+                        maze.Display();
+                        Console.WriteLine("Cheese found via path!");
+                        isFound = true;
+                        break;
+                    }
                     maze.Display();
-                    Console.WriteLine("Cheese found via path!");
-                    isFound = true;
-                    break;
+                    isStep = false;
                 }
 
-                maze.Display(); 
                 Thread.Sleep(30);
             }
         }
@@ -315,6 +325,25 @@ namespace MouseAI.UI
         #endregion
 
         #region Controls
+
+        private void btnRun_Click(object sender, EventArgs e)
+        {
+            SetRunState(RUNSTATE.RUN);
+
+            if (searchThread == null)
+                RunProcess();
+        }
+
+        private void btnPause_Click(object sender, EventArgs e)
+        {
+            SetRunState(RUNSTATE.PAUSE);
+        }
+
+        private void btnStep_Click(object sender, EventArgs e)
+        {
+            isStep = true;
+            SetRunState(RUNSTATE.STEP);
+        }
 
         private void SetRunState(RUNSTATE r)
         {
@@ -325,7 +354,7 @@ namespace MouseAI.UI
                 case RUNSTATE.NONE:
                     newToolStripMenuItem.Enabled = true;
                     saveToolStripMenuItem.Enabled = false;
-                    loadLastToolStripMenuItem.Enabled = true;
+                    loadToolStripMenuItem.Enabled = true;
                     btnRun.Enabled = false;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -334,7 +363,7 @@ namespace MouseAI.UI
                 case RUNSTATE.READY:
                     newToolStripMenuItem.Enabled = true;
                     saveToolStripMenuItem.Enabled = true;
-                    loadLastToolStripMenuItem.Enabled = true;
+                    loadToolStripMenuItem.Enabled = true;
                     btnRun.Enabled = true;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -343,7 +372,7 @@ namespace MouseAI.UI
                 case RUNSTATE.RUN:
                     newToolStripMenuItem.Enabled = false;
                     saveToolStripMenuItem.Enabled = false;
-                    loadLastToolStripMenuItem.Enabled = false;
+                    loadToolStripMenuItem.Enabled = false;
                     btnRun.Enabled = false;
                     btnStop.Enabled = true;
                     btnPause.Enabled = true;
@@ -352,20 +381,23 @@ namespace MouseAI.UI
                 case RUNSTATE.STOP:
                     newToolStripMenuItem.Enabled = false;
                     saveToolStripMenuItem.Enabled = false;
-                    loadLastToolStripMenuItem.Enabled = false;
+                    loadToolStripMenuItem.Enabled = false;
                     btnRun.Enabled = true;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
                     btnStep.Enabled = false;
                     return;
                 case RUNSTATE.PAUSE:
-                    newToolStripMenuItem.Enabled = false;
-                    saveToolStripMenuItem.Enabled = false;
-                    loadLastToolStripMenuItem.Enabled = false;
-                    btnRun.Enabled = false;
+                    btnRun.Enabled = true;
                     btnStop.Enabled = true;
                     btnPause.Enabled = false;
                     btnStep.Enabled = true;
+                    return;
+                case RUNSTATE.STEP:
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
                     return;
             }
 
@@ -389,11 +421,6 @@ namespace MouseAI.UI
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnRun_Click(object sender, EventArgs e)
         {
 
         }
