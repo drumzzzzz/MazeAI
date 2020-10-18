@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using Microsoft.Win32;
 using System.Reflection;
 using System.Linq;
+using System.Windows.Forms;
 
 #endregion
 
@@ -17,6 +18,36 @@ namespace MouseAI.PL
         #region Declarations
 
         private static int FileCount { get; set; }
+
+        #endregion
+
+        #region File Dialogs
+
+        public static string SaveFileAs_Dialog(string directory, string extension)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+
+            if (!string.IsNullOrEmpty(extension))
+            {
+                sfd.DefaultExt = extension;
+                sfd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*".Replace("txt", extension);
+            }
+
+            if (!string.IsNullOrEmpty(directory))
+            {
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                if (Directory.Exists(directory))
+                    sfd.InitialDirectory = directory;
+            }
+
+            DialogResult result = sfd.ShowDialog();
+
+            if (result == DialogResult.Cancel)
+                return string.Empty;
+            return result == DialogResult.OK ? sfd.FileName : null;
+        }
 
         #endregion
 

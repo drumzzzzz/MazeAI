@@ -3,8 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using MouseAI.BL;
+using MouseAI.PL;
 
 #endregion
 
@@ -17,6 +21,10 @@ namespace MouseAI
         private string maze;
         private readonly int maze_width;
         private readonly int maze_height;
+        private int mouse_x;
+        private int mouse_y;
+        private int cheese_x;
+        private int cheese_y;
 
         private readonly DIRECTION[] dirs;
         private const char BLOCK = '█';
@@ -28,6 +36,8 @@ namespace MouseAI
         private const char DEADEND = 'X';
         private const char JUNCTION = '+';
         private const char PATH = '●';
+        private const string FILE_EXT = "mze";
+        private const string FILE_DIR = "mazes";
 
         private static Random r;
         private readonly StringBuilder sb;
@@ -35,6 +45,7 @@ namespace MouseAI
         private readonly List<MazeObject> PathObjects;
         private MazeObject oMouse;
         private string FileName;
+        private string AppDir;
 
         #endregion
 
@@ -58,6 +69,7 @@ namespace MouseAI
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
             this.FileName = FileName;
+            AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
         }
 
         public void AddMouse(int x = 1, int y = 1)
@@ -70,6 +82,9 @@ namespace MouseAI
                 object_type = OBJECT_TYPE.SPACE,
                 isVisited = true
             };
+
+            mouse_x = x;
+            mouse_y = y;
         }
 
         public void AddCheese(int x_min, int x_max, int y_min, int y_max)
@@ -86,6 +101,8 @@ namespace MouseAI
                 {
                     MazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
                     MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
+                    cheese_x = x;
+                    cheese_y = y;
                     return;
                 }
             }
@@ -494,7 +511,31 @@ namespace MouseAI
 
         #endregion
 
-        #region Loading
+        #region Saving and Loading
+
+        public string SaveMazeModel()
+        {
+            try
+            {
+                MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, maze);
+
+                if (string.IsNullOrEmpty(FileName) || !File.Exists(FileName))
+                {
+  
+                    FileName = FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
+
+                    if (FileName == null)
+                        throw new Exception("Error Creating File");
+                }
+
+                return string.Empty;
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+
+        }
 
         public bool LoadMaze()
         {

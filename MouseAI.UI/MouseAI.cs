@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -44,7 +45,7 @@ namespace MouseAI.UI
         private SKBitmap Cheese_Bitmap;
         private SKBitmap[] Mouse_Bitmaps;
         private const float LINE_WIDTH = 1;
-
+        
         public enum RUNSTATE
         {
             NONE,
@@ -324,6 +325,19 @@ namespace MouseAI.UI
 
         #endregion
 
+        #region File Related
+
+        private void SaveMazeModel(bool isSaveAs)
+        {
+            string result = maze.SaveMazeModel();
+
+            if (result != string.Empty)
+                DisplayError(result, false);
+
+        }
+
+        #endregion
+
         #region Controls
 
         private void btnRun_Click(object sender, EventArgs e)
@@ -417,7 +431,12 @@ namespace MouseAI.UI
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            SaveMazeModel(false);
+        }
 
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveMazeModel(true);
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
