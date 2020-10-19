@@ -8,6 +8,7 @@ using Microsoft.Win32;
 using System.Reflection;
 using System.Linq;
 using System.Windows.Forms;
+using System.Data.SQLite;
 
 #endregion
 
@@ -48,6 +49,29 @@ namespace MouseAI.PL
                 return string.Empty;
             return result == DialogResult.OK ? sfd.FileName : null;
         }
+
+        public static string OpenFile_Dialog(string directory, string extension)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            if (!string.IsNullOrEmpty(extension))
+            {
+                ofd.DefaultExt = extension;
+                ofd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*".Replace("txt", extension);
+            }
+
+            if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+            {
+                ofd.InitialDirectory = directory;
+            }
+
+            DialogResult result = ofd.ShowDialog();
+
+            if (result == DialogResult.Cancel)
+                return string.Empty;
+            return result == DialogResult.OK ? ofd.FileName : null;
+        }
+
 
         #endregion
 

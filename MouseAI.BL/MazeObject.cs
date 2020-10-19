@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections.Generic;
 
 namespace MouseAI
 {
@@ -43,7 +42,7 @@ namespace MouseAI
 
         public MazeObject(OBJECT_TYPE element_type, int x, int y)
         {
-            this.object_type = element_type;
+            object_type = element_type;
             object_state = OBJECT_STATE.NONE;
             isVisited = false;
             isScanned = false;

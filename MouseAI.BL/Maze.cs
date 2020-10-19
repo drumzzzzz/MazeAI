@@ -18,6 +18,7 @@ namespace MouseAI
     {
         #region Declarations
 
+        private readonly byte[,] mazedata;
         private string maze;
         private readonly int maze_width;
         private readonly int maze_height;
@@ -38,6 +39,8 @@ namespace MouseAI
         private const char PATH = '●';
         private const string FILE_EXT = "mze";
         private const string FILE_DIR = "mazes";
+        private const byte BLACK = 0x00;
+        private const byte WHITE = 0xff;
 
         private static Random r;
         private readonly StringBuilder sb;
@@ -45,7 +48,7 @@ namespace MouseAI
         private readonly List<MazeObject> PathObjects;
         private MazeObject oMouse;
         private string FileName;
-        private string AppDir;
+        private readonly string AppDir;
 
         #endregion
 
@@ -57,6 +60,7 @@ namespace MouseAI
             this.maze_height = maze_height;
 
             maze = new string(new char[maze_width * maze_height]);
+            mazedata = new byte[maze_width,maze_height];
             MazeObjects = new MazeObject[maze_width, maze_height];
 
             dirs = new DIRECTION[4];
@@ -180,7 +184,8 @@ namespace MouseAI
             {
                 for (int x = 0; x < maze_width; ++x)
                 {
-                    MazeObjects[x, y] = new MazeObject(GetObjectType(x, y), x, y);
+                    mazedata[x, y] = GetObjectByte(x, y);
+                    MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
             }
         }
@@ -517,15 +522,16 @@ namespace MouseAI
         {
             try
             {
-                MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, maze);
+                MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata);
 
                 if (string.IsNullOrEmpty(FileName) || !File.Exists(FileName))
                 {
-  
                     FileName = FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
 
                     if (FileName == null)
                         throw new Exception("Error Creating File");
+
+                    FileIO.SerializeXml(mm, FileName);
                 }
 
                 return string.Empty;
@@ -537,16 +543,77 @@ namespace MouseAI
 
         }
 
-        public bool LoadMaze()
+        public string LoadMazeModel()
         {
+            try
+            {
+                string filename = FileIO.OpenFile_Dialog(AppDir, FILE_EXT);
+
+                if (!string.IsNullOrEmpty(filename) && File.Exists(filename))
+                {
+                    MazeModel mm = (MazeModel)FileIO.DeSerializeXml(typeof(MazeModel), filename);
+
+                    if (mm == null)
+                        throw new Exception("Error Loading File");
 
 
-            return true;
+
+                    FileName = filename;
+                }
+
+                return string.Empty;
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
         }
 
         #endregion
 
         #region Object Tools
+
+        private byte[,] GetMazeData()
+        {
+            return mazedata;
+        }
+
+        private static byte[,] ConvertArray(byte[][] ibytes)
+        {
+            int length = ibytes.Length;
+            int width = ibytes[0].Length;
+
+            byte[,] obytes = new byte[width,length];
+
+            for (int y = 0; y < length; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    obytes[x,y] = ibytes[y][x];
+                }
+            }
+
+            return obytes;
+        }
+
+        private static byte[][] ConvertArray(byte[,] ibytes)
+        {
+            int length = ibytes.GetLength(1);
+            int width = ibytes.GetLength(0);
+
+            byte[][] obytes = new byte[length][];
+
+            for (int y = 0; y < length; y++)
+            {
+                obytes[y] = new byte[width];
+
+                for (int x = 0; x < width; x++)
+                {
+                    obytes[y][x] = ibytes[x, y];
+                }
+            }
+            return obytes;
+        }
 
         private static char GetObjectChar(MazeObject mo)
         {
@@ -610,6 +677,16 @@ namespace MouseAI
         public OBJECT_TYPE GetObjectType(int x, int y)
         {
             return (maze[XYToIndex(x, y)] == SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
+        }
+
+        private byte GetObjectByte(int x, int y)
+        {
+            return (maze[XYToIndex(x, y)] == SPACE) ? WHITE : BLACK;
+        }
+
+        public OBJECT_TYPE GetObjectDataType(int x, int y)
+        {
+            return (mazedata[x, y] == WHITE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
         }
 
         public OBJECT_STATE GetObjectState(int x, int y)

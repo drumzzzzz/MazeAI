@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Maze.cs" />
+    <Compile Include="MazeDb.cs" />
     <Compile Include="MazeModel.cs" />
     <Compile Include="MazeObject.cs" />
     <Compile Include="MazePath.cs" />
