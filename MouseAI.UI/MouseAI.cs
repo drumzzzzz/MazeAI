@@ -237,13 +237,22 @@ namespace MouseAI.UI
 
         private void LoadNewMaze()
         {
+            if (maze == null)
+            {
+                maze = new Maze(51, 25, null);
+            }
+
             Console.WriteLine("Generating mazes ...");
             for (int i = 0; i < 1000; i++)
             {
-                maze = null;
-                maze = new Maze(51, 25, null);
-                CreateMaze();
+                if (!CreateMaze(maze))
+                {
+                    Console.WriteLine("Error: Retrying");
+                    i--;
+                    Thread.Sleep(10);
+                }
             }
+
             Console.WriteLine("Done!");
             RenderMaze();
         }
@@ -255,7 +264,7 @@ namespace MouseAI.UI
 
             maze = new Maze(51, 25, filename);
 
-            CreateMaze();
+            CreateMaze(maze);
         }
 
         private void MazeAI_Shown(object sender, EventArgs e)
@@ -266,18 +275,19 @@ namespace MouseAI.UI
             }
         }
 
-        private void CreateMaze()
+        private static bool CreateMaze(Maze m)
         {
             try
             {
-                maze.Reset();
-                maze.Generate();
-                maze.Update();
-                maze.AddCharacters();
+                m.Reset();
+                m.Generate();
+                m.Update();
+                return m.AddCharacters();
             }
             catch (Exception e)
             {
                 DisplayError("Error Creating Maze", e, false);
+                return false;
             }
         }
 
@@ -498,7 +508,7 @@ namespace MouseAI.UI
                 Application.Exit();
         }
 
-        private void DisplayError(string message, Exception e, bool isAppExit)
+        private static void DisplayError(string message, Exception e, bool isAppExit)
         {
             MessageBox.Show(string.Format("{0}:{1}  ", message, e.Message));
             if (isAppExit)

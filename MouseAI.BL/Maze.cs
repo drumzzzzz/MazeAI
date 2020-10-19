@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using MouseAI.BL;
 using MouseAI.PL;
 
@@ -19,7 +20,7 @@ namespace MouseAI
         #region Declarations
 
         private static MazeDb mazeDb;
-        private readonly byte[,] mazedata;
+        private byte[,] mazedata;
         private string maze;
         private readonly int maze_width;
         private readonly int maze_height;
@@ -43,15 +44,15 @@ namespace MouseAI
         private const byte BLACK = 0x00;
         private const byte WHITE = 0xff;
 
-        private static Random r;
-        private readonly StringBuilder sb;
-        private readonly MazeObject[,] MazeObjects;
-        private readonly List<MazeObject> PathObjects;
+        private Random r;
+        private StringBuilder sb;
+        private MazeObject[,] MazeObjects;
+        private List<MazeObject> PathObjects;
         private MazeObject oMouse;
         private string FileName;
         private readonly string AppDir;
 
-        private DbTable_Stats dbtblStats;
+        private static DbTable_Stats dbtblStats;
 
         #endregion
 
@@ -75,6 +76,7 @@ namespace MouseAI
             r = new Random();
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
+            
             this.FileName = FileName;
             AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
 
@@ -82,23 +84,18 @@ namespace MouseAI
                 mazeDb = new MazeDb();
         }
 
-        public void AddCharacters()
+        public bool AddCharacters()
         {
-            MazeObject mo_mouse;
-            MazeObject mo_cheese;
-            DIRECTION dir;
+            DIRECTION dir = (DIRECTION) r.Next(1, 4);
 
-            while (true)
-            {
-                dir = (DIRECTION) r.Next(1, 4);
+            MazeObject mo_mouse = GetMazeObject(dir);
+            if (mo_mouse == null)
+                return false;
 
-                mo_mouse = GetMazeObject(dir);
-                mo_cheese = GetMazeObject(OppositeDirection(dir));
+            MazeObject mo_cheese = GetMazeObject(OppositeDirection(dir));
 
-                if (mo_mouse != null && mo_cheese != null)
-                    break;
-                Console.WriteLine("Failed to generate - retrying");
-            }
+            if (mo_cheese == null)
+                return false;
 
             int x = mo_mouse.x;
             int y = mo_mouse.y;
@@ -122,6 +119,8 @@ namespace MouseAI
             MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
             cheese_x = x;
             cheese_y = y;
+
+            return true;
         }
 
         private MazeObject GetMazeObject(DIRECTION dir)
@@ -152,6 +151,9 @@ namespace MouseAI
 
         public void Reset()
         {
+            sb.Clear();
+            PathObjects.Clear();
+
             for (int i = 0; i < maze_width * maze_height; i++)
             {
                 maze = ChangeCharacter(maze, i, '█');
