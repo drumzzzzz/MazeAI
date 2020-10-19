@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -242,19 +243,37 @@ namespace MouseAI.UI
                 maze = new Maze(51, 25, null);
             }
 
+            string filename = maze.GetSaveName();
+
+            if (string.IsNullOrEmpty(filename))
+                return;
+
+            maze.ClearMazeModels();
+
             Console.WriteLine("Generating mazes ...");
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 if (!CreateMaze(maze))
                 {
                     Console.WriteLine("Error: Retrying");
                     i--;
-                    Thread.Sleep(10);
                 }
             }
 
-            Console.WriteLine("Done!");
-            RenderMaze();
+            Console.WriteLine("Mazes Generated!");
+
+            if (maze.isMazeModels())
+            {
+                string result = maze.SaveMazeModels(filename);
+                if (!string.IsNullOrEmpty(result))
+                    DisplayError("Error Creating DB:" + result, false);
+                else
+                    DisplayMessage("Mazes Generated and Saved!");
+            }
+
+
+
+            // RenderMaze();
         }
 
         private void LoadMaze(string filename)
@@ -262,7 +281,10 @@ namespace MouseAI.UI
             if (string.IsNullOrEmpty(filename))
                 return;
 
-            maze = new Maze(51, 25, filename);
+            if (maze == null)
+            {
+                maze = new Maze(51, 25, null);
+            }
 
             CreateMaze(maze);
         }
@@ -282,7 +304,10 @@ namespace MouseAI.UI
                 m.Reset();
                 m.Generate();
                 m.Update();
-                return m.AddCharacters();
+                if (!m.AddCharacters())
+                    return false;
+                m.AddMazeModel();
+                return true;
             }
             catch (Exception e)
             {
@@ -345,10 +370,6 @@ namespace MouseAI.UI
 
         private void SaveMazeModel(bool isSaveAs)
         {
-            string result = maze.SaveMazeModel();
-
-            if (result != string.Empty)
-                DisplayError(result, false);
 
         }
 

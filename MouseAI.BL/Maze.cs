@@ -47,6 +47,7 @@ namespace MouseAI
         private Random r;
         private StringBuilder sb;
         private MazeObject[,] MazeObjects;
+        private MazeModels mazeModels;
         private List<MazeObject> PathObjects;
         private MazeObject oMouse;
         private string FileName;
@@ -66,6 +67,7 @@ namespace MouseAI
             maze = new string(new char[maze_width * maze_height]);
             mazedata = new byte[maze_width,maze_height];
             MazeObjects = new MazeObject[maze_width, maze_height];
+            mazeModels = new MazeModels();
 
             dirs = new DIRECTION[4];
             dirs[0] = DIRECTION.NORTH; // NORTH;
@@ -82,6 +84,21 @@ namespace MouseAI
 
             if (mazeDb == null)
                 mazeDb = new MazeDb();
+        }
+
+        public void ClearMazeModels()
+        {
+            mazeModels.Clear();
+        }
+
+        public void AddMazeModel()
+        {
+            mazeModels.Add(new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
+        }
+
+        public bool isMazeModels()
+        {
+            return mazeModels.Count > 0;
         }
 
         public bool AddCharacters()
@@ -141,7 +158,6 @@ namespace MouseAI
 
         private static DIRECTION OppositeDirection(DIRECTION dir)
         {
-
             if (dir == DIRECTION.EAST)
                 return DIRECTION.WEST;
             if (dir == DIRECTION.WEST)
@@ -558,29 +574,27 @@ namespace MouseAI
 
         #region Saving and Loading
 
-        public string SaveMazeModel()
+        public string GetSaveName()
+        {
+            return FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
+        }
+
+        public string SaveMazeModels(string filename)
         {
             try
             {
-                MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata);
-
                 dbtblStats = new DbTable_Stats();
-                dbtblStats.Guid = mm.guid;
-                dbtblStats.LastUsed = DateTime.UtcNow.ToString();
 
-                if (!mazeDb.InsertStats(dbtblStats))
-                    throw new Exception("Failed to create stats");
-
-                if (string.IsNullOrEmpty(FileName) || !File.Exists(FileName))
+                foreach (MazeModel mm in mazeModels)
                 {
-                    FileName = FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
+                    dbtblStats.Guid = mm.guid;
+                    dbtblStats.LastUsed = DateTime.UtcNow.ToString();
 
-                    if (FileName == null)
-                        throw new Exception("Error Creating File");
-
-                    FileIO.SerializeXml(mm, FileName);
+                    if (!mazeDb.InsertStats(dbtblStats))
+                        throw new Exception("Failed to create stats");
                 }
 
+                FileIO.SerializeXml(mazeModels, filename);
                 return string.Empty;
             }
             catch (Exception e)
@@ -588,6 +602,37 @@ namespace MouseAI
                 return e.Message;
             }
         }
+
+        //public string SaveMazeModel()
+        //{
+        //    try
+        //    {
+        //        MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata);
+
+        //        dbtblStats = new DbTable_Stats();
+        //        dbtblStats.Guid = mm.guid;
+        //        dbtblStats.LastUsed = DateTime.UtcNow.ToString();
+
+        //        if (!mazeDb.InsertStats(dbtblStats))
+        //            throw new Exception("Failed to create stats");
+
+        //        if (string.IsNullOrEmpty(FileName) || !File.Exists(FileName))
+        //        {
+        //            FileName = FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
+
+        //            if (FileName == null)
+        //                throw new Exception("Error Creating File");
+
+        //            FileIO.SerializeXml(mm, FileName);
+        //        }
+
+        //        return string.Empty;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return e.Message;
+        //    }
+        //}
 
         public string LoadMazeModel()
         {
