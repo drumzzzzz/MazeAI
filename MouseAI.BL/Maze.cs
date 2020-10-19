@@ -18,6 +18,7 @@ namespace MouseAI
     {
         #region Declarations
 
+        private static MazeDb mazeDb;
         private readonly byte[,] mazedata;
         private string maze;
         private readonly int maze_width;
@@ -49,6 +50,8 @@ namespace MouseAI
         private MazeObject oMouse;
         private string FileName;
         private readonly string AppDir;
+
+        private DbTable_Stats dbtblStats;
 
         #endregion
 
@@ -522,7 +525,19 @@ namespace MouseAI
         {
             try
             {
+                if (mazeDb == null)
+                {
+                    mazeDb = new MazeDb();
+                }
+
                 MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata);
+
+                dbtblStats = new DbTable_Stats();
+                dbtblStats.Guid = mm.guid;
+                dbtblStats.LastUsed = DateTime.UtcNow.ToString();
+
+                if (!mazeDb.InsertStats(dbtblStats))
+                    throw new Exception("Failed to create stats");
 
                 if (string.IsNullOrEmpty(FileName) || !File.Exists(FileName))
                 {

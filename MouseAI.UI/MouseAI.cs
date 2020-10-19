@@ -21,7 +21,6 @@ namespace MouseAI.UI
         private Settings oSettings;
         private Thread searchThread;
         private Maze maze;
-        private MazeDb mazeDb;
         private bool isExit;
         private bool isFound;
         private bool isStep;
@@ -74,21 +73,20 @@ namespace MouseAI.UI
             Console.WindowHeight = 50;
             Console.WindowWidth = 75;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
-            mazeDb = new MazeDb();
-            TestInsert();
+            
             LoadSettings();
 
             RunState = RUNSTATE.NONE;
             InitMaze();
         }
 
-        private void TestInsert()
-        {
-            DbTable_Stats tblStats = new DbTable_Stats();
-            tblStats.Guid = Guid.NewGuid().ToString();
-            tblStats.LastUsed = DateTime.UtcNow.ToString();
-            bool result = mazeDb.InsertStats(tblStats);
-        }
+        //private void TestInsert()
+        //{
+        //    DbTable_Stats tblStats = new DbTable_Stats();
+        //    tblStats.Guid = Guid.NewGuid().ToString();
+        //    tblStats.LastUsed = DateTime.UtcNow.ToString();
+        //    bool result = mazeDb.InsertStats(tblStats);
+        //}
 
         private void LoadSettings()
         {
