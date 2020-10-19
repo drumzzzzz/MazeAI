@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 
 namespace MouseAI.PL
 {
     public class Database
     {
-        private string db_file;
+        private readonly string db_file;
         private const string DB_PATH = "URI=file:";
         public string err { get; set; }
 
@@ -23,39 +19,17 @@ namespace MouseAI.PL
             this.db_file = DB_PATH + db_file;
         }
 
-        public bool Create(string table, string columns)
-        {
-            try
-            {
-                SQLiteConnection conn = new SQLiteConnection();
-                conn.Open();
-                SQLiteCommand cmd = new SQLiteCommand(conn);
-
-                cmd.CommandText = "DROP TABLE IF EXISTS " + table;
-                cmd.ExecuteNonQuery();
-                cmd.CommandText = string.Format("CREATE TABLE {0} ({1})", table, columns);
-                cmd.ExecuteNonQuery();
-
-                conn.Close();
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                err = e.Message;
-                return false;
-            }
-        }
-
         public bool Insert(string table,string columns, string values)
         {
             try
             {
                 SQLiteConnection conn = new SQLiteConnection(db_file);
                 conn.Open();
-                SQLiteCommand cmd = new SQLiteCommand(conn);
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = string.Format("INSERT INTO {0}({1}) VALUES({2})", table, columns, values)
+                };
 
-                cmd.CommandText = string.Format("INSERT INTO {0}({1}) VALUES({2})", table, columns, values);
                 cmd.ExecuteNonQuery();
 
                 conn.Close();
@@ -75,11 +49,14 @@ namespace MouseAI.PL
             {
                 SQLiteConnection conn = new SQLiteConnection(db_file);
                 conn.Open();
-                SQLiteCommand cmd = new SQLiteCommand(conn);
-                cmd.CommandText = string.Format("SELECT * FROM {0} WHERE {1} = '{2}'", table, column, value);
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = string.Format("SELECT * FROM {0} WHERE {1} = '{2}'", table, column, value)
+                };
+
                 SQLiteDataReader rdr = cmd.ExecuteReader();
                 Type ObjType = obj.GetType();
-                bool isFound = false;
+                bool isFound;
 
                 rdr.Read();
                 if (!rdr.HasRows || rdr.FieldCount <= 0)

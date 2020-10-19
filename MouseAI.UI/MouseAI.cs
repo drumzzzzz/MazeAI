@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -79,14 +78,6 @@ namespace MouseAI.UI
             RunState = RUNSTATE.NONE;
             InitMaze();
         }
-
-        //private void TestInsert()
-        //{
-        //    DbTable_Stats tblStats = new DbTable_Stats();
-        //    tblStats.Guid = Guid.NewGuid().ToString();
-        //    tblStats.LastUsed = DateTime.UtcNow.ToString();
-        //    bool result = mazeDb.InsertStats(tblStats);
-        //}
 
         private void LoadSettings()
         {
@@ -246,9 +237,15 @@ namespace MouseAI.UI
 
         private void LoadNewMaze()
         {
-            maze = null;
-            maze = new Maze(51, 25, null);
-            CreateMaze();
+            Console.WriteLine("Generating mazes ...");
+            for (int i = 0; i < 1000; i++)
+            {
+                maze = null;
+                maze = new Maze(51, 25, null);
+                CreateMaze();
+            }
+            Console.WriteLine("Done!");
+            RenderMaze();
         }
 
         private void LoadMaze(string filename)
@@ -257,9 +254,6 @@ namespace MouseAI.UI
                 return;
 
             maze = new Maze(51, 25, filename);
-
-            //if (!maze.LoadMaze())
-            //    return;
 
             CreateMaze();
         }
@@ -279,15 +273,18 @@ namespace MouseAI.UI
                 maze.Reset();
                 maze.Generate();
                 maze.Update();
-                maze.AddMouse();
-                maze.AddCheese(1, 50, 1, 24);
-                DrawMaze();
-                SetRunState(RUNSTATE.READY);
+                maze.AddCharacters();
             }
             catch (Exception e)
             {
                 DisplayError("Error Creating Maze", e, false);
             }
+        }
+
+        public void RenderMaze()
+        {
+            DrawMaze();
+            SetRunState(RUNSTATE.READY);
         }
 
         private void RunProcess()

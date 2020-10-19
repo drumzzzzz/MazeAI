@@ -82,8 +82,30 @@ namespace MouseAI
                 mazeDb = new MazeDb();
         }
 
-        public void AddMouse(int x = 1, int y = 1)
+        public void AddCharacters()
         {
+            MazeObject mo_mouse;
+            MazeObject mo_cheese;
+            DIRECTION dir;
+
+            while (true)
+            {
+                dir = (DIRECTION) r.Next(1, 4);
+
+                mo_mouse = GetMazeObject(dir);
+                mo_cheese = GetMazeObject(OppositeDirection(dir));
+
+                if (mo_mouse != null && mo_cheese != null)
+                    break;
+                Console.WriteLine("Failed to generate - retrying");
+            }
+
+            int x = mo_mouse.x;
+            int y = mo_mouse.y;
+
+            mouse_x = x;
+            mouse_y = y;
+
             MazeObjects[x, y].object_state = OBJECT_STATE.MOUSE;
 
             oMouse = new MazeObject(OBJECT_TYPE.BLOCK, x, y)
@@ -93,29 +115,39 @@ namespace MouseAI
                 isVisited = true
             };
 
-            mouse_x = x;
-            mouse_y = y;
+            x = mo_cheese.x;
+            y = mo_cheese.y;
+
+            MazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
+            MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
+            cheese_x = x;
+            cheese_y = y;
         }
 
-        public void AddCheese(int x_min, int x_max, int y_min, int y_max)
+        private MazeObject GetMazeObject(DIRECTION dir)
         {
-            int x, y;
+            List<MazeObject> mos;
+ 
+            if (dir == DIRECTION.WEST)
+                mos = MazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == 1).ToList();
+            else if (dir == DIRECTION.NORTH)
+                mos = MazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == 1).ToList();
+            else if (dir == DIRECTION.EAST)
+                mos = MazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == maze_width - 2).ToList();
+            else
+                mos = MazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == maze_height - 2).ToList();
 
-            while (true)
-            {
-                x = r.Next(x_min, x_max);
-                y = r.Next(y_min, y_max);
+            return mos.Count == 0 ? null : mos.ElementAt(r.Next(mos.Count - 1));
+        }
 
-                if (MazeObjects[x, y].object_type != OBJECT_TYPE.BLOCK &&
-                    MazeObjects[x, y].object_state != OBJECT_STATE.MOUSE)
-                {
-                    MazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
-                    MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
-                    cheese_x = x;
-                    cheese_y = y;
-                    return;
-                }
-            }
+        private static DIRECTION OppositeDirection(DIRECTION dir)
+        {
+
+            if (dir == DIRECTION.EAST)
+                return DIRECTION.WEST;
+            if (dir == DIRECTION.WEST)
+                return DIRECTION.EAST;
+            return dir == DIRECTION.NORTH ? DIRECTION.SOUTH : DIRECTION.NORTH;
         }
 
         public void Reset()

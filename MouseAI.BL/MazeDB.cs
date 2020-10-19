@@ -31,7 +31,6 @@ namespace MouseAI.BL
 
         public bool InsertStats(DbTable_Stats tbl)
         {
-            string columns = "Guid, Success, Failure, LastUsed";
             string values = string.Format("'{0}', {1}, {2}, '{3}'", tbl.Guid, tbl.Success, tbl.Failure, tbl.LastUsed);
 
             return db.Insert(DbTable_Stats.TABLE, DbTable_Stats.COLUMNS, values);
