@@ -37,6 +37,11 @@ namespace MouseAI.BL
             return db.Insert(DbTable_Stats.TABLE, DbTable_Stats.COLUMNS, values);
         }
 
+        public DbTable_Stats ReadStats(string guid)
+        {
+            return (DbTable_Stats) db.Read(DbTable_Stats.TABLE, "Guid", guid, new DbTable_Stats());
+        }
+
         public string GetError()
         {
             return err;
@@ -45,14 +50,13 @@ namespace MouseAI.BL
 
     public class DbTable_Stats
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Guid { get; set; }
-        public int Success { get; set; }
-        public int Failure { get; set; }
+        public long Success { get; set; }
+        public long Failure { get; set; }
         public string LastUsed { get; set; }
 
         public static readonly string TABLE = "stats";
         public static readonly string COLUMNS = "Guid, Success, Failure, LastUsed";
-
     }
 }

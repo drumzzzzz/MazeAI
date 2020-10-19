@@ -77,6 +77,9 @@ namespace MouseAI
             PathObjects = new List<MazeObject>();
             this.FileName = FileName;
             AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
+
+            if (mazeDb == null)
+                mazeDb = new MazeDb();
         }
 
         public void AddMouse(int x = 1, int y = 1)
@@ -525,11 +528,6 @@ namespace MouseAI
         {
             try
             {
-                if (mazeDb == null)
-                {
-                    mazeDb = new MazeDb();
-                }
-
                 MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata);
 
                 dbtblStats = new DbTable_Stats();
@@ -555,7 +553,6 @@ namespace MouseAI
             {
                 return e.Message;
             }
-
         }
 
         public string LoadMazeModel()
@@ -571,7 +568,12 @@ namespace MouseAI
                     if (mm == null)
                         throw new Exception("Error Loading File");
 
+                    DbTable_Stats dbTableStats = mazeDb.ReadStats(mm.guid);
 
+                    if (dbTableStats == null)
+                    {
+                        throw new Exception("Error Loading Stats");
+                    }
 
                     FileName = filename;
                 }

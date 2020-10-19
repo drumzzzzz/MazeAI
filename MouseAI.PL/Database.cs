@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace MouseAI.PL
 {
@@ -23,8 +25,6 @@ namespace MouseAI.PL
 
         public bool Create(string table, string columns)
         {
-            
-
             try
             {
                 SQLiteConnection conn = new SQLiteConnection();
@@ -66,6 +66,49 @@ namespace MouseAI.PL
             {
                 err = e.Message;
                 return false;
+            }
+        }
+
+        public object Read(string table, string column, string value, object obj)
+        {
+            try
+            {
+                SQLiteConnection conn = new SQLiteConnection(db_file);
+                conn.Open();
+                SQLiteCommand cmd = new SQLiteCommand(conn);
+                cmd.CommandText = string.Format("SELECT * FROM {0} WHERE {1} = '{2}'", table, column, value);
+                SQLiteDataReader rdr = cmd.ExecuteReader();
+                Type ObjType = obj.GetType();
+                bool isFound = false;
+
+                rdr.Read();
+                if (!rdr.HasRows || rdr.FieldCount <= 0)
+                    throw new Exception("No Row Returned");
+
+                foreach (FieldInfo item in ObjType.GetRuntimeFields().Where(x=>x.IsStatic == false))
+                {
+                    isFound = false;
+                    for (int i = 0; i < rdr.FieldCount; i++)
+                    {
+                        string name = string.Format("<{0}>", rdr.GetName(i));
+                        if (item.Name.Contains(string.Format("<{0}>",rdr.GetName(i))) && rdr.GetFieldType(i) == item.FieldType)
+                        {
+                            var v = rdr.GetValue(i);
+                            item.SetValue(obj, v);
+                            isFound = true;
+                            break;
+                        }
+                    }
+                    if(!isFound)
+                        throw new Exception("Error Reading Fields");
+                }
+
+                return obj;
+            }
+            catch (Exception e)
+            {
+                err = e.Message;
+                return null;
             }
         }
     }
