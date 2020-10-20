@@ -353,8 +353,8 @@ namespace MouseAI
         private void SetEndpoint(MazeObject mo)
         {
             mo.isDeadEnd = true;
-            mo.isVisited = true;
-            mo.dtLastVisit = DateTime.UtcNow;
+            //mo.isVisited = true;
+            //mo.dtLastVisit = DateTime.UtcNow;
         }
 
         private int GetPerimiter(MazeObject mo)
@@ -397,10 +397,10 @@ namespace MouseAI
             {
                 throw new Exception("Mouse Object Null!");
             }
-            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
-                                                            o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
             //MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
-            //                                                o.object_state != OBJECT_STATE.MOUSE);
+            //                                                o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
+            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
+                                                            o.object_state != OBJECT_STATE.MOUSE);
             if (mo != null)
             {
                 if (mazeobjects.Count >= 4)
@@ -434,10 +434,10 @@ namespace MouseAI
                     }
                 }
 
-                if (mo_oldest == null)
-                {
-                    mo_oldest = mazeobjects.FirstOrDefault(m => m.object_state == OBJECT_STATE.MOUSE);
-                }
+                //if (mo_oldest == null)
+                //{
+                //    mo_oldest = mazeobjects.FirstOrDefault(m => m.object_state == OBJECT_STATE.MOUSE);
+                //}
 
                 if (mo_oldest == null)
                     throw new Exception("Maze Object Null");
@@ -532,17 +532,17 @@ namespace MouseAI
 
         public void Display()
         {
-            //Console.Clear();
+            Console.Clear();
 
-            //for (int y = 0; y < maze_height; ++y)
-            //{
-            //    sb.Clear();
-            //    for (int x = 0; x < maze_width; ++x)
-            //    {
-            //        sb.Append(GetObjectChar(MazeObjects[x, y]));
-            //    }
-            //    Console.WriteLine(sb.ToString());
-            //}
+            for (int y = 0; y < maze_height; ++y)
+            {
+                sb.Clear();
+                for (int x = 0; x < maze_width; ++x)
+                {
+                    sb.Append(GetObjectChar(MazeObjects[x, y]));
+                }
+                Console.WriteLine(sb.ToString());
+            }
         }
 
         #endregion
