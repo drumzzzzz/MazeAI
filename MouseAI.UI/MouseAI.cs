@@ -4,10 +4,10 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -47,6 +47,7 @@ namespace MouseAI.UI
         private SKBitmap Cheese_Bitmap;
         private SKBitmap[] Mouse_Bitmaps;
         private const float LINE_WIDTH = 1;
+        private const string TITLE = "MOUSE AI";
         
         public enum RUNSTATE
         {
@@ -79,9 +80,9 @@ namespace MouseAI.UI
             ConsoleHelper.SetCurrentFont("Consolas", 25);
             
             LoadSettings();
-
             RunState = RUNSTATE.NONE;
             InitMaze();
+            DisplayTitleMessage(string.Empty);
         }
 
         private void LoadSettings()
@@ -242,63 +243,12 @@ namespace MouseAI.UI
 
         #region Processing
 
-        private void LoadNewMaze()
-        {
-            if (maze == null)
-            {
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
-            }
-
-            string filename = maze.GetSaveName();
-
-            if (string.IsNullOrEmpty(filename))
-                return;
-
-            maze.ClearMazeModels();
-
-            for (int i = 0; i < MAZE_COUNT; i++)
-            {
-                if (!CreateMaze(maze)) // Retry on character placement conflict
-                    i--;
-
-                DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, MAZE_COUNT));
-            }
-
-            if (maze.isMazeModels())
-            {
-                string result = maze.SaveMazeModels(filename);
-                if (!string.IsNullOrEmpty(result))
-                {
-                    DisplayError("Error Creating DB:" + result, false);
-                    DisplayTsMessage("Error");
-                }
-                else
-                {
-                    DisplayTsMessage("Mazes Generated and Saved");
-                    AddMazeItems();
-                }
-            }
-        }
-
-        private void LoadMaze(string filename)
-        {
-            if (string.IsNullOrEmpty(filename))
-                return;
-
-            if (maze == null)
-            {
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
-            }
-
-            CreateMaze(maze);
-        }
-
         private void MazeAI_Shown(object sender, EventArgs e)
         {
-            if (oSettings.isAutoRun)
-            {
-                LoadMaze(oSettings.LastFileName);
-            }
+            //if (oSettings.isAutoRun)
+            //{
+            //    LoadMazes();
+            //}
         }
 
         private static bool CreateMaze(Maze m)
@@ -373,15 +323,68 @@ namespace MouseAI.UI
 
         #region File Related
 
-        private void LoadMazeModel()
+        private void NewMazes()
         {
             if (maze == null)
+            {
                 maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
+            }
 
-            string result = maze.LoadMazeModel();
+            string filename = maze.GetSaveName();
 
-            if (result != string.Empty)
+            if (string.IsNullOrEmpty(filename))
+                return;
+
+            maze.ClearMazeModels();
+
+            for (int i = 0; i < MAZE_COUNT; i++)
+            {
+                if (!CreateMaze(maze)) // Retry on character placement conflict
+                    i--;
+
+                DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, MAZE_COUNT));
+            }
+
+            if (maze.isMazeModels())
+            {
+                string result = maze.SaveMazeModels(filename);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    DisplayError("Error Creating DB:" + result, false);
+                    DisplayTsMessage("Error");
+                    DisplayTitleMessage(string.Empty);
+                }
+                else
+                {
+                    DisplayTsMessage("Mazes Generated and Saved");
+                    AddMazeItems();
+                    oSettings.LastFileName = maze.GetFileName();
+                    UpdateSettings();
+                    DisplayTitleMessage(oSettings.LastFileName);
+                }
+            }
+        }
+
+        private void LoadMazes(string filename)
+        {
+            if (maze == null)
+            {
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
+            }
+
+            string result = maze.LoadMazeModels(filename);
+
+            if (result != string.Empty || !maze.isMazeModels())
+            {
                 DisplayError(result, false);
+                return;
+            }
+
+            DisplayTsMessage("Mazes Loaded");
+            AddMazeItems();
+            oSettings.LastFileName = maze.GetFileName();
+            UpdateSettings();
+            DisplayTitleMessage(oSettings.LastFileName);
         }
 
         #endregion
@@ -489,12 +492,12 @@ namespace MouseAI.UI
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadNewMaze();
+            NewMazes();
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadMazeModel();
+            LoadMazes(null);
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
@@ -620,14 +623,14 @@ namespace MouseAI.UI
 
         #region Messages
 
-        private void DisplayMessage(string message)
+        private static void DisplayMessage(string message)
         {
             MessageBox.Show(message);
         }
 
-        private void DisplayError(string message, bool isAppExit)
+        private static void DisplayError(string message, bool isAppExit)
         {
-            MessageBox.Show(string.Format("{0}", message));
+            MessageBox.Show(string.Format("Error: {0}", message));
             if (isAppExit)
                 Application.Exit();
         }
@@ -642,6 +645,14 @@ namespace MouseAI.UI
         private void DisplayTsMessage(string message)
         {
             tsStatus.Text = message;
+        }
+
+        private void DisplayTitleMessage(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                Text = TITLE;
+            else
+                Text = string.Format("{0} ({1})", TITLE, value);
         }
 
         #endregion

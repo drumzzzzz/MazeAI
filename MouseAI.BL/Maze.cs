@@ -45,11 +45,12 @@ namespace MouseAI
         private readonly Random r;
         private readonly StringBuilder sb;
         private readonly MazeObject[,] MazeObjects;
-        private readonly MazeModels mazeModels;
+        private MazeModels mazeModels;
         private MazeModel mazeModel;
         private readonly List<MazeObject> PathObjects;
         private MazeObject oMouse;
         private readonly string AppDir;
+        private string FileName;
 
         private static DbTable_Stats dbtblStats;
 
@@ -88,7 +89,7 @@ namespace MouseAI
 
         public bool isMazeModels()
         {
-            return mazeModels.Count > 0;
+            return (mazeModels != null && mazeModels.Count > 0);
         }
 
         public bool AddCharacters()
@@ -565,6 +566,9 @@ namespace MouseAI
                 }
 
                 FileIO.SerializeXml(mazeModels, filename);
+
+                FileName = filename;
+
                 return string.Empty;
             }
             catch (Exception e)
@@ -573,26 +577,33 @@ namespace MouseAI
             }
         }
 
-        public string LoadMazeModel()
+        public string LoadMazeModels(string filename)
         {
             try
             {
-                string filename = FileIO.OpenFile_Dialog(AppDir, FILE_EXT);
+                if (string.IsNullOrEmpty(filename))
+                    filename = FileIO.OpenFile_Dialog(AppDir, FILE_EXT);
 
-                if (!string.IsNullOrEmpty(filename) && File.Exists(filename))
+                if (string.IsNullOrEmpty(filename) || !File.Exists(filename))
+                    throw new Exception("Error Loading File");
+
+
+                MazeModels mms = (MazeModels)FileIO.DeSerializeXml(typeof(MazeModels), filename);
+
+                if (mms == null)
+                    throw new Exception("Error Loading File");
+
+
+                foreach (MazeModel mm in mms)
                 {
-                    MazeModel mm = (MazeModel)FileIO.DeSerializeXml(typeof(MazeModel), filename);
-
-                    if (mm == null)
-                        throw new Exception("Error Loading File");
-
-                    DbTable_Stats dbTableStats = mazeDb.ReadStats(mm.guid);
-
-                    if (dbTableStats == null)
-                    {
-                        throw new Exception("Error Loading Stats");
-                    }
+                    if(mazeDb.ReadStats(mm.guid) == null)
+                        throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
                 }
+
+                mazeModels.Clear();
+                mazeModels = mms;
+
+                FileName = filename;
 
                 return string.Empty;
             }
@@ -616,6 +627,13 @@ namespace MouseAI
             if (mazeModel == null)
                 return false;
 
+            DbTable_Stats dbTableStats = mazeDb.ReadStats(mazeModel.guid);
+
+            if (dbTableStats == null)
+                return false;
+
+            dbtblStats = dbTableStats;
+
             mazedata = ConvertArray(mazeModel.mazedata);
 
             for (int y = 0; y < maze_height; ++y)
@@ -632,7 +650,7 @@ namespace MouseAI
 
         public int GetMazeModelSize()
         {
-            return mazeModels.Count;
+            return (mazeModels == null) ? 0 : mazeModels.Count;
         }
 
         private static byte[,] ConvertArray(byte[][] ibytes)
@@ -739,6 +757,11 @@ namespace MouseAI
         public OBJECT_STATE GetObjectState(int x, int y)
         {
             return (MazeObjects[x, y].object_state);
+        }
+
+        public string GetFileName()
+        {
+            return string.IsNullOrEmpty(FileName) ? string.Empty : FileName;
         }
 
         #endregion
