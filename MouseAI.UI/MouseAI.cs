@@ -56,7 +56,9 @@ namespace MouseAI.UI
             STOP,
             PAUSE,
             STEP,
-            RESET
+            RESET,
+            PROCESS,
+            SELECT
         }
 
         private RUNSTATE RunState;
@@ -256,7 +258,7 @@ namespace MouseAI.UI
 
             for (int i = 0; i < MAZE_COUNT; i++)
             {
-                if (!CreateMaze(maze))
+                if (!CreateMaze(maze)) // Retry on character placement conflict
                     i--;
 
                 DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, MAZE_COUNT));
@@ -285,7 +287,7 @@ namespace MouseAI.UI
 
             if (maze == null)
             {
-                maze = new Maze(51, 25, null);
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
             }
 
             CreateMaze(maze);
@@ -306,7 +308,7 @@ namespace MouseAI.UI
                 m.Reset();
                 m.Generate();
                 m.Update();
-                if (!m.AddCharacters())
+                if (!m.AddCharacters_Random())
                     return false;
                 m.AddMazeModel();
                 return true;
@@ -320,6 +322,7 @@ namespace MouseAI.UI
 
         public void RenderMaze()
         {
+            maze.Display();
             DrawMaze();
             SetRunState(RUNSTATE.READY);
         }
@@ -362,18 +365,13 @@ namespace MouseAI.UI
                     isStep = false;
                 }
 
-                Thread.Sleep(30);
+                // Thread.Sleep(30);
             }
         }
 
         #endregion
 
         #region File Related
-
-        private void SaveMazeModel(bool isSaveAs)
-        {
-
-        }
 
         private void LoadMazeModel()
         {
@@ -400,6 +398,13 @@ namespace MouseAI.UI
                 item.SubItems.Add("F");
                 lvwMazes.Items.Add(item);
             }
+
+            if (lvwMazes.Items.Count > 0)
+            {
+                lvwMazes.FocusedItem = lvwMazes.Items[0];
+                lvwMazes.Items[0].Selected = true;
+                lvwMazes.Select();
+            }
         }
 
         private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
@@ -407,33 +412,40 @@ namespace MouseAI.UI
             if (lvwMazes.FocusedItem == null)
                 return;
 
+            SetRunState(RUNSTATE.PROCESS);
             SelectMaze(lvwMazes.FocusedItem.Index);
+        }
+
+        private void SelectMaze()
+        {
+            if (lvwMazes.Items.Count > 0 && lvwMazes.FocusedItem != null)
+            {
+                SelectMaze(lvwMazes.FocusedItem.Index);
+            }
         }
 
         private void SelectMaze(int index)
         {
             try
             {
-                maze.Reset();
-                if (maze.SelectMazeModel(index))
-                {
-                    if (!maze.AddCharacters())
-                        throw new Exception("Could not add characters");
+                maze.SelectMazeModel(index);
+                if (!maze.AddCharacters())
+                    throw new Exception("Could not add characters");
 
-                    maze.Display();
-                    RenderMaze();
-                }
+                RenderMaze();
+                DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
+                SetRunState(RUNSTATE.READY);
             }
             catch (Exception e)
             {
                 DisplayError("Error Selecting Maze", e, false);
+                SetRunState(RUNSTATE.SELECT);
             }
-
         }
 
         #endregion
 
-        #region Controls
+        #region Button
 
         private void btnRun_Click(object sender, EventArgs e)
         {
@@ -454,63 +466,19 @@ namespace MouseAI.UI
             SetRunState(RUNSTATE.STEP);
         }
 
-        private void SetRunState(RUNSTATE r)
+        private void btnStop_Click(object sender, EventArgs e)
         {
-            RunState = r;
-
-            switch (r)
-            {
-                case RUNSTATE.NONE:
-                    newToolStripMenuItem.Enabled = true;
-                    saveToolStripMenuItem.Enabled = false;
-                    loadToolStripMenuItem.Enabled = true;
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    return;
-                case RUNSTATE.READY:
-                    newToolStripMenuItem.Enabled = true;
-                    saveToolStripMenuItem.Enabled = true;
-                    loadToolStripMenuItem.Enabled = true;
-                    btnRun.Enabled = true;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    return;
-                case RUNSTATE.RUN:
-                    newToolStripMenuItem.Enabled = false;
-                    saveToolStripMenuItem.Enabled = false;
-                    loadToolStripMenuItem.Enabled = false;
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = true;
-                    btnPause.Enabled = true;
-                    btnStep.Enabled = false;
-                    return;
-                case RUNSTATE.STOP:
-                    newToolStripMenuItem.Enabled = false;
-                    saveToolStripMenuItem.Enabled = false;
-                    loadToolStripMenuItem.Enabled = false;
-                    btnRun.Enabled = true;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    return;
-                case RUNSTATE.PAUSE:
-                    btnRun.Enabled = true;
-                    btnStop.Enabled = true;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = true;
-                    return;
-                case RUNSTATE.STEP:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    return;
-            }
-
+            SetRunState(RUNSTATE.STOP);
         }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            SelectMaze();
+        }
+
+        #endregion
+
+        #region Menustrip
 
         private void SetMenuItems()
         {
@@ -522,11 +490,6 @@ namespace MouseAI.UI
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadNewMaze();
-        }
-
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SaveMazeModel(false);
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
@@ -562,6 +525,94 @@ namespace MouseAI.UI
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+        }
+
+        #endregion
+
+        #region Control States
+
+        private void SetRunState(RUNSTATE r)
+        {
+            RunState = r;
+
+            switch (r)
+            {
+                case RUNSTATE.PROCESS:
+                    newToolStripMenuItem.Enabled = false;
+                    loadToolStripMenuItem.Enabled = false;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = false;
+                    lvwMazes.Enabled = false;
+                    return;
+                case RUNSTATE.SELECT:
+                    newToolStripMenuItem.Enabled = true;
+                    loadToolStripMenuItem.Enabled = true;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = false;
+                    lvwMazes.Enabled = true;
+                    return;
+                case RUNSTATE.NONE:
+                    newToolStripMenuItem.Enabled = true;
+                    loadToolStripMenuItem.Enabled = true;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = false;
+                    lvwMazes.Enabled = false;
+                    return;
+                case RUNSTATE.READY:
+                    newToolStripMenuItem.Enabled = true;
+                    loadToolStripMenuItem.Enabled = true;
+                    btnRun.Enabled = true;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = false;
+                    lvwMazes.Enabled = true;
+                    return;
+                case RUNSTATE.RUN:
+                    newToolStripMenuItem.Enabled = false;
+                    loadToolStripMenuItem.Enabled = false;
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = true;
+                    btnPause.Enabled = true;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = false;
+                    lvwMazes.Enabled = false;
+                    return;
+                case RUNSTATE.STOP:
+                    newToolStripMenuItem.Enabled = true;
+                    loadToolStripMenuItem.Enabled = true;
+                    btnRun.Enabled = true;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = true;
+                    lvwMazes.Enabled = true;
+                    return;
+                case RUNSTATE.PAUSE:
+                    btnRun.Enabled = true;
+                    btnStop.Enabled = true;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = true;
+                    return;
+                case RUNSTATE.STEP:
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = false;
+                    btnPause.Enabled = false;
+                    btnStep.Enabled = false;
+                    return;
+                case RUNSTATE.RESET:
+                    return;
+            }
 
         }
 

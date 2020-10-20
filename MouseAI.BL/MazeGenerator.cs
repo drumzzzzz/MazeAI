@@ -82,7 +82,7 @@ namespace MouseAI.BL
                 int x2 = x + (dx << 1);
                 int y2 = y + (dy << 1);
 
-                if (IsInBounds(x2, y2))
+                if (Maze.IsInBounds(x2, y2))
                 {
                     if (maze[XYToIndex(x2, y2)] == Maze.BLOCK)
                     {
@@ -93,22 +93,9 @@ namespace MouseAI.BL
             }
         }
 
-        public OBJECT_TYPE GetObjectType(int x, int y)
-        {
-            return (maze[XYToIndex(x, y)] == Maze.SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
-        }
-
         public byte GetObjectByte(int x, int y)
         {
             return (maze[XYToIndex(x, y)] == Maze.SPACE) ? Maze.WHITE : Maze.BLACK;
-        }
-
-        private bool IsInBounds(int x, int y)
-        {
-            if (x < 0 || x >= maze_width)
-                return false;
-
-            return (y >= 0 && y < maze_height);
         }
 
         private int XYToIndex(int x, int y)

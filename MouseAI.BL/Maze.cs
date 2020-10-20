@@ -21,8 +21,8 @@ namespace MouseAI
         private static MazeDb mazeDb;
         private byte[,] mazedata;
         private readonly MazeGenerator mazeGenerator;
-        private readonly int maze_width;
-        private readonly int maze_height;
+        private static int maze_width;
+        private static int maze_height;
         private int mouse_x;
         private int mouse_y;
         private int cheese_x;
@@ -46,9 +46,9 @@ namespace MouseAI
         private readonly StringBuilder sb;
         private readonly MazeObject[,] MazeObjects;
         private readonly MazeModels mazeModels;
+        private MazeModel mazeModel;
         private readonly List<MazeObject> PathObjects;
         private MazeObject oMouse;
-        private string FileName;
         private readonly string AppDir;
 
         private static DbTable_Stats dbtblStats;
@@ -57,23 +57,19 @@ namespace MouseAI
 
         #region Initialization
 
-        public Maze(int maze_width, int maze_height, string FileName)
+        public Maze(int _maze_width, int _maze_height, string FileName)
         {
-            this.maze_width = maze_width;
-            this.maze_height = maze_height;
+            maze_width = _maze_width;
+            maze_height = _maze_height;
 
-            // maze = new string(new char[maze_width * maze_height]);
             mazedata = new byte[maze_width,maze_height];
             MazeObjects = new MazeObject[maze_width, maze_height];
             mazeModels = new MazeModels();
-
             r = new Random();
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
-
             mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
 
-            this.FileName = FileName;
             AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
 
             if (mazeDb == null)
@@ -96,6 +92,39 @@ namespace MouseAI
         }
 
         public bool AddCharacters()
+        {
+            if (mazeModel == null)
+                return false;
+
+            int mx = mazeModel.mouse_x;
+            int my = mazeModel.mouse_y;
+            int cx = mazeModel.cheese_x;
+            int cy = mazeModel.cheese_y;
+
+            if (!IsInBounds(mx, my) || !IsInBounds(cx, cy))
+                return false;
+
+            mouse_x = mx;
+            mouse_y = my;
+
+            MazeObjects[mx, my].object_state = OBJECT_STATE.MOUSE;
+
+            oMouse = new MazeObject(OBJECT_TYPE.BLOCK, mx, my)
+            {
+                object_state = OBJECT_STATE.MOUSE,
+                object_type = OBJECT_TYPE.SPACE,
+                isVisited = true
+            };
+
+            MazeObjects[cx, cy].object_state = OBJECT_STATE.CHEESE;
+            MazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
+            cheese_x = cx;
+            cheese_y = cy;
+
+            return true;
+        }
+
+        public bool AddCharacters_Random()
         {
             DIRECTION dir = (DIRECTION) r.Next(1, 4);
 
@@ -163,11 +192,6 @@ namespace MouseAI
         {
             sb.Clear();
             PathObjects.Clear();
-
-            //for (int i = 0; i < maze_width * maze_height; i++)
-            //{
-            //    maze = ChangeCharacter(maze, i, '█');
-            //}
         }
 
         public void Generate()
@@ -568,8 +592,6 @@ namespace MouseAI
                     {
                         throw new Exception("Error Loading Stats");
                     }
-
-                    FileName = filename;
                 }
 
                 return string.Empty;
@@ -586,28 +608,26 @@ namespace MouseAI
 
         public bool SelectMazeModel(int index)
         {
-            if (index > mazeModels.Count - 1)
+            if (index < 0 || index > mazeModels.Count - 1)
                 return false;
 
-            MazeModel m = mazeModels[index];
+            mazeModel = mazeModels[index];
 
-            if (m != null)
+            if (mazeModel == null)
+                return false;
+
+            mazedata = ConvertArray(mazeModel.mazedata);
+
+            for (int y = 0; y < maze_height; ++y)
             {
-                mazedata = ConvertArray(m.mazedata);
-
-                for (int y = 0; y < maze_height; ++y)
+                for (int x = 0; x < maze_width; ++x)
                 {
-                    for (int x = 0; x < maze_width; ++x)
-                    {
-                        MazeObjects[x, y] = null;
-                        MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
-                    }
+                    MazeObjects[x, y] = null;
+                    MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
-
-                return true;
             }
 
-            return false;
+            return true;
         }
 
         public int GetMazeModelSize()
@@ -657,7 +677,7 @@ namespace MouseAI
             if (mo.object_type == OBJECT_TYPE.BLOCK)
                 return BLOCK;
 
-            // ToDd: Scan Debug
+            // ToDo: Scan Debug
             if (mo.object_state == OBJECT_STATE.MOUSE)
                 return MOUSE;
 
@@ -684,8 +704,13 @@ namespace MouseAI
                 //case OBJECT_STATE.MOUSE: return MOUSE;
             }
 
-            Console.WriteLine("Invalid Character - type:" + mo.object_type + " state:" + mo.object_state);
+            // Console.WriteLine("Invalid Character - type:" + mo.object_type + " state:" + mo.object_state);
             return SPACE;
+        }
+
+        public string GetGUID()
+        {
+            return mazeModel.guid;
         }
 
         public Point GetMousePosition()
@@ -698,7 +723,7 @@ namespace MouseAI
             return (int)oMouse.direction;
         }
 
-        private bool IsInBounds(int x, int y)
+        public static bool IsInBounds(int x, int y)
         {
             if (x < 0 || x >= maze_width)
                 return false;
@@ -715,13 +740,6 @@ namespace MouseAI
         {
             return (MazeObjects[x, y].object_state);
         }
-
-        //public static string ChangeCharacter(string sourceString, int charIndex, char newChar)
-        //{
-        //    return (charIndex > 0 ? sourceString.Substring(0, charIndex) : "")
-        //           + newChar +
-        //           (charIndex < sourceString.Length - 1 ? sourceString.Substring(charIndex + 1) : "");
-        //}
 
         #endregion
     }
