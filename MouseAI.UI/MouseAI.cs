@@ -404,16 +404,31 @@ namespace MouseAI.UI
 
         private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (lvwMazes.FocusedItem == null)
+                return;
 
-            SelectMaze(lvwMazes.Items.IndexOf(lvwMazes.SelectedItems[0]));
+            SelectMaze(lvwMazes.FocusedItem.Index);
         }
 
         private void SelectMaze(int index)
         {
-            if (maze.SelectMazeModel(index))
+            try
             {
+                maze.Reset();
+                if (maze.SelectMazeModel(index))
+                {
+                    if (!maze.AddCharacters())
+                        throw new Exception("Could not add characters");
 
+                    maze.Display();
+                    RenderMaze();
+                }
             }
+            catch (Exception e)
+            {
+                DisplayError("Error Selecting Maze", e, false);
+            }
+
         }
 
         #endregion

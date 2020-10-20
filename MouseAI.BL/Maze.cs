@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using MouseAI.BL;
 using MouseAI.PL;
 
@@ -21,7 +20,7 @@ namespace MouseAI
 
         private static MazeDb mazeDb;
         private byte[,] mazedata;
-        private string maze;
+        private readonly MazeGenerator mazeGenerator;
         private readonly int maze_width;
         private readonly int maze_height;
         private int mouse_x;
@@ -29,10 +28,9 @@ namespace MouseAI
         private int cheese_x;
         private int cheese_y;
 
-        private readonly DIRECTION[] dirs;
-        private const char BLOCK = '█';
+        public const char BLOCK = '█';
         private const char VISITED = '>';
-        private const char SPACE = '░';
+        public const char SPACE = '░';
         private const char MOUSE = 'ô';
         private const char CHEESE = 'Δ';
         private const char SCANNED = ':';
@@ -41,14 +39,14 @@ namespace MouseAI
         private const char PATH = '●';
         private const string FILE_EXT = "mze";
         private const string FILE_DIR = "mazes";
-        private const byte BLACK = 0x00;
-        private const byte WHITE = 0xff;
+        public const byte BLACK = 0x00;
+        public const byte WHITE = 0xff;
 
-        private Random r;
-        private StringBuilder sb;
-        private MazeObject[,] MazeObjects;
-        private MazeModels mazeModels;
-        private List<MazeObject> PathObjects;
+        private readonly Random r;
+        private readonly StringBuilder sb;
+        private readonly MazeObject[,] MazeObjects;
+        private readonly MazeModels mazeModels;
+        private readonly List<MazeObject> PathObjects;
         private MazeObject oMouse;
         private string FileName;
         private readonly string AppDir;
@@ -64,21 +62,17 @@ namespace MouseAI
             this.maze_width = maze_width;
             this.maze_height = maze_height;
 
-            maze = new string(new char[maze_width * maze_height]);
+            // maze = new string(new char[maze_width * maze_height]);
             mazedata = new byte[maze_width,maze_height];
             MazeObjects = new MazeObject[maze_width, maze_height];
             mazeModels = new MazeModels();
 
-            dirs = new DIRECTION[4];
-            dirs[0] = DIRECTION.NORTH; // NORTH;
-            dirs[1] = DIRECTION.EAST; // EAST;
-            dirs[2] = DIRECTION.SOUTH; // SOUTH;
-            dirs[3] = DIRECTION.WEST; // WEST;
-
             r = new Random();
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
-            
+
+            mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
+
             this.FileName = FileName;
             AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
 
@@ -93,7 +87,7 @@ namespace MouseAI
 
         public void AddMazeModel()
         {
-            mazeModels.Add(new MazeModel(mazeModels.Count + 1, maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
+            mazeModels.Add(new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
         }
 
         public bool isMazeModels()
@@ -170,68 +164,16 @@ namespace MouseAI
             sb.Clear();
             PathObjects.Clear();
 
-            for (int i = 0; i < maze_width * maze_height; i++)
-            {
-                maze = ChangeCharacter(maze, i, '█');
-            }
+            //for (int i = 0; i < maze_width * maze_height; i++)
+            //{
+            //    maze = ChangeCharacter(maze, i, '█');
+            //}
         }
 
-        // Starting at the given index, recursively visit every direction randomly
-        public void Generate(int x = 1, int y = 1)
+        public void Generate()
         {
-            if (x == 1 && y == 1)
-                Reset();
-
-            // Set current location to empty
-            maze = ChangeCharacter(maze, XYToIndex(x, y), SPACE);
-
-            int rand;
-            DIRECTION dir_temp;
-
-            for (int i = 0; i < 4; i++)
-            {
-                rand = r.Next(0, 4);
-                dir_temp = dirs[rand];
-                dirs[rand] = dirs[i];
-                dirs[i] = dir_temp;
-            }
-
-            // Iterate directions and attempt to move
-            for (int i = 0; i < 4; ++i)
-            {
-                // Offset from current location
-                int dx = 0;
-                int dy = 0;
-
-                switch (dirs[i])
-                {
-                    case DIRECTION.NORTH:
-                        dy = -1;
-                        break;
-                    case DIRECTION.SOUTH:
-                        dy = 1;
-                        break;
-                    case DIRECTION.EAST:
-                        dx = 1;
-                        break;
-                    case DIRECTION.WEST:
-                        dx = -1;
-                        break;
-                }
-
-                // Find the coords 2 spaces away
-                int x2 = x + (dx << 1);
-                int y2 = y + (dy << 1);
-
-                if (IsInBounds(x2, y2))
-                {
-                    if (maze[XYToIndex(x2, y2)] == BLOCK)
-                    {
-                        maze = ChangeCharacter(maze, XYToIndex(x2 - dx, y2 - dy), SPACE);
-                        Generate(x2, y2);
-                    }
-                }
-            }
+            mazeGenerator.Reset();
+            mazeGenerator.Generate();
         }
 
         public void Update()
@@ -240,7 +182,7 @@ namespace MouseAI
             {
                 for (int x = 0; x < maze_width; ++x)
                 {
-                    mazedata[x, y] = GetObjectByte(x, y);
+                    mazedata[x, y] = mazeGenerator.GetObjectByte(x, y);
                     MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
             }
@@ -418,7 +360,6 @@ namespace MouseAI
             if (ScanObjects(x, y))
             {
                 CleanPathObjects();
-                //ClearPaths();
                 Display();
                 return true;
             }
@@ -467,7 +408,12 @@ namespace MouseAI
                 }
 
                 if (mo_oldest == null)
-                    throw new Exception("Object was null!");
+                {
+                    mo_oldest = mazeobjects.FirstOrDefault(m => m.object_state == OBJECT_STATE.MOUSE);
+                }
+
+                if (mo_oldest == null)
+                    throw new Exception("Maze Object Null");
 
                 oMouse.x = mo_oldest.x;
                 oMouse.y = mo_oldest.y;
@@ -534,7 +480,7 @@ namespace MouseAI
 
             for (int x_idx = x - 1; x_idx < x + 2; x_idx += 2)
             {
-                if (IsInBounds(x_idx, y) && GetObjectType(x_idx, y) == OBJECT_TYPE.SPACE)
+                if (IsInBounds(x_idx, y) && GetObjectDataType(x_idx, y) == OBJECT_TYPE.SPACE)
                 {
                     mazeobjects.Add(MazeObjects[x_idx, y]);
                 }
@@ -542,7 +488,7 @@ namespace MouseAI
 
             for (int y_idx = y - 1; y_idx < y + 2; y_idx += 2)
             {
-                if (IsInBounds(x, y_idx) && GetObjectType(x, y_idx) == OBJECT_TYPE.SPACE)
+                if (IsInBounds(x, y_idx) && GetObjectDataType(x, y_idx) == OBJECT_TYPE.SPACE)
                 {
                     mazeobjects.Add(MazeObjects[x, y_idx]);
                 }
@@ -603,37 +549,6 @@ namespace MouseAI
             }
         }
 
-        //public string SaveMazeModel()
-        //{
-        //    try
-        //    {
-        //        MazeModel mm = new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata);
-
-        //        dbtblStats = new DbTable_Stats();
-        //        dbtblStats.Guid = mm.guid;
-        //        dbtblStats.LastUsed = DateTime.UtcNow.ToString();
-
-        //        if (!mazeDb.InsertStats(dbtblStats))
-        //            throw new Exception("Failed to create stats");
-
-        //        if (string.IsNullOrEmpty(FileName) || !File.Exists(FileName))
-        //        {
-        //            FileName = FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
-
-        //            if (FileName == null)
-        //                throw new Exception("Error Creating File");
-
-        //            FileIO.SerializeXml(mm, FileName);
-        //        }
-
-        //        return string.Empty;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return e.Message;
-        //    }
-        //}
-
         public string LoadMazeModel()
         {
             try
@@ -678,6 +593,17 @@ namespace MouseAI
 
             if (m != null)
             {
+                mazedata = ConvertArray(m.mazedata);
+
+                for (int y = 0; y < maze_height; ++y)
+                {
+                    for (int x = 0; x < maze_width; ++x)
+                    {
+                        MazeObjects[x, y] = null;
+                        MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
+                    }
+                }
+
                 return true;
             }
 
@@ -687,24 +613,6 @@ namespace MouseAI
         public int GetMazeModelSize()
         {
             return mazeModels.Count;
-        }
-
-        public MazeModel GetMazeModel(int index)
-        {
-            if (index > mazeModels.Count - 1)
-                return null;
-
-            return mazeModels[index];
-        }
-
-        public MazeModels GetMazeModels()
-        {
-            return mazeModels;
-        }
-
-        private byte[,] GetMazeData()
-        {
-            return mazedata;
         }
 
         private static byte[,] ConvertArray(byte[][] ibytes)
@@ -790,27 +698,12 @@ namespace MouseAI
             return (int)oMouse.direction;
         }
 
-        private int XYToIndex(int x, int y)
-        {
-            return y * maze_width + x;
-        }
-
         private bool IsInBounds(int x, int y)
         {
             if (x < 0 || x >= maze_width)
                 return false;
 
             return (y >= 0 && y < maze_height);
-        }
-
-        public OBJECT_TYPE GetObjectType(int x, int y)
-        {
-            return (maze[XYToIndex(x, y)] == SPACE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
-        }
-
-        private byte GetObjectByte(int x, int y)
-        {
-            return (maze[XYToIndex(x, y)] == SPACE) ? WHITE : BLACK;
         }
 
         public OBJECT_TYPE GetObjectDataType(int x, int y)
@@ -823,12 +716,12 @@ namespace MouseAI
             return (MazeObjects[x, y].object_state);
         }
 
-        public static string ChangeCharacter(string sourceString, int charIndex, char newChar)
-        {
-            return (charIndex > 0 ? sourceString.Substring(0, charIndex) : "")
-                   + newChar +
-                   (charIndex < sourceString.Length - 1 ? sourceString.Substring(charIndex + 1) : "");
-        }
+        //public static string ChangeCharacter(string sourceString, int charIndex, char newChar)
+        //{
+        //    return (charIndex > 0 ? sourceString.Substring(0, charIndex) : "")
+        //           + newChar +
+        //           (charIndex < sourceString.Length - 1 ? sourceString.Substring(charIndex + 1) : "");
+        //}
 
         #endregion
     }
