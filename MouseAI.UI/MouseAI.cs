@@ -26,6 +26,7 @@ namespace MouseAI.UI
         private bool isFound;
         private bool isStep;
         private bool isTest;
+        private bool isDone;
 
         private const int MAZE_WIDTH = 51;
         private const int MAZE_HEIGHT = 25;
@@ -50,6 +51,7 @@ namespace MouseAI.UI
         private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
         private SKBitmap[] Mouse_Bitmaps;
+        private Point mouse_last;
         
         public enum RUNSTATE
         {
@@ -222,12 +224,15 @@ namespace MouseAI.UI
             UpdateMaze();
         }
 
-        private void UpdateMaze()
+        private bool UpdateMaze()
         {
+            Point p = maze.GetMousePosition();
+            if (p.X == mouse_last.X && p.Y == mouse_last.Y)
+                return false;
+
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage,0,0);
 
-            Point p = maze.GetMousePosition();
             int direction = maze.GetMouseDirection();
 
             canvas.DrawBitmap(Mouse_Bitmaps[direction], p.X * MAZE_SCALE_WIDTH_PX, p.Y * MAZE_SCALE_HEIGHT_PX);
@@ -240,6 +245,8 @@ namespace MouseAI.UI
                 pbxMaze.Image?.Dispose();
                 pbxMaze.Image = new Bitmap(mStream, false);
             }
+
+            return true;
         }
 
         #endregion
@@ -309,9 +316,19 @@ namespace MouseAI.UI
             searchThread = new Thread(AISearch);
             searchThread.Start();
 
+            mouse_last = new Point(-1,-1);
+
             while (!isExit && !isFound)
             {
-                UpdateMaze();
+                //Point p = maze.GetMousePosition();
+
+                if (isDone)
+                {
+                    if (!UpdateMaze())
+                        Thread.Sleep(10);
+                    isDone = false;
+                }
+
                 if (RunState == RUNSTATE.STEP && !isStep)
                     SetRunState(RUNSTATE.PAUSE);
 
@@ -330,20 +347,27 @@ namespace MouseAI.UI
 
         private void AISearch()
         {
+            isDone = false;
             while (!isFound)
             {
-                if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
+                if (!isDone)
                 {
-                    if (maze.ProcessMouseMove())
+                    if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
                     {
+                        if (maze.ProcessMouseMove())
+                        {
+                            maze.Display();
+                            Console.WriteLine("Cheese found via path!");
+                            isFound = true;
+                            break;
+                        }
+
                         maze.Display();
-                        Console.WriteLine("Cheese found via path!");
-                        isFound = true;
-                        break;
+                        isStep = false;
                     }
-                    maze.Display();
-                    isStep = false;
+                    isDone = true;
                 }
+                Thread.Sleep(10);
             }
         }
 
