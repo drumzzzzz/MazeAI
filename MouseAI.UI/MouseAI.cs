@@ -25,6 +25,7 @@ namespace MouseAI.UI
         private bool isExit;
         private bool isFound;
         private bool isStep;
+        private bool isTest;
 
         private const int MAZE_WIDTH = 51;
         private const int MAZE_HEIGHT = 25;
@@ -34,6 +35,9 @@ namespace MouseAI.UI
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
         private const int MAZE_COUNT = 100;
+        private const float LINE_WIDTH = 1;
+        private const string TITLE = "MOUSE AI";
+
         private SKColor BlockColor;
         private SKColor SpaceColor;
         private SKPaint BlockPaint;
@@ -46,8 +50,6 @@ namespace MouseAI.UI
         private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
         private SKBitmap[] Mouse_Bitmaps;
-        private const float LINE_WIDTH = 1;
-        private const string TITLE = "MOUSE AI";
         
         public enum RUNSTATE
         {
@@ -59,7 +61,8 @@ namespace MouseAI.UI
             STEP,
             RESET,
             PROCESS,
-            SELECT
+            SELECT,
+            TEST
         }
 
         private RUNSTATE RunState;
@@ -277,6 +280,29 @@ namespace MouseAI.UI
             SetRunState(RUNSTATE.READY);
         }
 
+
+        private void RunMazeTests()
+        {
+            if (!maze.isMazeModels())
+                return;
+
+            for (int i = 0; i < lvwMazes.Items.Count; i++)
+            {
+                if (SelectMaze(i))
+                {
+                    // SetRunState(RUNSTATE.TEST);
+
+                    SetRunState(RUNSTATE.RUN);
+
+                    if (searchThread == null)
+                        RunProcess();
+                    // RunProcess();
+                }
+                if (RunState == RUNSTATE.STOP)
+                    break;
+            }
+        }
+
         private void RunProcess()
         {
             //DisplayMessage("Searching for cheese ...");
@@ -296,6 +322,10 @@ namespace MouseAI.UI
             {
                 //DisplayMessage("Found the cheese!");
             }
+
+            isFound = false;
+
+            searchThread = null;
         }
 
         private void AISearch()
@@ -314,8 +344,6 @@ namespace MouseAI.UI
                     maze.Display();
                     isStep = false;
                 }
-
-                // Thread.Sleep(30);
             }
         }
 
@@ -427,7 +455,7 @@ namespace MouseAI.UI
             }
         }
 
-        private void SelectMaze(int index)
+        private bool SelectMaze(int index)
         {
             try
             {
@@ -438,11 +466,13 @@ namespace MouseAI.UI
                 RenderMaze();
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
                 SetRunState(RUNSTATE.READY);
+                return true;
             }
             catch (Exception e)
             {
                 DisplayError("Error Selecting Maze", e, false);
                 SetRunState(RUNSTATE.SELECT);
+                return false;
             }
         }
 
@@ -528,7 +558,7 @@ namespace MouseAI.UI
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            RunMazeTests();
         }
 
         #endregion
@@ -541,9 +571,15 @@ namespace MouseAI.UI
 
             switch (r)
             {
+                case RUNSTATE.TEST:
+                    btnRun.Enabled = false;
+                    btnStop.Enabled = true;
+                    btnPause.Enabled = true;
+                    btnStep.Enabled = false;
+                    btnReset.Enabled = false;
+                    lvwMazes.Enabled = false;
+                    return;
                 case RUNSTATE.PROCESS:
-                    newToolStripMenuItem.Enabled = false;
-                    loadToolStripMenuItem.Enabled = false;
                     btnRun.Enabled = false;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -552,8 +588,6 @@ namespace MouseAI.UI
                     lvwMazes.Enabled = false;
                     return;
                 case RUNSTATE.SELECT:
-                    newToolStripMenuItem.Enabled = true;
-                    loadToolStripMenuItem.Enabled = true;
                     btnRun.Enabled = false;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -562,8 +596,6 @@ namespace MouseAI.UI
                     lvwMazes.Enabled = true;
                     return;
                 case RUNSTATE.NONE:
-                    newToolStripMenuItem.Enabled = true;
-                    loadToolStripMenuItem.Enabled = true;
                     btnRun.Enabled = false;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -572,8 +604,6 @@ namespace MouseAI.UI
                     lvwMazes.Enabled = false;
                     return;
                 case RUNSTATE.READY:
-                    newToolStripMenuItem.Enabled = true;
-                    loadToolStripMenuItem.Enabled = true;
                     btnRun.Enabled = true;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -582,8 +612,6 @@ namespace MouseAI.UI
                     lvwMazes.Enabled = true;
                     return;
                 case RUNSTATE.RUN:
-                    newToolStripMenuItem.Enabled = false;
-                    loadToolStripMenuItem.Enabled = false;
                     btnRun.Enabled = false;
                     btnStop.Enabled = true;
                     btnPause.Enabled = true;
@@ -592,8 +620,6 @@ namespace MouseAI.UI
                     lvwMazes.Enabled = false;
                     return;
                 case RUNSTATE.STOP:
-                    newToolStripMenuItem.Enabled = true;
-                    loadToolStripMenuItem.Enabled = true;
                     btnRun.Enabled = true;
                     btnStop.Enabled = false;
                     btnPause.Enabled = false;
@@ -616,7 +642,6 @@ namespace MouseAI.UI
                 case RUNSTATE.RESET:
                     return;
             }
-
         }
 
         #endregion

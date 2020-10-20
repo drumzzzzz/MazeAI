@@ -397,8 +397,10 @@ namespace MouseAI
             {
                 throw new Exception("Mouse Object Null!");
             }
-            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false && 
+            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
                                                             o.object_state != OBJECT_STATE.MOUSE && o.isDeadEnd == false);
+            //MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
+            //                                                o.object_state != OBJECT_STATE.MOUSE);
             if (mo != null)
             {
                 if (mazeobjects.Count >= 4)
@@ -460,11 +462,13 @@ namespace MouseAI
         {
             for (int i = PathObjects.Count - 1; i > -1; i--)
             {
+                //if (PathObjects[i].isDeadEnd && !PathObjects[i].isJunction)
                 if (PathObjects[i].isDeadEnd)
                 {
                     PathObjects[i].isPath = false;
                     PathObjects.RemoveAt(i);
                 }
+                //else if (PathObjects[i].isJunction && PathObjects[i].object_state != OBJECT_STATE.MOUSE)
                 else if (PathObjects[i].isJunction)
                 {
                     List<MazeObject> mo = CheckNode(PathObjects[i].x, PathObjects[i].y);
@@ -528,17 +532,17 @@ namespace MouseAI
 
         public void Display()
         {
-            Console.Clear();
+            //Console.Clear();
 
-            for (int y = 0; y < maze_height; ++y)
-            {
-                sb.Clear();
-                for (int x = 0; x < maze_width; ++x)
-                {
-                    sb.Append(GetObjectChar(MazeObjects[x, y]));
-                }
-                Console.WriteLine(sb.ToString());
-            }
+            //for (int y = 0; y < maze_height; ++y)
+            //{
+            //    sb.Clear();
+            //    for (int x = 0; x < maze_width; ++x)
+            //    {
+            //        sb.Append(GetObjectChar(MazeObjects[x, y]));
+            //    }
+            //    Console.WriteLine(sb.ToString());
+            //}
         }
 
         #endregion
