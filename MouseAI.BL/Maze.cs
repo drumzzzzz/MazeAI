@@ -93,7 +93,7 @@ namespace MouseAI
 
         public void AddMazeModel()
         {
-            mazeModels.Add(new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
+            mazeModels.Add(new MazeModel(mazeModels.Count + 1, maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
         }
 
         public bool isMazeModels()
@@ -668,6 +668,39 @@ namespace MouseAI
         #endregion
 
         #region Object Tools
+
+        public bool SelectMazeModel(int index)
+        {
+            if (index > mazeModels.Count - 1)
+                return false;
+
+            MazeModel m = mazeModels[index];
+
+            if (m != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public int GetMazeModelSize()
+        {
+            return mazeModels.Count;
+        }
+
+        public MazeModel GetMazeModel(int index)
+        {
+            if (index > mazeModels.Count - 1)
+                return null;
+
+            return mazeModels[index];
+        }
+
+        public MazeModels GetMazeModels()
+        {
+            return mazeModels;
+        }
 
         private byte[,] GetMazeData()
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace MouseAI.BL
 {
@@ -14,11 +15,17 @@ namespace MouseAI.BL
         public int cheese_x { get; set; }
         public int cheese_y { get; set; }
 
+
+        public int index { get; set; }
+
+        public bool isTest { get; set; }
+
         public MazeModel()
         { }
 
-        public MazeModel(int width, int height, int mouse_x, int mouse_y, int cheese_x, int cheese_y, byte[,] MazeData)
+        public MazeModel(int index, int width, int height, int mouse_x, int mouse_y, int cheese_x, int cheese_y, byte[,] MazeData)
         {
+            this.index = index;
             this.width = width;
             this.height = height;
             this.mouse_x = mouse_x;
@@ -27,6 +34,7 @@ namespace MouseAI.BL
             this.cheese_y = cheese_y;
             guid = Guid.NewGuid().ToString();
             mazedata = new byte[width][];
+            isTest = false;
 
             for (int y = 0; y < height; y++)
             {

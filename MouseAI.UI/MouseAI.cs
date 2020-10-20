@@ -3,6 +3,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -32,6 +33,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
+        private const int MAZE_COUNT = 100;
         private SKColor BlockColor;
         private SKColor SpaceColor;
         private SKPaint BlockPaint;
@@ -112,8 +114,10 @@ namespace MouseAI.UI
         {
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
-            Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2);
+            Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + lvwMazes.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 3);
+            lvwMazes.Height = pbxMaze.Height - stpStatus.Height;
+            lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
             pbxMaze.Left = (MAZE_MARGIN_PX / 2);
             pbxMaze.Top = (MAZE_MARGIN_PX / 2);
             BlockColor = new SKColor(
@@ -240,7 +244,7 @@ namespace MouseAI.UI
         {
             if (maze == null)
             {
-                maze = new Maze(51, 25, null);
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
             }
 
             string filename = maze.GetSaveName();
@@ -250,30 +254,28 @@ namespace MouseAI.UI
 
             maze.ClearMazeModels();
 
-            Console.WriteLine("Generating mazes ...");
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < MAZE_COUNT; i++)
             {
                 if (!CreateMaze(maze))
-                {
-                    Console.WriteLine("Error: Retrying");
                     i--;
-                }
-            }
 
-            Console.WriteLine("Mazes Generated!");
+                DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, MAZE_COUNT));
+            }
 
             if (maze.isMazeModels())
             {
                 string result = maze.SaveMazeModels(filename);
                 if (!string.IsNullOrEmpty(result))
+                {
                     DisplayError("Error Creating DB:" + result, false);
+                    DisplayTsMessage("Error");
+                }
                 else
-                    DisplayMessage("Mazes Generated and Saved!");
+                {
+                    DisplayTsMessage("Mazes Generated and Saved");
+                    AddMazeItems();
+                }
             }
-
-
-
-            // RenderMaze();
         }
 
         private void LoadMaze(string filename)
@@ -386,6 +388,36 @@ namespace MouseAI.UI
 
         #endregion
 
+        #region Listview
+
+        private void AddMazeItems()
+        {
+            lvwMazes.Items.Clear();
+            
+            for (int i=0;i<maze.GetMazeModelSize();i++)
+            {
+                ListViewItem item = new ListViewItem((i+1).ToString());
+                item.SubItems.Add("F");
+                lvwMazes.Items.Add(item);
+            }
+        }
+
+        private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+            SelectMaze(lvwMazes.Items.IndexOf(lvwMazes.SelectedItems[0]));
+        }
+
+        private void SelectMaze(int index)
+        {
+            if (maze.SelectMazeModel(index))
+            {
+
+            }
+        }
+
+        #endregion
+
         #region Controls
 
         private void btnRun_Click(object sender, EventArgs e)
@@ -482,11 +514,6 @@ namespace MouseAI.UI
             SaveMazeModel(false);
         }
 
-        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SaveMazeModel(true);
-        }
-
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadMazeModel();
@@ -513,6 +540,16 @@ namespace MouseAI.UI
             UpdateSettings();
         }
 
+        private void trainToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void testToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
         #endregion
 
         #region Messages
@@ -536,7 +573,11 @@ namespace MouseAI.UI
                 Application.Exit();
         }
 
-        #endregion
+        private void DisplayTsMessage(string message)
+        {
+            tsStatus.Text = message;
+        }
 
+        #endregion
     }
 }
