@@ -122,8 +122,8 @@ namespace MouseAI.UI
         private void InitMaze()
         {
             
-            pbxPath.Width = MAZE_WIDTH;
-            pbxPath.Height = MAZE_HEIGHT * 2;
+            pbxPath.Width = MAZE_WIDTH * 2;
+            pbxPath.Height = MAZE_HEIGHT * 3;
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
 
@@ -161,6 +161,20 @@ namespace MouseAI.UI
                 IsAntialias = true,
                 Style = SKPaintStyle.Fill
             };
+        }
+
+        private void DrawPath()
+        {
+            string guid = maze.GetGUID();
+            if (string.IsNullOrEmpty(guid))
+            {
+                pbxPath.Image.Dispose();
+                pbxPath.Image = null;
+                return;
+            }
+
+            Bitmap bmp = maze.GetPathBMP(guid);
+            pbxPath.Image = bmp ?? null;
         }
 
         private void DrawMaze()
@@ -326,14 +340,9 @@ namespace MouseAI.UI
 
             while (!isExit && !isFound)
             {
-                //Point p = maze.GetMousePosition();
 
                 if (isDone)
                 {
-                    //if (!maze.isDeadEnd())
-                    //    UpdateMaze();
-                    //if (!UpdateMaze())
-                    //    Thread.Sleep(10);
                     isDone = false;
                 }
                 else
@@ -342,7 +351,10 @@ namespace MouseAI.UI
                 }
 
                 if (RunState == RUNSTATE.STEP && !isStep)
+                {
+                    RenderMaze();
                     SetRunState(RUNSTATE.PAUSE);
+                }
 
                 Application.DoEvents();
             }
@@ -352,23 +364,16 @@ namespace MouseAI.UI
 
             if (isFound && isValid && maze.CalculatePath())
             {
-                string guid = maze.GetGUID();
-                if (!string.IsNullOrEmpty(guid))
-                {
-                    Bitmap bmp = maze.GetPathBMP(guid);
-                    if (bmp != null)
-                        pbxPath.Image = bmp;
-                }
+                DrawPath();
             }
             else
             {
                 DisplayError("Error Calculating Path!", false);
             }
             
-            SetRunState(RUNSTATE.STOP);
+            // SetRunState(RUNSTATE.STOP);
 
             isFound = false;
-
             searchThread = null;
         }
 
@@ -398,11 +403,8 @@ namespace MouseAI.UI
                         isDone = true;
                     }
                     else
-                    {
                         Thread.Sleep(1);
-                    }
                 }
-
                 isValid = true;
             }
             catch (Exception e)
@@ -532,6 +534,7 @@ namespace MouseAI.UI
                     throw new Exception("Could not add characters");
 
                 RenderMaze();
+                DrawPath();
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
                 SetRunState(RUNSTATE.READY);
                 return true;

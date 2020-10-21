@@ -246,8 +246,6 @@ namespace MouseAI
                     return false;
                 }
 
-                //if (os == OBJECT_STATE.SCANNED)
-                //    break;
                 if (MazeObjects[x_idx, y].isDeadEnd)
                     break;
 
@@ -269,8 +267,6 @@ namespace MouseAI
                     isCheesePath = true;
                     return false;
                 }
-                //if (os == OBJECT_STATE.SCANNED)
-                //    break;
                 if (MazeObjects[x_idx, y].isDeadEnd)
                     break;
 
@@ -292,8 +288,6 @@ namespace MouseAI
                     isCheesePath = true;
                     return false;
                 }
-                //if (os == OBJECT_STATE.SCANNED)
-                //    break;
                 if (MazeObjects[x, y_idx].isDeadEnd)
                     break;
 
@@ -315,9 +309,6 @@ namespace MouseAI
                     isCheesePath = true;
                     return false;
                 }
-
-                //if (os == OBJECT_STATE.SCANNED)
-                //    break;
                 if (MazeObjects[x, y_idx].isDeadEnd)
                     break;
 
@@ -331,16 +322,7 @@ namespace MouseAI
 
         private OBJECT_STATE CheckScannedObject(int x, int y)
         {
-            if (MazeObjects[x, y].object_state == OBJECT_STATE.CHEESE)
-                return OBJECT_STATE.CHEESE;
-
-            //if (MazeObjects[x, y].isScanned)
-            //{
-            //    return OBJECT_STATE.SCANNED;
-            //}
-
-            //MazeObjects[x, y].isScanned = true;
-            return OBJECT_STATE.NONE;
+            return MazeObjects[x, y].object_state == OBJECT_STATE.CHEESE ? OBJECT_STATE.CHEESE : OBJECT_STATE.NONE;
         }
 
         private bool isScanValid(int x, int y)
@@ -372,11 +354,9 @@ namespace MouseAI
             mos.Clear();
         }
 
-        private void SetEndpoint(MazeObject mo)
+        private static void SetEndpoint(MazeObject mo)
         {
             mo.isDeadEnd = true;
-            //mo.isVisited = true;
-            //mo.dtLastVisit = DateTime.UtcNow;
         }
 
         private int GetPerimiter(MazeObject mo)
@@ -423,6 +403,7 @@ namespace MouseAI
                     Display();
                     return true;
                 }
+                return false;
             }
 
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
@@ -519,7 +500,7 @@ namespace MouseAI
             if (!SetPathMove(curr_x, curr_y, new_x, new_y, mazeobjects))
                 throw new Exception("Invalid Path Move!");
 
-            MazeObject mo = mazeobjects.FirstOrDefault(o => o.x == new_x && o.y == new_y);
+            MazeObject mo = mazeobjects.FirstOrDefault(o => o.x == curr_x && o.y == curr_y);
             if (mo!=null)
                 PathObjects.Add(mo);
 
@@ -532,6 +513,8 @@ namespace MouseAI
             {
                 MazeObjects[curr_x, curr_y].object_state = OBJECT_STATE.VISITED;
                 MazeObjects[new_x, new_y].object_state = OBJECT_STATE.MOUSE;
+                oMouse.x = new_x;
+                oMouse.y = new_y;
                 return true;
             }
             
