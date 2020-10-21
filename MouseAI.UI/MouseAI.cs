@@ -287,7 +287,6 @@ namespace MouseAI.UI
             SetRunState(RUNSTATE.READY);
         }
 
-
         private void RunMazeTests()
         {
             if (!maze.isMazeModels())
@@ -313,6 +312,7 @@ namespace MouseAI.UI
         private void RunProcess()
         {
             //DisplayMessage("Searching for cheese ...");
+            maze.Reset();
             searchThread = new Thread(AISearch);
             searchThread.Start();
 
@@ -324,9 +324,15 @@ namespace MouseAI.UI
 
                 if (isDone)
                 {
-                    if (!UpdateMaze())
-                        Thread.Sleep(10);
+                    //if (!maze.isDeadEnd())
+                    //    UpdateMaze();
+                    //if (!UpdateMaze())
+                    //    Thread.Sleep(10);
                     isDone = false;
+                }
+                else
+                {
+                    Thread.Sleep(1);
                 }
 
                 if (RunState == RUNSTATE.STEP && !isStep)
@@ -337,6 +343,7 @@ namespace MouseAI.UI
 
             if (isFound)
             {
+                maze.CalculatePath();
                 //DisplayMessage("Found the cheese!");
             }
 
@@ -367,7 +374,11 @@ namespace MouseAI.UI
                     }
                     isDone = true;
                 }
-                Thread.Sleep(10);
+                else
+                {
+                    Thread.Sleep(1);
+                }
+                //Thread.Sleep(10);
             }
         }
 
