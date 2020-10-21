@@ -50,9 +50,11 @@
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.c2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.btnReset = new System.Windows.Forms.Button();
+            this.pbxPath = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).BeginInit();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
             this.SuspendLayout();
             // 
             // pbxMaze
@@ -70,9 +72,9 @@
             // 
             this.stpStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsStatus});
-            this.stpStatus.Location = new System.Drawing.Point(0, 541);
+            this.stpStatus.Location = new System.Drawing.Point(0, 685);
             this.stpStatus.Name = "stpStatus";
-            this.stpStatus.Size = new System.Drawing.Size(892, 30);
+            this.stpStatus.Size = new System.Drawing.Size(894, 40);
             this.stpStatus.TabIndex = 5;
             this.stpStatus.Text = "statusStrip1";
             // 
@@ -88,7 +90,7 @@
             this.tsStatus.Margin = new System.Windows.Forms.Padding(10, 3, 0, 2);
             this.tsStatus.Name = "tsStatus";
             this.tsStatus.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
-            this.tsStatus.Size = new System.Drawing.Size(400, 25);
+            this.tsStatus.Size = new System.Drawing.Size(400, 35);
             this.tsStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // msMain
@@ -100,7 +102,7 @@
             this.editToolStripMenuItem});
             this.msMain.Location = new System.Drawing.Point(0, 0);
             this.msMain.Name = "msMain";
-            this.msMain.Size = new System.Drawing.Size(892, 35);
+            this.msMain.Size = new System.Drawing.Size(894, 35);
             this.msMain.TabIndex = 6;
             // 
             // fileToolStripMenuItem
@@ -140,14 +142,14 @@
             // testToolStripMenuItem
             // 
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
             this.testToolStripMenuItem.Text = "Test";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // trainToolStripMenuItem
             // 
             this.trainToolStripMenuItem.Name = "trainToolStripMenuItem";
-            this.trainToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.trainToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
             this.trainToolStripMenuItem.Text = "Train";
             this.trainToolStripMenuItem.Click += new System.EventHandler(this.trainToolStripMenuItem_Click);
             // 
@@ -270,11 +272,24 @@
             this.btnReset.UseVisualStyleBackColor = true;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
+            // pbxPath
+            // 
+            this.pbxPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pbxPath.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pbxPath.Location = new System.Drawing.Point(797, 541);
+            this.pbxPath.Margin = new System.Windows.Forms.Padding(0);
+            this.pbxPath.Name = "pbxPath";
+            this.pbxPath.Size = new System.Drawing.Size(51, 25);
+            this.pbxPath.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbxPath.TabIndex = 13;
+            this.pbxPath.TabStop = false;
+            // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(892, 571);
+            this.ClientSize = new System.Drawing.Size(894, 725);
+            this.Controls.Add(this.pbxPath);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.lvwMazes);
             this.Controls.Add(this.btnStep);
@@ -295,6 +310,7 @@
             this.stpStatus.PerformLayout();
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -323,6 +339,7 @@
         private System.Windows.Forms.ColumnHeader c1;
         private System.Windows.Forms.ColumnHeader c2;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.PictureBox pbxPath;
     }
 }
 

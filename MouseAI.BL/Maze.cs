@@ -617,9 +617,39 @@ namespace MouseAI
         {
             PathObjects = PathObjects.OrderBy(x => x.dtLastVisit).ToList();
             DisplayPath();
+            MazeObject mo;
 
+            MazePath mp = mazePaths.GetPath(mazeModel.guid);
+
+            if (mp == null)
+                throw new Exception("Maze path was null!");
+
+            mp.bmp = new Bitmap(maze_width, maze_height);
+
+            for (int y = 0; y < maze_height; y++)
+            {
+                for (int x = 0; x < maze_width; x++)
+                {
+                    mo = PathObjects.FirstOrDefault(o => o.y == y && o.x == x);
+
+                    mp.mazepath[y][x] = (mo != null) ? BLACK : WHITE;
+                    (mp.bmp).SetPixel(x, y, (mp.mazepath[y][x] == WHITE) ? Color.White : Color.Black);
+                }
+            }
 
             return true;
+        }
+
+        public Bitmap GetPathBMP(string guid)
+        {
+            MazePath mp = mazePaths.GetPath(guid);
+
+            return mp?.bmp == null ? null : mp.bmp;
+        }
+
+        public string GetGUID()
+        {
+            return mazeModel?.guid;
         }
 
         #endregion
@@ -862,11 +892,6 @@ namespace MouseAI
 
             // Console.WriteLine("Invalid Character - type:" + mo.object_type + " state:" + mo.object_state);
             return SPACE;
-        }
-
-        public string GetGUID()
-        {
-            return mazeModel.guid;
         }
 
         public Point GetMousePosition()

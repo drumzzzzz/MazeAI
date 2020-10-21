@@ -27,6 +27,7 @@ namespace MouseAI.UI
         private bool isStep;
         private bool isTest;
         private bool isDone;
+        private bool isValid;
 
         private const int MAZE_WIDTH = 51;
         private const int MAZE_HEIGHT = 25;
@@ -120,14 +121,19 @@ namespace MouseAI.UI
 
         private void InitMaze()
         {
+            
+            pbxPath.Width = MAZE_WIDTH;
+            pbxPath.Height = MAZE_HEIGHT * 2;
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
+
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + lvwMazes.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 3);
-            lvwMazes.Height = pbxMaze.Height - stpStatus.Height;
+            lvwMazes.Height = pbxMaze.Height - stpStatus.Height - pbxPath.Height - 20;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
             pbxMaze.Left = (MAZE_MARGIN_PX / 2);
             pbxMaze.Top = (MAZE_MARGIN_PX / 2);
+            pbxPath.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5 + lvwMazes.Height + 10);
             BlockColor = new SKColor(
                     red: 46,
                     green: 37,
@@ -341,11 +347,25 @@ namespace MouseAI.UI
                 Application.DoEvents();
             }
 
-            if (isFound)
+            RenderMaze();
+            maze.DisplayMaze();
+
+            if (isFound && isValid && maze.CalculatePath())
             {
-                maze.CalculatePath();
-                //DisplayMessage("Found the cheese!");
+                string guid = maze.GetGUID();
+                if (!string.IsNullOrEmpty(guid))
+                {
+                    Bitmap bmp = maze.GetPathBMP(guid);
+                    if (bmp != null)
+                        pbxPath.Image = bmp;
+                }
             }
+            else
+            {
+                DisplayError("Error Calculating Path!", false);
+            }
+            
+            SetRunState(RUNSTATE.STOP);
 
             isFound = false;
 
@@ -355,31 +375,44 @@ namespace MouseAI.UI
         private void AISearch()
         {
             isDone = false;
-            while (!isFound)
-            {
-                if (!isDone)
-                {
-                    if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
-                    {
-                        if (maze.ProcessMouseMove())
-                        {
-                            maze.Display();
-                            Console.WriteLine("Cheese found via path!");
-                            isFound = true;
-                            break;
-                        }
 
-                        maze.Display();
-                        isStep = false;
-                    }
-                    isDone = true;
-                }
-                else
+            try
+            {
+                while (!isFound)
                 {
-                    Thread.Sleep(1);
+                    if (!isDone)
+                    {
+                        if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
+                        {
+                            if (maze.ProcessMouseMove())
+                            {
+                                maze.Display();
+                                Console.WriteLine("Cheese found via path!");
+                                isFound = true;
+                                break;
+                            }
+
+                            maze.Display();
+                            isStep = false;
+                        }
+                        isDone = true;
+                    }
+                    else
+                    {
+                        Thread.Sleep(1);
+                    }
                 }
-                //Thread.Sleep(10);
+
+                isValid = true;
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("Search Error:" + e.Message);
+                isValid = false;
+            }
+
+            isFound = true;
+            isDone = true;
         }
 
         #endregion
@@ -716,5 +749,6 @@ namespace MouseAI.UI
         }
 
         #endregion
+
     }
 }
