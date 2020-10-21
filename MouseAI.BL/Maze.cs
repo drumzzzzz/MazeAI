@@ -69,6 +69,7 @@ namespace MouseAI
             mazedata = new byte[maze_width,maze_height];
             MazeObjects = new MazeObject[maze_width, maze_height];
             mazeModels = new MazeModels();
+            mazeModel = new MazeModel();
             r = new Random();
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
@@ -400,7 +401,7 @@ namespace MouseAI
                 if (ProcessCheeseMove(mouse, mazeobjects))
                 {
                     CleanPathObjects();
-                    Display();
+                    DisplayMaze();
                     return true;
                 }
                 return false;
@@ -456,14 +457,11 @@ namespace MouseAI
                 mouse.object_state = OBJECT_STATE.VISITED;
             }
 
-            Display();
             return false;
         }
 
         private bool ProcessCheeseMove(MazeObject mouse, List<MazeObject> mazeobjects)
         {
-            DisplayMaze();
-
             int curr_x = mouse.x;
             int curr_y = mouse.y;
             int new_x = -1;
@@ -638,21 +636,6 @@ namespace MouseAI
         #endregion
 
         #region Rendering
-
-        public void Display()
-        {
-            //Console.Clear();
-
-            //for (int y = 0; y < maze_height; ++y)
-            //{
-            //    sb.Clear();
-            //    for (int x = 0; x < maze_width; ++x)
-            //    {
-            //        sb.Append(GetObjectChar(MazeObjects[x, y]));
-            //    }
-            //    Console.WriteLine(sb.ToString());
-            //}
-        }
 
         public void DisplayMaze()
         {

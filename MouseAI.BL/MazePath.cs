@@ -42,6 +42,9 @@ namespace MouseAI
 
         public void ClearPath(string guid)
         {
+            if (string.IsNullOrEmpty(guid))
+                return;
+
             MazePath mp = this.FirstOrDefault(x => x.guid == guid);
             if (mp != null)
                 Remove(mp);

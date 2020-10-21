@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Timers;
 using System.Windows.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -36,7 +37,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 100;
+        private const int MAZE_COUNT = 1000;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -53,7 +54,10 @@ namespace MouseAI.UI
         private SKBitmap Cheese_Bitmap;
         private SKBitmap[] Mouse_Bitmaps;
         private Point mouse_last;
-        
+
+        private const int PROCESS_DELAY = 1;
+        private const int SEARCH_DELAY = 1;
+
         public enum RUNSTATE
         {
             NONE,
@@ -84,7 +88,7 @@ namespace MouseAI.UI
             Console.WindowHeight = 50;
             Console.WindowWidth = 75;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
-            
+
             LoadSettings();
             RunState = RUNSTATE.NONE;
             InitMaze();
@@ -117,11 +121,142 @@ namespace MouseAI.UI
 
         #endregion
 
+        #region Processing
+
+        private void MazeAI_Shown(object sender, EventArgs e)
+        {
+            if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
+            {
+                LoadMazes(oSettings.LastFileName);
+            }
+        }
+
+        private static bool CreateMaze(Maze m)
+        {
+            try
+            {
+                m.Reset();
+                m.Generate();
+                m.Update();
+                if (!m.AddCharacters_Random())
+                    return false;
+                m.AddMazeModel();
+                return true;
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error Creating Maze", e, false);
+                return false;
+            }
+        }
+
+        public void RenderMaze()
+        {
+            maze.DisplayMaze();
+            DrawMaze();
+            SetRunState(RUNSTATE.READY);
+        }
+
+        private void RunMazeTests()
+        {
+            if (!maze.isMazeModels())
+                return;
+
+            for (int i = 0; i < lvwMazes.Items.Count; i++)
+            {
+                if (SelectMaze(i))
+                {
+                    SetRunState(RUNSTATE.RUN);
+
+                    if (searchThread == null)
+                        RunProcess();
+                }
+                if (RunState == RUNSTATE.STOP)
+                    break;
+            }
+        }
+
+        private void RunProcess()
+        {
+            maze.Reset();
+            searchThread = new Thread(AISearch);
+            searchThread.Start();
+
+            mouse_last = new Point(-1,-1);
+
+            while (!isExit && !isFound)
+            {
+                if (isDone)
+                    isDone = false;
+
+                if (RunState == RUNSTATE.STEP && !isStep)
+                {
+                    RenderMaze();
+                    SetRunState(RUNSTATE.PAUSE);
+                }
+
+                Application.DoEvents();
+                Thread.Sleep(PROCESS_DELAY);
+            }
+
+            RenderMaze();
+
+            if (isFound && isValid && maze.CalculatePath())
+                DrawPath();
+            else
+                DisplayError("Error Calculating Path!", false);
+
+            isFound = false;
+            searchThread = null;
+        }
+
+        private void AISearch()
+        {
+            isDone = false;
+
+            try
+            {
+                while (!isFound)
+                {
+                    if (!isDone)
+                    {
+                        if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
+                        {
+                            if (maze.ProcessMouseMove())
+                            {
+                                Console.WriteLine("Cheese found via path!");
+                                isFound = true;
+                                break;
+                            }
+
+                            if (isStep)
+                                maze.DisplayMaze();
+
+                            isStep = false;
+                        }
+                        isDone = true;
+                    }
+                    Thread.Sleep(SEARCH_DELAY);
+                }
+                isValid = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Search Error:" + e.Message);
+                isValid = false;
+            }
+
+            isFound = true;
+            isDone = true;
+        }
+
+        #endregion
+
         #region Graphics Rendering
 
         private void InitMaze()
         {
-            
+
             pbxPath.Width = MAZE_WIDTH * 2;
             pbxPath.Height = MAZE_HEIGHT * 3;
             pbxMaze.Width = MAZE_WIDTH_PX;
@@ -199,15 +334,15 @@ namespace MouseAI.UI
 
             Mouse_Bitmaps = new SKBitmap[4];
 
-            SKBitmap[] mbmps = 
+            SKBitmap[] mbmps =
             {
                 Resources.mouse_north.ToSKBitmap(),
                 Resources.mouse_east.ToSKBitmap(),
-                Resources.mouse_south.ToSKBitmap(), 
+                Resources.mouse_south.ToSKBitmap(),
                 Resources.mouse_west.ToSKBitmap()
-            }; 
+            };
 
-            Mouse_Bitmaps[(int) DIRECTION.NORTH] = Resources.mouse_north.ToSKBitmap();
+            Mouse_Bitmaps[(int)DIRECTION.NORTH] = Resources.mouse_north.ToSKBitmap();
             Mouse_Bitmaps[(int)DIRECTION.EAST] = Resources.mouse_east.ToSKBitmap();
             Mouse_Bitmaps[(int)DIRECTION.SOUTH] = Resources.mouse_south.ToSKBitmap();
             Mouse_Bitmaps[(int)DIRECTION.WEST] = Resources.mouse_west.ToSKBitmap();
@@ -232,11 +367,11 @@ namespace MouseAI.UI
 
                     ot = maze.GetObjectDataType(x_idx, y_idx);
 
-                    offscreen.DrawRect(x_pos,y_pos,MAZE_SCALE_WIDTH_PX,MAZE_SCALE_HEIGHT_PX,
+                    offscreen.DrawRect(x_pos, y_pos, MAZE_SCALE_WIDTH_PX, MAZE_SCALE_HEIGHT_PX,
                             (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
 
                     if (maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
-                        offscreen.DrawBitmap(Cheese_Bitmap,x_pos,y_pos);
+                        offscreen.DrawBitmap(Cheese_Bitmap, x_pos, y_pos);
                 }
             }
             offscreen.Save();
@@ -251,12 +386,12 @@ namespace MouseAI.UI
                 return false;
 
             canvas.Clear(SKColor.Parse("#003366"));
-            canvas.DrawImage(backimage,0,0);
+            canvas.DrawImage(backimage, 0, 0);
 
             int direction = maze.GetMouseDirection();
 
             canvas.DrawBitmap(Mouse_Bitmaps[direction], p.X * MAZE_SCALE_WIDTH_PX, p.Y * MAZE_SCALE_HEIGHT_PX);
-            
+
             SKImage image = surface.Snapshot();
             MazeData = image.Encode();
 
@@ -267,154 +402,6 @@ namespace MouseAI.UI
             }
 
             return true;
-        }
-
-        #endregion
-
-        #region Processing
-
-        private void MazeAI_Shown(object sender, EventArgs e)
-        {
-            //if (oSettings.isAutoRun)
-            //{
-            //    LoadMazes();
-            //}
-        }
-
-        private static bool CreateMaze(Maze m)
-        {
-            try
-            {
-                m.Reset();
-                m.Generate();
-                m.Update();
-                if (!m.AddCharacters_Random())
-                    return false;
-                m.AddMazeModel();
-                return true;
-            }
-            catch (Exception e)
-            {
-                DisplayError("Error Creating Maze", e, false);
-                return false;
-            }
-        }
-
-        public void RenderMaze()
-        {
-            maze.Display();
-            DrawMaze();
-            SetRunState(RUNSTATE.READY);
-        }
-
-        private void RunMazeTests()
-        {
-            if (!maze.isMazeModels())
-                return;
-
-            for (int i = 0; i < lvwMazes.Items.Count; i++)
-            {
-                if (SelectMaze(i))
-                {
-                    // SetRunState(RUNSTATE.TEST);
-
-                    SetRunState(RUNSTATE.RUN);
-
-                    if (searchThread == null)
-                        RunProcess();
-                    // RunProcess();
-                }
-                if (RunState == RUNSTATE.STOP)
-                    break;
-            }
-        }
-
-        private void RunProcess()
-        {
-            //DisplayMessage("Searching for cheese ...");
-            maze.Reset();
-            searchThread = new Thread(AISearch);
-            searchThread.Start();
-
-            mouse_last = new Point(-1,-1);
-
-            while (!isExit && !isFound)
-            {
-
-                if (isDone)
-                {
-                    isDone = false;
-                }
-                else
-                {
-                    Thread.Sleep(1);
-                }
-
-                if (RunState == RUNSTATE.STEP && !isStep)
-                {
-                    RenderMaze();
-                    SetRunState(RUNSTATE.PAUSE);
-                }
-
-                Application.DoEvents();
-            }
-
-            RenderMaze();
-            maze.DisplayMaze();
-
-            if (isFound && isValid && maze.CalculatePath())
-            {
-                DrawPath();
-            }
-            else
-            {
-                DisplayError("Error Calculating Path!", false);
-            }
-            
-            // SetRunState(RUNSTATE.STOP);
-
-            isFound = false;
-            searchThread = null;
-        }
-
-        private void AISearch()
-        {
-            isDone = false;
-
-            try
-            {
-                while (!isFound)
-                {
-                    if (!isDone)
-                    {
-                        if (RunState == RUNSTATE.RUN || (RunState == RUNSTATE.STEP && isStep))
-                        {
-                            if (maze.ProcessMouseMove())
-                            {
-                                maze.Display();
-                                Console.WriteLine("Cheese found via path!");
-                                isFound = true;
-                                break;
-                            }
-
-                            maze.Display();
-                            isStep = false;
-                        }
-                        isDone = true;
-                    }
-                    else
-                        Thread.Sleep(1);
-                }
-                isValid = true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Search Error:" + e.Message);
-                isValid = false;
-            }
-
-            isFound = true;
-            isDone = true;
         }
 
         #endregion
