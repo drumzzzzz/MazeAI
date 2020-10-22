@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -616,30 +617,23 @@ namespace MouseAI
             return mp?.bmp == null ? null : mp.bmp;
         }
 
-        public string GetGUID()
+        public bool isModelBMP(int index)
         {
-            return mazeModel?.guid;
-        }
-
-        public bool CheckTested(string guid)
-        {
-            return mazePaths.isPath(guid);
-        }
-
-        public bool SetTested(string guid, bool isTested)
-        {
-            if (string.IsNullOrEmpty(guid))
+            if (index < 0 || index > mazeModels.Count)
                 return false;
 
-            MazeModel mm = mazeModels.FirstOrDefault(x => x.guid == guid);
+            MazeModel mm = mazeModels[index];
 
             if (mm == null)
                 return false;
 
-            mm.isPath = isTested;
-            return true;
+            return mm.bmp != null && mm.mazepath != null;
         }
 
+        public string GetGUID()
+        {
+            return mazeModel?.guid;
+        }
 
         public bool SetTested(bool isTested)
         {
@@ -648,6 +642,46 @@ namespace MouseAI
 
             mazeModel.isPath = isTested;
             return true;
+        }
+
+        public void UpdateMazeModelPaths()
+        {
+            if (mazeModels.Count == 0 || mazePaths.Count == 0)
+                return;
+
+            foreach (MazeModel mm in mazeModels)
+            {
+                MazePath mp = mazePaths.GetPath(mm.guid);
+
+                if (mp?.mazepath != null && mp.bmp != null)
+                {
+                    mm.mazepath = (byte[][]) mp.mazepath.Clone();
+
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        mp.bmp.Save(memoryStream, ImageFormat.Bmp);
+                        mm.bmp = memoryStream.ToArray();
+                    }
+                }
+            }
+        }
+
+        public void UpdateMazePaths()
+        {
+            if (mazeModels.Count == 0)
+                return;
+
+            foreach (MazeModel mm in mazeModels)
+            {
+                MazePath mp = mazePaths.GetPath(mm.guid);
+
+                if (mp != null && mm.bmp != null && mm.mazepath != null)
+                {
+                    mp.mazepath = (byte[][])mm.mazepath.Clone();
+                    var ms = new MemoryStream(mm.bmp);
+                    mp.bmp = (Bitmap) Image.FromStream(ms);
+                }
+            }
         }
 
         #endregion
@@ -715,6 +749,19 @@ namespace MouseAI
 
                 FileName = filename;
 
+                return string.Empty;
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
+
+        public string SaveUpdatedMazeModels(string filename)
+        {
+            try
+            {
+                FileIO.SerializeXml(mazeModels, filename);
                 return string.Empty;
             }
             catch (Exception e)

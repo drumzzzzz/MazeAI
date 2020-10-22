@@ -67,7 +67,6 @@ namespace MouseAI.UI
             RESET,
             PROCESS,
             SELECT,
-            BUILD_TEST,
             BUILD_PATHS
         }
 
@@ -234,14 +233,17 @@ namespace MouseAI.UI
 
         #region Building
 
-        private void BuildTests()
+        private void BuildPaths()
         {
             if (!maze.isMazeModels())
                 return;
 
+            if (MessageBox.Show("Clear and calculate maze paths?", "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
+                return;
+
             for (int i = 0; i < lvwMazes.Items.Count; i++)
             {
-                RunState = RUNSTATE.BUILD_TEST;
+                RunState = RUNSTATE.BUILD_PATHS;
 
                 if (SelectItem(i) && SelectMaze(i))
                 {
@@ -256,19 +258,7 @@ namespace MouseAI.UI
             SetRunState(RUNSTATE.READY);
         }
 
-        private void BuildPaths()
-        {
-            if (!maze.isMazeModels())
-                return;
-
-            for (int i = 0; i < maze.GetMazeModelSize() - 1; i++)
-            {
-
-            }
-        }
-
         #endregion
-
 
         #region Graphics Rendering
 
@@ -494,10 +484,36 @@ namespace MouseAI.UI
             }
 
             DisplayTsMessage("Mazes Loaded");
+
+            maze.UpdateMazePaths();
             AddMazeItems();
             oSettings.LastFileName = maze.GetFileName();
             UpdateSettings();
             DisplayTitleMessage(oSettings.LastFileName);
+        }
+
+        private void SaveMazes()
+        {
+            if (!maze.isMazeModels() ||  string.IsNullOrEmpty(oSettings.LastFileName))
+                return;
+
+            DisplayTsMessage("Saving Mazes ...");
+
+            try
+            {
+                maze.UpdateMazeModelPaths();
+                string result = maze.SaveUpdatedMazeModels(oSettings.LastFileName);
+
+                if (!string.IsNullOrEmpty(result))
+                    throw  new Exception(result);
+
+                DisplayTsMessage("Saved.");
+            }
+            catch (Exception e)
+            {
+                DisplayTsMessage("Save Error");
+                DisplayError("Error Saving Mazes:", e, false);
+            }
         }
 
         #endregion
@@ -521,7 +537,8 @@ namespace MouseAI.UI
             for (int i=0;i<maze.GetMazeModelSize();i++)
             {
                 ListViewItem item = new ListViewItem((i+1).ToString());
-                item.SubItems.Add("NO");
+                
+                item.SubItems.Add(maze.isModelBMP(i) ? "YES" : "NO");
                 lvwMazes.Items.Add(item);
             }
 
@@ -535,7 +552,7 @@ namespace MouseAI.UI
 
         private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (RunState == RUNSTATE.BUILD_TEST)
+            if (RunState == RUNSTATE.BUILD_PATHS)
                 return;
 
             if (lvwMazes.FocusedItem == null)
@@ -632,6 +649,11 @@ namespace MouseAI.UI
             loadLastToolStripMenuItem.Checked = oSettings.isLoadLast;
         }
 
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveMazes();
+        }
+
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewMazes();
@@ -670,11 +692,6 @@ namespace MouseAI.UI
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            BuildTests();
-        }
-
-        private void pathsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
             BuildPaths();
         }
 
@@ -686,7 +703,7 @@ namespace MouseAI.UI
         {
             RunState = r;
 
-            if (r == RUNSTATE.BUILD_PATHS || r == RUNSTATE.BUILD_TEST)
+            if (r == RUNSTATE.BUILD_PATHS)
             {
                 btnRun.Enabled = false;
                 btnStop.Enabled = true;

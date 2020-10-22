@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace MouseAI.BL
@@ -15,6 +17,8 @@ namespace MouseAI.BL
         public int cheese_x { get; set; }
         public int cheese_y { get; set; }
         public bool isPath { get; set; }
+        public byte[][] mazepath { get; set; }
+        public byte[] bmp { get; set; }
 
         public MazeModel()
         { }

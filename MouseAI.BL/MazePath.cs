@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MouseAI
 {
-    public class MazePath : List<MazeObject>
+    public class MazePath
     {
         public string guid { get; set; }
         public byte[][] mazepath { get; set; }
