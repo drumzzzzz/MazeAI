@@ -225,12 +225,11 @@ namespace MouseAI
 
         #region Scanning
 
-        public bool ScanObjects(int x, int y)
+        public void ScanObjects(int x, int y)
         {
             if (isCheesePath && mouse_x == cheese_x && mouse_y == cheese_y)
-                return true;
+                return;
 
-            OBJECT_STATE os;
             List<MazeObject> mo = new List<MazeObject>();
 
             // Scan West
@@ -239,12 +238,10 @@ namespace MouseAI
                 if (!isScanValid(x_idx, y))
                     break;
 
-                os = CheckScannedObject(x_idx, y);
-
-                if (os == OBJECT_STATE.CHEESE)
+                if (CheckScannedObject(x_idx, y) == OBJECT_STATE.CHEESE)
                 {
                     isCheesePath = true;
-                    return false;
+                    return;
                 }
 
                 if (MazeObjects[x_idx, y].isDeadEnd)
@@ -252,7 +249,6 @@ namespace MouseAI
 
                 mo.Add(MazeObjects[x_idx, y]);
             }
-
             CheckEndPoints(mo);
 
             // Scan East
@@ -261,19 +257,17 @@ namespace MouseAI
                 if (!isScanValid(x_idx, y))
                     break;
 
-                os = CheckScannedObject(x_idx, y);
-
-                if (os == OBJECT_STATE.CHEESE)
+                if (CheckScannedObject(x_idx, y) == OBJECT_STATE.CHEESE)
                 {
                     isCheesePath = true;
-                    return false;
+                    return;
                 }
+
                 if (MazeObjects[x_idx, y].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x_idx, y]);
             }
-
             CheckEndPoints(mo);
 
             // Scan North
@@ -282,19 +276,17 @@ namespace MouseAI
                 if (!isScanValid(x, y_idx))
                     break;
 
-                os = CheckScannedObject(x, y_idx);
-
-                if (os == OBJECT_STATE.CHEESE)
+                if (CheckScannedObject(x, y_idx) == OBJECT_STATE.CHEESE)
                 {
                     isCheesePath = true;
-                    return false;
+                    return;
                 }
+
                 if (MazeObjects[x, y_idx].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x, y_idx]);
             }
-
             CheckEndPoints(mo);
 
             // Scan South
@@ -303,22 +295,19 @@ namespace MouseAI
                 if (!isScanValid(x, y_idx))
                     break;
 
-                os = CheckScannedObject(x, y_idx);
-
-                if (os == OBJECT_STATE.CHEESE)
+                if (CheckScannedObject(x, y_idx) == OBJECT_STATE.CHEESE)
                 {
                     isCheesePath = true;
-                    return false;
+                    return;
                 }
+
                 if (MazeObjects[x, y_idx].isDeadEnd)
                     break;
 
                 mo.Add(MazeObjects[x, y_idx]);
             }
-
             CheckEndPoints(mo);
 
-            return false;
         }
 
         private OBJECT_STATE CheckScannedObject(int x, int y)
