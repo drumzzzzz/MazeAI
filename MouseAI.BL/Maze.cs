@@ -54,6 +54,7 @@ namespace MouseAI
         private readonly string AppDir;
         private string FileName;
         private bool isCheesePath;
+        private List<MazeObject>[] scanObjects = new List<MazeObject>[4];
 
         private static DbTable_Stats dbtblStats;
 
@@ -76,6 +77,11 @@ namespace MouseAI
             mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
             mazePaths = new MazePaths(maze_width, maze_height);
 
+            for (int i = 0; i < scanObjects.Length; i++)
+            {
+                scanObjects[i] = new List<MazeObject>();
+            }
+ 
             AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
 
             if (mazeDb == null)
@@ -225,89 +231,80 @@ namespace MouseAI
 
         #region Scanning
 
-        public void ScanObjects(int x, int y)
+        private int ScanDirection(int x, int y)
+        {
+            if (!isScanValid(x, y))
+                return 1;
+
+            if (CheckScannedObject(x, y) == OBJECT_STATE.CHEESE)
+            {
+                isCheesePath = true;
+                return 0;
+            }
+
+            return MazeObjects[x, y].isDeadEnd ? 1 : -1;
+        }
+
+        private void ScanObjects(int x, int y)
         {
             if (isCheesePath && mouse_x == cheese_x && mouse_y == cheese_y)
                 return;
 
-            List<MazeObject> mo = new List<MazeObject>();
+            int result;
 
             // Scan West
             for (int x_idx = x - 1; x_idx > 0; x_idx--)
             {
-                if (!isScanValid(x_idx, y))
+                result = ScanDirection(x_idx, y);
+                if (result == 1)
                     break;
-
-                if (CheckScannedObject(x_idx, y) == OBJECT_STATE.CHEESE)
-                {
-                    isCheesePath = true;
+                if (result == 0)
                     return;
-                }
 
-                if (MazeObjects[x_idx, y].isDeadEnd)
-                    break;
-
-                mo.Add(MazeObjects[x_idx, y]);
+                scanObjects[0].Add(MazeObjects[x_idx, y]);
             }
-            CheckEndPoints(mo);
 
             // Scan East
             for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
             {
-                if (!isScanValid(x_idx, y))
+                result = ScanDirection(x_idx, y);
+                if (result == 1)
                     break;
-
-                if (CheckScannedObject(x_idx, y) == OBJECT_STATE.CHEESE)
-                {
-                    isCheesePath = true;
+                if (result == 0)
                     return;
-                }
 
-                if (MazeObjects[x_idx, y].isDeadEnd)
-                    break;
-
-                mo.Add(MazeObjects[x_idx, y]);
+                scanObjects[1].Add(MazeObjects[x_idx, y]);
             }
-            CheckEndPoints(mo);
 
             // Scan North
             for (int y_idx = y - 1; y_idx > 0; y_idx--)
             {
-                if (!isScanValid(x, y_idx))
+                result = ScanDirection(x, y_idx);
+                if (result == 1)
                     break;
-
-                if (CheckScannedObject(x, y_idx) == OBJECT_STATE.CHEESE)
-                {
-                    isCheesePath = true;
+                if (result == 0)
                     return;
-                }
 
-                if (MazeObjects[x, y_idx].isDeadEnd)
-                    break;
-
-                mo.Add(MazeObjects[x, y_idx]);
+                scanObjects[2].Add(MazeObjects[x, y_idx]);
             }
-            CheckEndPoints(mo);
 
             // Scan South
             for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
             {
-                if (!isScanValid(x, y_idx))
+                result = ScanDirection(x, y_idx);
+                if (result == 1)
                     break;
-
-                if (CheckScannedObject(x, y_idx) == OBJECT_STATE.CHEESE)
-                {
-                    isCheesePath = true;
+                if (result == 0)
                     return;
-                }
 
-                if (MazeObjects[x, y_idx].isDeadEnd)
-                    break;
-
-                mo.Add(MazeObjects[x, y_idx]);
+                scanObjects[3].Add(MazeObjects[x, y_idx]);
             }
-            CheckEndPoints(mo);
 
+            for (int i = 0; i < scanObjects.Length; i++)
+            {
+                CheckEndPoints(scanObjects[i]);
+                scanObjects[i].Clear();
+            }
         }
 
         private OBJECT_STATE CheckScannedObject(int x, int y)
@@ -327,8 +324,11 @@ namespace MouseAI
 
         private void CheckEndPoints(IList<MazeObject> mos)
         {
+            if (mos.Count == 0)
+                return;
+
             // If there are objects and the last point is a dead end
-            if (mos.Count != 0 && GetPerimiter(mos.Last()) == 1)
+            if (GetPerimiter(mos.Last()) == 1)
             {
                 SetEndpoint(mos.Last());
                 mos.RemoveAt(mos.Count - 1);
@@ -341,7 +341,7 @@ namespace MouseAI
                         break;
                 }
             }
-            mos.Clear();
+            // mos.Clear();
         }
 
         private static void SetEndpoint(MazeObject mo)
