@@ -14,7 +14,7 @@ namespace MouseAI.BL
         public int mouse_y { get; set; }
         public int cheese_x { get; set; }
         public int cheese_y { get; set; }
-        public bool isTest { get; set; }
+        public bool isPath { get; set; }
 
         public MazeModel()
         { }
@@ -29,7 +29,7 @@ namespace MouseAI.BL
             this.cheese_y = cheese_y;
             guid = Guid.NewGuid().ToString();
             mazedata = new byte[height][];
-            isTest = false;
+            isPath = false;
 
             for (int y = 0; y < height; y++)
             {

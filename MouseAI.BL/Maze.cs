@@ -55,7 +55,6 @@ namespace MouseAI
         private string FileName;
         private bool isCheesePath;
         private List<MazeObject>[] scanObjects = new List<MazeObject>[4];
-
         private static DbTable_Stats dbtblStats;
 
         #endregion
@@ -620,6 +619,35 @@ namespace MouseAI
         public string GetGUID()
         {
             return mazeModel?.guid;
+        }
+
+        public bool CheckTested(string guid)
+        {
+            return mazePaths.isPath(guid);
+        }
+
+        public bool SetTested(string guid, bool isTested)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return false;
+
+            MazeModel mm = mazeModels.FirstOrDefault(x => x.guid == guid);
+
+            if (mm == null)
+                return false;
+
+            mm.isPath = isTested;
+            return true;
+        }
+
+
+        public bool SetTested(bool isTested)
+        {
+            if (mazeModel == null)
+                return false;
+
+            mazeModel.isPath = isTested;
+            return true;
         }
 
         #endregion

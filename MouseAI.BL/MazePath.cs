@@ -62,5 +62,10 @@ namespace MouseAI
             Add(mp);
             return mp;
         }
+
+        public bool isPath(string guid)
+        {
+            return !string.IsNullOrEmpty(guid) && this.Any(x => x.guid == guid);
+        }
     }
 }

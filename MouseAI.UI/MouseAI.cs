@@ -4,10 +4,8 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Timers;
 using System.Windows.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -30,14 +28,14 @@ namespace MouseAI.UI
         private bool isDone;
         private bool isValid;
 
-        private const int MAZE_WIDTH = 51;
+        private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
         private const int MAZE_SCALE_WIDTH_PX = 16;
         private const int MAZE_SCALE_HEIGHT_PX = 32;
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 1000;
+        private const int MAZE_COUNT = 20;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -69,7 +67,8 @@ namespace MouseAI.UI
             RESET,
             PROCESS,
             SELECT,
-            TEST
+            BUILD_TEST,
+            BUILD_PATHS
         }
 
         private RUNSTATE RunState;
@@ -157,25 +156,6 @@ namespace MouseAI.UI
             SetRunState(RUNSTATE.READY);
         }
 
-        private void RunMazeTests()
-        {
-            if (!maze.isMazeModels())
-                return;
-
-            for (int i = 0; i < lvwMazes.Items.Count; i++)
-            {
-                if (SelectMaze(i))
-                {
-                    SetRunState(RUNSTATE.RUN);
-
-                    if (searchThread == null)
-                        RunProcess();
-                }
-                if (RunState == RUNSTATE.STOP)
-                    break;
-            }
-        }
-
         private void RunProcess()
         {
             maze.Reset();
@@ -252,6 +232,44 @@ namespace MouseAI.UI
 
         #endregion
 
+        #region Building
+
+        private void BuildTests()
+        {
+            if (!maze.isMazeModels())
+                return;
+
+            for (int i = 0; i < lvwMazes.Items.Count; i++)
+            {
+                RunState = RUNSTATE.BUILD_TEST;
+
+                if (SelectItem(i) && SelectMaze(i))
+                {
+                    SetRunState(RUNSTATE.RUN);
+
+                    if (searchThread == null)
+                        RunProcess();
+                }
+                if (RunState == RUNSTATE.STOP)
+                    break;
+            }
+            SetRunState(RUNSTATE.READY);
+        }
+
+        private void BuildPaths()
+        {
+            if (!maze.isMazeModels())
+                return;
+
+            for (int i = 0; i < maze.GetMazeModelSize() - 1; i++)
+            {
+
+            }
+        }
+
+        #endregion
+
+
         #region Graphics Rendering
 
         private void InitMaze()
@@ -310,6 +328,16 @@ namespace MouseAI.UI
 
             Bitmap bmp = maze.GetPathBMP(guid);
             pbxPath.Image = bmp ?? null;
+
+            if (bmp != null)
+            {
+                if (maze.SetTested(true))
+                {
+                    lvwMazes.Enabled = true;
+                    UpdateItemState(true);
+                    lvwMazes.Enabled = false;
+                }
+            }
         }
 
         private void DrawMaze()
@@ -476,6 +504,16 @@ namespace MouseAI.UI
 
         #region Listview
 
+        private void UpdateItemState(bool isPath)
+        {
+            if (lvwMazes.SelectedItems[0] == null)
+                return;
+
+            ListViewItem item = lvwMazes.SelectedItems[0];
+            item.SubItems[1].Text = (isPath) ? "YES" : "NO";
+            lvwMazes.Refresh();
+        }
+
         private void AddMazeItems()
         {
             lvwMazes.Items.Clear();
@@ -483,7 +521,7 @@ namespace MouseAI.UI
             for (int i=0;i<maze.GetMazeModelSize();i++)
             {
                 ListViewItem item = new ListViewItem((i+1).ToString());
-                item.SubItems.Add("F");
+                item.SubItems.Add("NO");
                 lvwMazes.Items.Add(item);
             }
 
@@ -497,11 +535,27 @@ namespace MouseAI.UI
 
         private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (RunState == RUNSTATE.BUILD_TEST)
+                return;
+
             if (lvwMazes.FocusedItem == null)
                 return;
 
             SetRunState(RUNSTATE.PROCESS);
             SelectMaze(lvwMazes.FocusedItem.Index);
+        }
+
+        private bool SelectItem(int index)
+        {
+            if (index >= 0 && index < lvwMazes.Items.Count)
+            {
+                lvwMazes.Items[index].Selected = true;
+                lvwMazes.Select();
+                //lvwMazes.Refresh();
+                return true;
+            }
+
+            return false;
         }
 
         private void SelectMaze()
@@ -616,7 +670,12 @@ namespace MouseAI.UI
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            RunMazeTests();
+            BuildTests();
+        }
+
+        private void pathsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            BuildPaths();
         }
 
         #endregion
@@ -627,16 +686,19 @@ namespace MouseAI.UI
         {
             RunState = r;
 
+            if (r == RUNSTATE.BUILD_PATHS || r == RUNSTATE.BUILD_TEST)
+            {
+                btnRun.Enabled = false;
+                btnStop.Enabled = true;
+                btnPause.Enabled = true;
+                btnStep.Enabled = false;
+                btnReset.Enabled = false;
+                lvwMazes.Enabled = false;
+                return;
+            }
+
             switch (r)
             {
-                case RUNSTATE.TEST:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = true;
-                    btnPause.Enabled = true;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = false;
-                    lvwMazes.Enabled = false;
-                    return;
                 case RUNSTATE.PROCESS:
                     btnRun.Enabled = false;
                     btnStop.Enabled = false;
