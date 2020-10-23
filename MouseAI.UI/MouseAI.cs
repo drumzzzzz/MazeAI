@@ -31,7 +31,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
         private const int MAZE_SCALE_WIDTH_PX = 16;
-        private const int MAZE_SCALE_HEIGHT_PX = 32;
+        private const int MAZE_SCALE_HEIGHT_PX = 24;
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
@@ -271,11 +271,12 @@ namespace MouseAI.UI
             pbxMaze.Height = MAZE_HEIGHT_PX;
 
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + lvwMazes.Width;
-            Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 3);
+            Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 4);
             lvwMazes.Height = pbxMaze.Height - stpStatus.Height - pbxPath.Height - 20;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
             pbxMaze.Left = (MAZE_MARGIN_PX / 2);
-            pbxMaze.Top = (MAZE_MARGIN_PX / 2);
+            //pbxMaze.Top = (MAZE_MARGIN_PX / 2);
+            pbxMaze.Top = (MAZE_MARGIN_PX);
             pbxPath.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5 + lvwMazes.Height + 10);
             BlockColor = new SKColor(
                     red: 46,
@@ -344,10 +345,10 @@ namespace MouseAI.UI
             offscreen = buffer.Canvas;
             offscreen.Clear(SKColor.Parse("#003366"));
 
-            SKImageInfo resizeInfo = new SKImageInfo(90, 190);
+            SKImageInfo resizeInfo = new SKImageInfo(90, 140);
             SKBitmap c = Resources.cheese.ToSKBitmap();
             Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
-            resizeInfo.Height = 60;
+            resizeInfo.Height = 40;
             resizeInfo.Width = 30;
 
             Mouse_Bitmaps = new SKBitmap[4];
