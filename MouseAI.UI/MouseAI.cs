@@ -31,7 +31,7 @@ namespace MouseAI.UI
 
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
-        private const int MAZE_SCALE_WIDTH_PX = 20;
+        private const int MAZE_SCALE_WIDTH_PX = 28;
         private const int MAZE_SCALE_HEIGHT_PX = 28;
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
@@ -82,10 +82,8 @@ namespace MouseAI.UI
             InitializeComponent();
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
-            Console.CursorVisible = false;
-            Console.OutputEncoding = new UnicodeEncoding();
-            Console.WindowHeight = 50;
-            Console.WindowWidth = 75;
+            Console.WindowHeight = 24;
+            Console.WindowWidth = 50;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT);
             
@@ -268,20 +266,18 @@ namespace MouseAI.UI
 
         private void InitMaze()
         {
-
-            pbxPath.Width = MAZE_WIDTH * 2;
-            pbxPath.Height = MAZE_HEIGHT * 3;
+            pbxPath.Width = MAZE_WIDTH * 3;
+            pbxPath.Height = MAZE_HEIGHT * 4;
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
-
-            Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + lvwMazes.Width;
-            Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 4);
-            lvwMazes.Height = pbxMaze.Height - stpStatus.Height - pbxPath.Height - 20;
+            lvwMazes.Height = pbxMaze.Height - pbxPath.Height - 10;
+            lvwMazes.Width = pbxPath.Width;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
-            pbxMaze.Left = (MAZE_MARGIN_PX / 2);
-            //pbxMaze.Top = (MAZE_MARGIN_PX / 2);
-            pbxMaze.Top = (MAZE_MARGIN_PX);
-            pbxPath.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5 + lvwMazes.Height + 10);
+            pbxMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
+            pbxPath.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10);
+            Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
+            Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
+
             BlockColor = new SKColor(
                     red: 46,
                     green: 37,
@@ -349,11 +345,11 @@ namespace MouseAI.UI
             offscreen = buffer.Canvas;
             offscreen.Clear(SKColor.Parse("#003366"));
 
-            SKImageInfo resizeInfo = new SKImageInfo(90, 140);
+            SKImageInfo resizeInfo = new SKImageInfo(160, 160);
             SKBitmap c = Resources.cheese.ToSKBitmap();
             Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
-            resizeInfo.Height = 40;
-            resizeInfo.Width = 30;
+            resizeInfo.Height = 51;
+            resizeInfo.Width = 51;
 
             Mouse_Bitmaps = new SKBitmap[4];
 
@@ -413,7 +409,7 @@ namespace MouseAI.UI
 
             int direction = maze.GetMouseDirection();
 
-            canvas.DrawBitmap(Mouse_Bitmaps[direction], p.X * MAZE_SCALE_WIDTH_PX, p.Y * MAZE_SCALE_HEIGHT_PX);
+            canvas.DrawBitmap(Mouse_Bitmaps[direction], (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
 
             SKImage image = surface.Snapshot();
             MazeData = image.Encode();
