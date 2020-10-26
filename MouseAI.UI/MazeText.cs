@@ -12,6 +12,7 @@ namespace MouseAI.UI
         private readonly StringBuilder sb;
         private readonly int maze_height;
         private readonly int maze_width;
+        // private Maze maze;
         private List<MazeObject> PathObjects;
         private MazeObject[,] MazeObjects;
         private bool isInit;
@@ -57,17 +58,29 @@ namespace MouseAI.UI
             Height = txtMaze.Height + (MARGIN * 2);
         }
 
-        public void Init(Maze maze)
-        {
-            PathObjects = maze.GetPathObjects();
-            MazeObjects = maze.GetMazeObjects();
-            
-            isInit = true;
-        }
-
-        public void Display()
+        public void Display(Maze maze)
         {
             sb.Clear();
+            MazeObjects = maze.GetMazeObjects();
+
+            for (int y = 0; y < maze_height; y++)
+            {
+                for (int x = 0; x < maze_width; x++)
+                {
+                    sb.Append(GetObjectChar(MazeObjects[x, y]));
+                }
+                if (y < maze_height - 1)
+                    sb.Append(Environment.NewLine);
+            }
+
+            txtMaze.Text = sb.ToString();
+        }
+
+        public void DisplayPaths(Maze maze)
+        {
+            sb.Clear();
+            PathObjects = maze.GetPathObjects();
+            MazeObjects = maze.GetMazeObjects();
 
             for (int y = 0; y < maze_height; y++)
             {

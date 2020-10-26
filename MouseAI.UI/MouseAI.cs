@@ -20,7 +20,7 @@ namespace MouseAI.UI
 
         private Settings oSettings;
         private Thread searchThread;
-        private MazeText mazeText;
+        private readonly MazeText mazeText;
         private Maze maze;
         private bool isExit;
         private bool isFound;
@@ -36,7 +36,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 20;
+        private const int MAZE_COUNT = 5;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -153,7 +153,7 @@ namespace MouseAI.UI
 
         public void RenderMaze()
         {
-            DisplayMazeText();
+            // DisplayMazeText(false);
             DrawMaze();
             SetRunState(RUNSTATE.READY);
         }
@@ -175,6 +175,7 @@ namespace MouseAI.UI
                 {
                     RenderMaze();
                     SetRunState(RUNSTATE.PAUSE);
+                    DisplayMazeText(true);
                 }
 
                 Application.DoEvents();
@@ -184,7 +185,10 @@ namespace MouseAI.UI
             RenderMaze();
 
             if (isFound && isValid && maze.CalculatePath())
+            {
                 DrawPath();
+                DisplayMazeText(true);
+            }
             else
                 DisplayError("Error Calculating Path!", false);
 
@@ -210,9 +214,6 @@ namespace MouseAI.UI
                                 isFound = true;
                                 break;
                             }
-
-                            if (isStep)
-                                DisplayMazeText();
 
                             isStep = false;
                         }
@@ -424,7 +425,7 @@ namespace MouseAI.UI
             }
 
             if (oSettings.isMazeText)
-                DisplayMazeText();
+                DisplayMazeText(false);
         }
 
         #endregion
@@ -436,7 +437,6 @@ namespace MouseAI.UI
             if (maze == null)
             {
                 maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-                mazeText.Init(maze);
             }
 
             string filename = maze.GetSaveName();
@@ -479,7 +479,6 @@ namespace MouseAI.UI
             if (maze == null)
             {
                 maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-                mazeText.Init(maze);
             }
 
             string result = maze.LoadMazeModels(filename);
@@ -622,12 +621,17 @@ namespace MouseAI.UI
             mazeText.txtMaze.Clear();
         }
 
-        private void DisplayMazeText()
+        private void DisplayMazeText(bool isPath)
         {
-            if (!mazeText.CheckInit())
+            if (maze == null)
                 return;
            
-            mazeText.Display();
+            if (isPath)
+                mazeText.DisplayPaths(maze);
+            else
+            {
+                mazeText.Display(maze);
+            }
         }
 
         #endregion

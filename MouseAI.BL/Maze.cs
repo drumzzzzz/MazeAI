@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using MouseAI.BL;
 using MouseAI.PL;
@@ -33,6 +34,7 @@ namespace MouseAI
         private const string FILE_DIR = "mazes";
         public const byte BLACK = 0x00;
         public const byte WHITE = 0xff;
+        public const int GREY = 0x80;
 
         private readonly Random r;
         private readonly StringBuilder sb;
@@ -98,6 +100,8 @@ namespace MouseAI
             if (mazeModel == null)
                 return false;
 
+            PathObjects.Clear();
+
             int mx = mazeModel.mouse_x;
             int my = mazeModel.mouse_y;
             int cx = mazeModel.cheese_x;
@@ -115,13 +119,16 @@ namespace MouseAI
             {
                 object_state = OBJECT_STATE.MOUSE,
                 object_type = OBJECT_TYPE.SPACE,
-                isVisited = true
+                isVisited = true,
+                dtLastVisit = DateTime.UtcNow
             };
 
             MazeObjects[cx, cy].object_state = OBJECT_STATE.CHEESE;
             MazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
             cheese_x = cx;
             cheese_y = cy;
+
+            PathObjects.Add(oMouse);
 
             return true;
         }
@@ -151,7 +158,8 @@ namespace MouseAI
             {
                 object_state = OBJECT_STATE.MOUSE,
                 object_type = OBJECT_TYPE.SPACE,
-                isVisited = true
+                isVisited = true,
+                dtLastVisit = DateTime.UtcNow
             };
 
             x = mo_cheese.x;
@@ -161,6 +169,8 @@ namespace MouseAI
             MazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
             cheese_x = x;
             cheese_y = y;
+
+            PathObjects.Add(oMouse);
 
             return true;
         }
@@ -380,6 +390,7 @@ namespace MouseAI
                 if (ProcessCheeseMove(mouse, mazeobjects))
                 {
                     CleanPathObjects();
+                    FinalizePathObjects();
                     return true;
                 }
                 return false;
@@ -483,50 +494,6 @@ namespace MouseAI
             return false;
         }
 
-        private bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
-        {
-            if (CheckPathMove(new_x, new_y))
-            {
-                MazeObjects[curr_x, curr_y].object_state = OBJECT_STATE.VISITED;
-                MazeObjects[new_x, new_y].object_state = OBJECT_STATE.MOUSE;
-                oMouse.x = new_x;
-                oMouse.y = new_y;
-                return true;
-            }
-            
-            return false;
-        }
-
-        private bool CheckPathMove(int x, int y)
-        {
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
-        }
-
-        private void CleanPathObjects()
-        {
-            for (int i = PathObjects.Count - 1; i > -1; i--)
-            {
-                if (PathObjects[i].isDeadEnd)
-                {
-                    PathObjects[i].isPath = false;
-                    PathObjects.RemoveAt(i);
-                }
-                else if (PathObjects[i].isJunction)
-                {
-                    List<MazeObject> mo = CheckNode(PathObjects[i].x, PathObjects[i].y);
-
-                    if (mo == null)
-                        throw  new Exception("Objects is null!");
-
-                    if (mo.Count(x => x.isDeadEnd) == mo.Count - 1)
-                    {
-                        PathObjects[i].isDeadEnd = true;
-                        PathObjects.RemoveAt(i);
-                    }
-                }
-            }
-        }
-
         private DIRECTION GetMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
         {
             if (x_last != x_curr)
@@ -574,6 +541,11 @@ namespace MouseAI
 
         public bool CalculatePath()
         {
+            oMouse.x = mouse_x;
+            oMouse.y = mouse_y;
+            oMouse.isPath = true;
+            oMouse.isDeadEnd = false;
+
             PathObjects = PathObjects.OrderBy(x => x.dtLastVisit).ToList();
             MazeObject mo;
 
@@ -589,47 +561,104 @@ namespace MouseAI
                 for (int x = 0; x < maze_width; x++)
                 {
                     mo = PathObjects.FirstOrDefault(o => o.y == y && o.x == x);
+                    byte b = GetByteColor(mo);
 
-                    mp.mazepath[y][x] = (mo != null) ? BLACK : WHITE;
-                    (mp.bmp).SetPixel(x, y, (mp.mazepath[y][x] == WHITE) ? Color.White : Color.Black);
+                    mp.mazepath[y][x] = b;
+                    (mp.bmp).SetPixel(x, y, GetColor(b));
                 }
             }
 
             return true;
         }
 
-        public Bitmap GetPathBMP(string guid)
+        private static Color GetColor(byte b)
         {
-            MazePath mp = mazePaths.GetPath(guid);
-
-            return mp?.bmp == null ? null : mp.bmp;
+            if (b == WHITE)
+                return Color.White;
+            return b == GREY ? Color.Gray : Color.Black;
         }
 
-        public bool isModelBMP(int index)
+        private static byte GetByteColor(MazeObject mo)
         {
-            if (index < 0 || index > mazeModels.Count)
-                return false;
-
-            MazeModel mm = mazeModels[index];
-
-            if (mm == null)
-                return false;
-
-            return mm.bmp != null && mm.mazepath != null;
+            if (mo == null)
+                return WHITE;
+            return mo.isDeadEnd ? (byte) GREY : BLACK;
         }
 
-        public string GetGUID()
+        private bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
         {
-            return mazeModel?.guid;
+            if (CheckPathMove(new_x, new_y))
+            {
+                MazeObjects[curr_x, curr_y].object_state = OBJECT_STATE.VISITED;
+                MazeObjects[new_x, new_y].object_state = OBJECT_STATE.MOUSE;
+                oMouse.x = new_x;
+                oMouse.y = new_y;
+                return true;
+            }
+
+            return false;
         }
 
-        public bool SetTested(bool isTested)
+        private bool CheckPathMove(int x, int y)
         {
-            if (mazeModel == null)
-                return false;
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+        }
 
-            mazeModel.isPath = isTested;
-            return true;
+        private void FinalizePathObjects()
+        {
+            int x, y;
+            List<MazeObject> pathobjects;
+
+            foreach (MazeObject mo in MazeObjects)
+            {
+                if (mo.object_type == OBJECT_TYPE.SPACE && !mo.isPath && mo.x != cheese_x && mo.y != cheese_y)
+                {
+                    mo.isDeadEnd = true;
+                    mo.isVisited = true;
+
+                    x = mo.x;
+                    y = mo.y;
+
+                    pathobjects = PathObjects.Where(o => (o.x == x || o.y == y) && o.isDeadEnd == false).ToList();
+
+                    if (pathobjects.Count != 0)
+                    {
+                        foreach (MazeObject po in pathobjects)
+                        {
+                            if ((po.y == y && (po.x == x - 1 || po.x == x + 1)) || (po.x == x && (po.y == y - 1 || po.y == y + 1)))
+                            {
+                                mo.isPath = true;
+                                PathObjects.Add(mo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CleanPathObjects()
+        {
+            for (int i = PathObjects.Count - 1; i > -1; i--)
+            {
+                if (PathObjects[i].isDeadEnd)
+                {
+                    PathObjects[i].isPath = false;
+                    PathObjects.RemoveAt(i);
+                }
+                else if (PathObjects[i].isJunction)
+                {
+                    List<MazeObject> mo = CheckNode(PathObjects[i].x, PathObjects[i].y);
+
+                    if (mo == null)
+                        throw new Exception("Objects is null!");
+
+                    if (mo.Count(x => x.isDeadEnd) == mo.Count - 1)
+                    {
+                        PathObjects[i].isDeadEnd = true;
+                        PathObjects.RemoveAt(i);
+                    }
+                }
+            }
         }
 
         public void UpdateMazeModelPaths()
@@ -670,6 +699,40 @@ namespace MouseAI
                     mp.bmp = (Bitmap) Image.FromStream(ms);
                 }
             }
+        }
+
+        public Bitmap GetPathBMP(string guid)
+        {
+            MazePath mp = mazePaths.GetPath(guid);
+
+            return mp?.bmp == null ? null : mp.bmp;
+        }
+
+        public bool isModelBMP(int index)
+        {
+            if (index < 0 || index > mazeModels.Count)
+                return false;
+
+            MazeModel mm = mazeModels[index];
+
+            if (mm == null)
+                return false;
+
+            return mm.bmp != null && mm.mazepath != null;
+        }
+
+        public string GetGUID()
+        {
+            return mazeModel?.guid;
+        }
+
+        public bool SetTested(bool isTested)
+        {
+            if (mazeModel == null)
+                return false;
+
+            mazeModel.isPath = isTested;
+            return true;
         }
 
         #endregion
