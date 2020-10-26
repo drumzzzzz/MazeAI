@@ -123,7 +123,7 @@ namespace MouseAI
                 isVisited = true,
                 dtLastVisit = DateTime.UtcNow
             };
-            PathObjects.Add(oMouse);
+            // PathObjects.Add(oMouse);
 
             MazeObjects[cx, cy].object_state = OBJECT_STATE.CHEESE;
             MazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
@@ -175,7 +175,7 @@ namespace MouseAI
             cheese_x = x;
             cheese_y = y;
 
-            PathObjects.Add(oMouse);
+            // PathObjects.Add(oMouse);
 
             return true;
         }
@@ -412,7 +412,8 @@ namespace MouseAI
                     CleanPathObjects();
                 }
 
-                oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
+                // oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
+                oMouse.direction = DIRECTION.SOUTH;
 
                 oMouse.x = mo.x;
                 oMouse.y = mo.y;
@@ -442,7 +443,7 @@ namespace MouseAI
 
                 oMouse.x = mo_oldest.x;
                 oMouse.y = mo_oldest.y;
-                oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo_oldest.x, mo_oldest.y);
+                oMouse.direction = DIRECTION.SOUTH;
 
                 if (!mouse.isJunction)
                     mouse.isDeadEnd = true;
@@ -503,17 +504,16 @@ namespace MouseAI
 
         private DIRECTION GetMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
         {
-            if (x_last != x_curr)
-            {
-                return (x_last > x_curr) ? DIRECTION.WEST : DIRECTION.EAST;
-            }
+            //if (x_last != x_curr)
+            //{
+            //    return (x_last > x_curr) ? DIRECTION.WEST : DIRECTION.EAST;
+            //}
 
-            if (y_last != y_curr)
-            {
-                return (y_last > y_curr) ? DIRECTION.NORTH : DIRECTION.SOUTH;
-            }
-
-            return oMouse.direction;
+            //if (y_last != y_curr)
+            //{
+            //    return (y_last > y_curr) ? DIRECTION.NORTH : DIRECTION.SOUTH;
+            //}
+            return DIRECTION.SOUTH;
         }
 
         public List<MazeObject> CheckNode(int x, int y)
@@ -559,11 +559,6 @@ namespace MouseAI
 
             foreach (MazeObject mo in PathObjects)
             {
-                //if ((mo.x == mouse_x && mo.y == mouse_y) || (mo.x == cheese_x && mo.y == cheese_y))
-                //{
-                //    mo.isDeadEnd = false;
-                //    mo.isPath = true;
-                //}
                 b = GetByteColor(mo);
                 mp.mazepath[mo.y][mo.x] = b;
                 (mp.bmp).SetPixel(mo.x, mo.y, GetColor(b));
@@ -593,6 +588,14 @@ namespace MouseAI
         {
             List<MazeObject> pathObjects = new List<MazeObject>();
 
+            MazeObject m = new MazeObject(OBJECT_TYPE.SPACE, mouse_x, mouse_y)
+            {
+                dtLastVisit = DateTime.UtcNow, 
+                isPath = true, 
+                isDeadEnd = false
+            };
+            PathObjects.Insert(0, m);
+
             foreach (MazeObject mo in PathObjects)
             {
                 for (int x = mo.x - 1; x > 0; x--)
@@ -617,24 +620,21 @@ namespace MouseAI
             }
 
             PathObjects.AddRange(pathObjects);
-
             oMouse.x = mouse_x;
             oMouse.y = mouse_y;
-            //oCheese.dtLastVisit = DateTime.UtcNow;
-            //PathObjects.Add(oCheese);
         }
 
-        private bool CheckPathValid(int x, int y, List<MazeObject> pathObjects)
+        private bool CheckPathValid(int x, int y, ICollection<MazeObject> pathObjects)
         {
-            //if (IsInBounds(x, y) && !MazeObjects[x, y].isPath &&
-            //    MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE && 
-            //    !PathObjects.Any(o => o.x == x && o.y == y))
-            //{
-            //    MazeObjects[x, y].isPath = true;
-            //    MazeObjects[x, y].isDeadEnd = true;
-            //    //pathObjects.Add(MazeObjects[x,y]);
-            //    return true;
-            //}
+            if (IsInBounds(x, y) && !MazeObjects[x, y].isPath &&
+                MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE &&
+                !PathObjects.Any(o => o.x == x && o.y == y))
+            {
+                MazeObjects[x, y].isPath = true;
+                MazeObjects[x, y].isDeadEnd = true;
+                pathObjects.Add(MazeObjects[x,y]);
+                return true;
+            }
 
             return false;
         }
