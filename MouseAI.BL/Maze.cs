@@ -6,9 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Net.Configuration;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using MouseAI.BL;
 using MouseAI.PL;
@@ -44,7 +42,6 @@ namespace MouseAI
         private MazeModel mazeModel;
         private List<MazeObject> PathObjects;
         private MazeObject oMouse;
-        private MazeObject oCheese;
         private readonly MazePaths mazePaths;
         private readonly string AppDir;
         private string FileName;
@@ -123,18 +120,11 @@ namespace MouseAI
                 isVisited = true,
                 dtLastVisit = DateTime.UtcNow
             };
-            // PathObjects.Add(oMouse);
 
             MazeObjects[cx, cy].object_state = OBJECT_STATE.CHEESE;
             MazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
             cheese_x = cx;
             cheese_y = cy;
-
-            oCheese = new MazeObject(OBJECT_TYPE.SPACE, cx, cy)
-            {
-                object_state = OBJECT_STATE.CHEESE
-            };
-
             return true;
         }
 
@@ -502,20 +492,6 @@ namespace MouseAI
             return false;
         }
 
-        private DIRECTION GetMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
-        {
-            //if (x_last != x_curr)
-            //{
-            //    return (x_last > x_curr) ? DIRECTION.WEST : DIRECTION.EAST;
-            //}
-
-            //if (y_last != y_curr)
-            //{
-            //    return (y_last > y_curr) ? DIRECTION.NORTH : DIRECTION.SOUTH;
-            //}
-            return DIRECTION.SOUTH;
-        }
-
         public List<MazeObject> CheckNode(int x, int y)
         {
             List<MazeObject> mazeobjects = new List<MazeObject>
@@ -842,11 +818,6 @@ namespace MouseAI
 
         #region Object Tools
 
-        public bool isDeadEnd()
-        {
-            return oMouse.isDeadEnd;
-        }
-
         public bool SelectMazeModel(int index)
         {
             if (index < 0 || index > mazeModels.Count - 1)
@@ -898,25 +869,6 @@ namespace MouseAI
                 }
             }
 
-            return obytes;
-        }
-
-        private static byte[][] ConvertArray(byte[,] ibytes)
-        {
-            int length = ibytes.GetLength(1);
-            int width = ibytes.GetLength(0);
-
-            byte[][] obytes = new byte[length][];
-
-            for (int y = 0; y < length; y++)
-            {
-                obytes[y] = new byte[width];
-
-                for (int x = 0; x < width; x++)
-                {
-                    obytes[y][x] = ibytes[x, y];
-                }
-            }
             return obytes;
         }
 

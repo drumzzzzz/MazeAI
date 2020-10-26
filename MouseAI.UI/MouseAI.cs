@@ -4,7 +4,6 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using SkiaSharp;
@@ -36,7 +35,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 5;
+        private const int MAZE_COUNT = 1000;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -318,10 +317,10 @@ namespace MouseAI.UI
             }
 
             Bitmap bmp = maze.GetPathBMP(guid);
-            pbxPath.Image = bmp ?? null;
 
             if (bmp != null)
             {
+                pbxPath.Image = bmp;
                 if (maze.SetTested(true))
                 {
                     lvwMazes.Enabled = true;
@@ -817,11 +816,6 @@ namespace MouseAI.UI
         #endregion
 
         #region Messages
-
-        private static void DisplayMessage(string message)
-        {
-            MessageBox.Show(message);
-        }
 
         private static void DisplayError(string message, bool isAppExit)
         {
