@@ -1,23 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MouseAI.BL
 {
     public class MazeGenerator
     {
-        private string maze;
-        private readonly int maze_width;
-        private readonly int maze_height;
+        private static byte[] maze;
+        private static int maze_width;
+        private static int maze_height;
         private readonly DIRECTION[] dirs;
         private readonly Random r;
 
-        public MazeGenerator(int maze_width, int maze_height, Random r)
+        public MazeGenerator(int _maze_width, int _maze_height, Random r)
         {
-            this.maze_width = maze_width;
-            this.maze_height = maze_height;
+            maze_width = _maze_width;
+            maze_height = _maze_height;
             this.r = r;
 
             dirs = new DIRECTION[4];
@@ -26,23 +22,22 @@ namespace MouseAI.BL
             dirs[2] = DIRECTION.SOUTH; // SOUTH;
             dirs[3] = DIRECTION.WEST; // WEST;
 
-            maze = new string(new char[maze_width * maze_height]);
+            maze = new byte[maze_width * maze_height];
         }
 
-        public void Reset()
+        public static void Reset()
         {
             for (int i = 0; i < maze_width * maze_height; i++)
             {
-                maze = ChangeCharacter(maze, i, '█');
+                maze[i] = Maze.BLACK;
             }
         }
-
 
         // Starting at the given index, recursively visit every direction randomly
         public void Generate(int x = 1, int y = 1)
         {
             // Set current location to empty
-            maze = ChangeCharacter(maze, XYToIndex(x, y), Maze.SPACE);
+            maze[XYToIndex(x, y)] = Maze.WHITE;
 
             int rand;
             DIRECTION dir_temp;
@@ -84,30 +79,23 @@ namespace MouseAI.BL
 
                 if (Maze.IsInBounds(x2, y2))
                 {
-                    if (maze[XYToIndex(x2, y2)] == Maze.BLOCK)
+                    if (maze[XYToIndex(x2, y2)] == Maze.BLACK)
                     {
-                        maze = ChangeCharacter(maze, XYToIndex(x2 - dx, y2 - dy), Maze.SPACE);
+                        maze[XYToIndex(x2 - dx, y2 - dy)] = Maze.WHITE;
                         Generate(x2, y2);
                     }
                 }
             }
         }
 
-        public byte GetObjectByte(int x, int y)
+        public static byte GetObjectByte(int x, int y)
         {
-            return (maze[XYToIndex(x, y)] == Maze.SPACE) ? Maze.WHITE : Maze.BLACK;
+            return (maze[XYToIndex(x, y)]);
         }
 
-        private int XYToIndex(int x, int y)
+        private static int XYToIndex(int x, int y)
         {
             return y * maze_width + x;
-        }
-
-        public static string ChangeCharacter(string sourceString, int charIndex, char newChar)
-        {
-            return (charIndex > 0 ? sourceString.Substring(0, charIndex) : "")
-                   + newChar +
-                   (charIndex < sourceString.Length - 1 ? sourceString.Substring(charIndex + 1) : "");
         }
     }
 }

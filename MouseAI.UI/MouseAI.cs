@@ -20,6 +20,7 @@ namespace MouseAI.UI
 
         private Settings oSettings;
         private Thread searchThread;
+        private MazeText mazeText;
         private Maze maze;
         private bool isExit;
         private bool isFound;
@@ -30,8 +31,8 @@ namespace MouseAI.UI
 
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
-        private const int MAZE_SCALE_WIDTH_PX = 16;
-        private const int MAZE_SCALE_HEIGHT_PX = 24;
+        private const int MAZE_SCALE_WIDTH_PX = 20;
+        private const int MAZE_SCALE_HEIGHT_PX = 28;
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
@@ -86,7 +87,8 @@ namespace MouseAI.UI
             Console.WindowHeight = 50;
             Console.WindowWidth = 75;
             ConsoleHelper.SetCurrentFont("Consolas", 25);
-
+            mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT);
+            
             LoadSettings();
             RunState = RUNSTATE.NONE;
             InitMaze();
@@ -126,6 +128,7 @@ namespace MouseAI.UI
             if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
             {
                 LoadMazes(oSettings.LastFileName);
+                SetMazeTextVisible();
             }
         }
 
@@ -150,7 +153,7 @@ namespace MouseAI.UI
 
         public void RenderMaze()
         {
-            maze.DisplayMaze();
+            DisplayMazeText();
             DrawMaze();
             SetRunState(RUNSTATE.READY);
         }
@@ -209,7 +212,7 @@ namespace MouseAI.UI
                             }
 
                             if (isStep)
-                                maze.DisplayMaze();
+                                DisplayMazeText();
 
                             isStep = false;
                         }
@@ -398,11 +401,11 @@ namespace MouseAI.UI
             UpdateMaze();
         }
 
-        private bool UpdateMaze()
+        private void UpdateMaze()
         {
             Point p = maze.GetMousePosition();
             if (p.X == mouse_last.X && p.Y == mouse_last.Y)
-                return false;
+                return;
 
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);
@@ -420,7 +423,8 @@ namespace MouseAI.UI
                 pbxMaze.Image = new Bitmap(mStream, false);
             }
 
-            return true;
+            if (oSettings.isMazeText)
+                DisplayMazeText();
         }
 
         #endregion
@@ -431,7 +435,8 @@ namespace MouseAI.UI
         {
             if (maze == null)
             {
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+                mazeText.Init(maze);
             }
 
             string filename = maze.GetSaveName();
@@ -473,7 +478,8 @@ namespace MouseAI.UI
         {
             if (maze == null)
             {
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT, null);
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+                mazeText.Init(maze);
             }
 
             string result = maze.LoadMazeModels(filename);
@@ -608,6 +614,24 @@ namespace MouseAI.UI
 
         #endregion
 
+        #region Maze Text
+
+        private void SetMazeTextVisible()
+        {
+            mazeText.Visible = (oSettings.isMazeText);
+            mazeText.txtMaze.Clear();
+        }
+
+        private void DisplayMazeText()
+        {
+            if (!mazeText.CheckInit())
+                return;
+           
+            mazeText.Display();
+        }
+
+        #endregion
+
         #region Button
 
         private void btnRun_Click(object sender, EventArgs e)
@@ -684,6 +708,14 @@ namespace MouseAI.UI
             loadLastToolStripMenuItem.Checked = !loadLastToolStripMenuItem.Checked;
             oSettings.isLoadLast = loadLastToolStripMenuItem.Checked;
             UpdateSettings();
+        }
+
+        private void mazeTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mazeTextToolStripMenuItem.Checked = !mazeTextToolStripMenuItem.Checked;
+            oSettings.isMazeText = mazeTextToolStripMenuItem.Checked;
+            UpdateSettings();
+            SetMazeTextVisible();
         }
 
         private void trainToolStripMenuItem_Click(object sender, EventArgs e)

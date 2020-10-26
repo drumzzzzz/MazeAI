@@ -29,16 +29,6 @@ namespace MouseAI
         private int cheese_x;
         private int cheese_y;
 
-        public const char BLOCK = '█';
-        private const char VISITED = '>';
-        public const char SPACE = '░';
-        private const char MOUSE = 'ô';
-        private const char CHEESE = 'Δ';
-        private const char SCANNED = ':';
-        private const char DEADEND = 'X';
-        private const char JUNCTION = '+';
-        private const char PATH = '●';
-        private const char PATHOBJ = '#';
         private const string FILE_EXT = "mze";
         private const string FILE_DIR = "mazes";
         public const byte BLACK = 0x00;
@@ -51,18 +41,18 @@ namespace MouseAI
         private MazeModel mazeModel;
         private List<MazeObject> PathObjects;
         private MazeObject oMouse;
-        private MazePaths mazePaths;
+        private readonly MazePaths mazePaths;
         private readonly string AppDir;
         private string FileName;
         private bool isCheesePath;
-        private List<MazeObject>[] scanObjects = new List<MazeObject>[4];
+        private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
         private static DbTable_Stats dbtblStats;
 
         #endregion
 
         #region Initialization
 
-        public Maze(int _maze_width, int _maze_height, string FileName)
+        public Maze(int _maze_width, int _maze_height)
         {
             maze_width = _maze_width;
             maze_height = _maze_height;
@@ -210,7 +200,7 @@ namespace MouseAI
 
         public void Generate()
         {
-            mazeGenerator.Reset();
+            MazeGenerator.Reset();
             mazeGenerator.Generate();
             isCheesePath = false;
         }
@@ -221,7 +211,7 @@ namespace MouseAI
             {
                 for (int x = 0; x < maze_width; ++x)
                 {
-                    mazedata[x, y] = mazeGenerator.GetObjectByte(x, y);
+                    mazedata[x, y] = MazeGenerator.GetObjectByte(x, y);
                     MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
             }
@@ -390,7 +380,6 @@ namespace MouseAI
                 if (ProcessCheeseMove(mouse, mazeobjects))
                 {
                     CleanPathObjects();
-                    DisplayMaze();
                     return true;
                 }
                 return false;
@@ -484,7 +473,7 @@ namespace MouseAI
                 throw new Exception("Invalid Path Direction!");
             }
 
-            if (!SetPathMove(curr_x, curr_y, new_x, new_y, mazeobjects))
+            if (!SetPathMove(curr_x, curr_y, new_x, new_y))
                 throw new Exception("Invalid Path Move!");
 
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.x == curr_x && o.y == curr_y);
@@ -494,7 +483,7 @@ namespace MouseAI
             return false;
         }
 
-        private bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y, List<MazeObject> mazeobjects)
+        private bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
         {
             if (CheckPathMove(new_x, new_y))
             {
@@ -586,7 +575,6 @@ namespace MouseAI
         public bool CalculatePath()
         {
             PathObjects = PathObjects.OrderBy(x => x.dtLastVisit).ToList();
-            DisplayPath();
             MazeObject mo;
 
             MazePath mp = mazePaths.GetPath(mazeModel.guid);
@@ -681,43 +669,6 @@ namespace MouseAI
                     var ms = new MemoryStream(mm.bmp);
                     mp.bmp = (Bitmap) Image.FromStream(ms);
                 }
-            }
-        }
-
-        #endregion
-
-        #region Rendering
-
-        public void DisplayMaze()
-        {
-            Console.Clear();
-
-            for (int y = 0; y < maze_height; ++y)
-            {
-                sb.Clear();
-                for (int x = 0; x < maze_width; ++x)
-                {
-                    sb.Append(GetObjectChar(MazeObjects[x, y]));
-                }
-                Console.WriteLine(sb.ToString());
-            }
-        }
-
-        private void DisplayPath()
-        {
-            Console.Clear();
-
-            for (int y = 0; y < maze_height; y++)
-            {
-                sb.Clear();
-                for (int x = 0; x < maze_width; x++)
-                {
-                    if (PathObjects.Any(o => o.x == x && o.y == y))
-                        sb.Append(PATHOBJ);
-                    else
-                        sb.Append(GetObjectChar(MazeObjects[x, y]));
-                }
-                Console.WriteLine(sb.ToString());
             }
         }
 
@@ -888,42 +839,6 @@ namespace MouseAI
             return obytes;
         }
 
-        private static char GetObjectChar(MazeObject mo)
-        {
-            if (mo.object_type == OBJECT_TYPE.BLOCK)
-                return BLOCK;
-
-            // ToDo: Scan Debug
-            if (mo.object_state == OBJECT_STATE.MOUSE)
-                return MOUSE;
-
-            if (mo.isDeadEnd)
-                return DEADEND;
-
-            if (mo.isPath)
-                return PATH;
-
-            if (mo.isJunction)
-                return JUNCTION;
-
-            if(mo.object_state == OBJECT_STATE.VISITED)
-                return VISITED;
-
-            if (mo.isScanned)
-                return SCANNED;
-
-            switch (mo.object_state)
-            {
-                case OBJECT_STATE.NONE: return SPACE;
-                //case OBJECT_STATE.VISITED: return VISITED;
-                case OBJECT_STATE.CHEESE: return CHEESE;
-                //case OBJECT_STATE.MOUSE: return MOUSE;
-            }
-
-            // Console.WriteLine("Invalid Character - type:" + mo.object_type + " state:" + mo.object_state);
-            return SPACE;
-        }
-
         public Point GetMousePosition()
         {
             return new Point(oMouse.x, oMouse.y);
@@ -957,6 +872,16 @@ namespace MouseAI
             return string.IsNullOrEmpty(FileName) ? string.Empty : FileName;
         }
 
-        #endregion
+        public List<MazeObject> GetPathObjects()
+        {
+            return PathObjects;
+        }
+
+        public MazeObject[,] GetMazeObjects()
+        {
+            return MazeObjects;
+        }
     }
+
+    #endregion
 }
