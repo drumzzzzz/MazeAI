@@ -341,7 +341,6 @@ namespace MouseAI
                         break;
                 }
             }
-            // mos.Clear();
         }
 
         private static void SetEndpoint(MazeObject mo)
@@ -571,20 +570,6 @@ namespace MouseAI
             return true;
         }
 
-        private static Color GetColor(byte b)
-        {
-            if (b == WHITE)
-                return Color.White;
-            return b == GREY ? Color.Gray : Color.Black;
-        }
-
-        private static byte GetByteColor(MazeObject mo)
-        {
-            if (mo == null)
-                return WHITE;
-            return mo.isDeadEnd ? (byte) GREY : BLACK;
-        }
-
         private bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
         {
             if (CheckPathMove(new_x, new_y))
@@ -606,34 +591,47 @@ namespace MouseAI
 
         private void FinalizePathObjects()
         {
-            int x, y;
-            List<MazeObject> pathobjects;
+            List<MazeObject> pathObjects = new List<MazeObject>();
 
-            foreach (MazeObject mo in MazeObjects)
+            foreach (MazeObject mo in PathObjects)
             {
-                if (mo.object_type == OBJECT_TYPE.SPACE && !mo.isPath && mo.x != cheese_x && mo.y != cheese_y)
+                for (int x = mo.x - 1; x > 0; x--)
                 {
-                    mo.isDeadEnd = true;
-                    mo.isVisited = true;
+                    if (!CheckPathValid(x, mo.y, pathObjects)) break;
+                }
 
-                    x = mo.x;
-                    y = mo.y;
+                for (int x = mo.x + 1; x < maze_width; x++)
+                {
+                    if (!CheckPathValid(x, mo.y, pathObjects)) break;
+                }
 
-                    pathobjects = PathObjects.Where(o => (o.x == x || o.y == y) && o.isDeadEnd == false).ToList();
+                for (int y = mo.y - 1; y > 0; y--)
+                {
+                    if (!CheckPathValid(mo.x, y, pathObjects)) break;
+                }
 
-                    if (pathobjects.Count != 0)
-                    {
-                        foreach (MazeObject po in pathobjects)
-                        {
-                            if ((po.y == y && (po.x == x - 1 || po.x == x + 1)) || (po.x == x && (po.y == y - 1 || po.y == y + 1)))
-                            {
-                                mo.isPath = true;
-                                PathObjects.Add(mo);
-                            }
-                        }
-                    }
+                for (int y = mo.y + 1; y < maze_height; y++)
+                {
+                    if (!CheckPathValid(mo.x, y, pathObjects)) break;
                 }
             }
+
+            PathObjects.AddRange(pathObjects);
+        }
+
+        private bool CheckPathValid(int x, int y, List<MazeObject> pathObjects)
+        {
+            if (IsInBounds(x, y) &&
+                MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE &&
+                !PathObjects.Any(o => o.x == x && o.y == y))
+            {
+                MazeObjects[x, y].isPath = true;
+                MazeObjects[x, y].isDeadEnd = true;
+                pathObjects.Add(MazeObjects[x,y]);
+                return true;
+            }
+
+            return false;
         }
 
         private void CleanPathObjects()
@@ -733,6 +731,21 @@ namespace MouseAI
 
             mazeModel.isPath = isTested;
             return true;
+        }
+
+
+        private static Color GetColor(byte b)
+        {
+            if (b == WHITE)
+                return Color.White;
+            return b == GREY ? Color.Gray : Color.Black;
+        }
+
+        private static byte GetByteColor(MazeObject mo)
+        {
+            if (mo == null)
+                return WHITE;
+            return mo.isDeadEnd ? (byte)GREY : BLACK;
         }
 
         #endregion
