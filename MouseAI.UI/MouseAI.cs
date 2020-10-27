@@ -4,8 +4,10 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Threading;
 using System.Windows.Forms;
+using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -17,6 +19,7 @@ namespace MouseAI.UI
     {
         #region Declarations
 
+        private MazeNn mazeNn;
         private Settings oSettings;
         private Thread searchThread;
         private readonly MazeText mazeText;
@@ -35,7 +38,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 1000;
+        private const int MAZE_COUNT = 20;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -79,11 +82,11 @@ namespace MouseAI.UI
         public MouseAI()
         {
             InitializeComponent();
-            Console.BackgroundColor = ConsoleColor.Blue;
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WindowHeight = 24;
-            Console.WindowWidth = 50;
-            ConsoleHelper.SetCurrentFont("Consolas", 25);
+            //Console.BackgroundColor = ConsoleColor.Blue;
+            //Console.ForegroundColor = ConsoleColor.White;
+            Console.WindowHeight = 30;
+            Console.WindowWidth = 100;
+            //ConsoleHelper.SetCurrentFont("Consolas", 25);
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT);
             
             LoadSettings();
@@ -120,6 +123,13 @@ namespace MouseAI.UI
 
         #region Processing
 
+        private void InitNeuralNet()
+        {
+
+            mazeNn = new MazeNn(MAZE_WIDTH, MAZE_HEIGHT);
+            mazeNn.ProcessNet();
+        }
+
         private void MazeAI_Shown(object sender, EventArgs e)
         {
             if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
@@ -127,6 +137,8 @@ namespace MouseAI.UI
                 LoadMazes(oSettings.LastFileName);
                 SetMazeTextVisible();
             }
+
+            InitNeuralNet();
         }
 
         private static bool CreateMaze(Maze m)
