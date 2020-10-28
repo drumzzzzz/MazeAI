@@ -9,6 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseAI.UI", "MouseAI.UI\Mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseAI.BL", "MouseAI.BL\MouseAI.BL.csproj", "{8A915BDC-1D48-44F0-9DD8-DCB8117A4670}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{30516D0D-6019-4584-ACD6-D411FF0E891A}"
+	ProjectSection(SolutionItems) = preProject
+		Installation.txt = Installation.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseAI.ML", "MouseAI.ML\MouseAI.ML.csproj", "{F0953389-66B5-429E-8019-32B53E4E30ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +48,14 @@ Global
 		{8A915BDC-1D48-44F0-9DD8-DCB8117A4670}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8A915BDC-1D48-44F0-9DD8-DCB8117A4670}.Release|x64.ActiveCfg = Release|Any CPU
 		{8A915BDC-1D48-44F0-9DD8-DCB8117A4670}.Release|x64.Build.0 = Release|Any CPU
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Debug|x64.ActiveCfg = Debug|x64
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Debug|x64.Build.0 = Debug|x64
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Release|x64.ActiveCfg = Release|Any CPU
+		{F0953389-66B5-429E-8019-32B53E4E30ED}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

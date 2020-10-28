@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
+using MouseAI.ML;
 
 #endregion
 
@@ -19,7 +20,6 @@ namespace MouseAI.UI
     {
         #region Declarations
 
-        private MazeNn mazeNn;
         private Settings oSettings;
         private Thread searchThread;
         private readonly MazeText mazeText;
@@ -125,9 +125,8 @@ namespace MouseAI.UI
 
         private void InitNeuralNet()
         {
-
-            mazeNn = new MazeNn(MAZE_WIDTH, MAZE_HEIGHT);
-            mazeNn.ProcessNet();
+            Mnist mn = new Mnist();
+            mn.Run();
         }
 
         private void MazeAI_Shown(object sender, EventArgs e)

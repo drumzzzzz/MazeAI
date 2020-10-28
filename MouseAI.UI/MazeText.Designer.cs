@@ -58,7 +58,6 @@
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Mouse AI";
-            this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();
 
