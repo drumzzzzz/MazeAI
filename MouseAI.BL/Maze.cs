@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using MouseAI.BL;
-using MouseAI.ML;
 using MouseAI.PL;
 
 #endregion
@@ -744,13 +743,15 @@ namespace MouseAI
         {
             try
             {
-                dbtblProjects = new DbTable_Projects
-                {
-                    Guid = Guid.NewGuid().ToString(),
-                    Config = "None"
-                };
-                if (!mazeDb.InsertProject(dbtblProjects))
-                    throw new Exception("Failed to create projects table");
+                //dbtblProjects = new DbTable_Projects
+                //{
+                //    Guid = Guid.NewGuid().ToString(),
+                //    Config = string.Empty,
+                //    dtStart = string.Empty,
+                //    dtEnd = string.Empty
+                //};
+                //if (!mazeDb.InsertProject(dbtblProjects))
+                //    throw new Exception("Failed to create projects table");
 
                 dbtblStats = new DbTable_Mazes();
 

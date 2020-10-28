@@ -11,8 +11,9 @@ namespace MouseAI.BL
     {
         public static void TestMnist()
         {
-            Mnist mnist = new Mnist();
-            mnist.Run();
+            NeuralNet nn = new NeuralNet(28,28);
+            nn.TestMnist();
         }
+
     }
 }

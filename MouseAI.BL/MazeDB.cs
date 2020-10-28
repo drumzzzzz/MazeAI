@@ -43,7 +43,8 @@ namespace MouseAI.BL
 
         public bool InsertProject(DbTable_Projects tbl)
         {
-            string values = string.Format("'{0}','{1}',{2},{3}", tbl.Guid, tbl.Config, tbl.Loss, tbl.Accuracy);
+            string values = string.Format("'{0}','{1}',{2},{3},{4},'{5}','{6}'", 
+                tbl.Guid, tbl.Config, tbl.Loss, tbl.Accuracy, tbl.Epochs, tbl.dtStart, tbl.dtEnd);
 
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }
@@ -73,8 +74,11 @@ namespace MouseAI.BL
         public string Config { get; set; }
         public double Loss { get; set; }
         public double Accuracy { get; set; }
+        public int Epochs { get; set; }
+        public string dtStart { get; set; }
+        public string dtEnd { get; set; }
 
         public static readonly string TABLE = "projects";
-        public static readonly string COLUMNS = "Guid, Config, Loss, Accuracy";
+        public static readonly string COLUMNS = "Guid, Config, Loss, Accuracy, Epochs, dtStart, dtEnd";
     }
 }
