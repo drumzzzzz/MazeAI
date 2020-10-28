@@ -108,6 +108,7 @@
     <Compile Include="MazeDb.cs" />
     <Compile Include="MazeGenerator.cs" />
     <Compile Include="MazeModel.cs" />
+    <Compile Include="MazeNn.cs" />
     <Compile Include="MazeObject.cs" />
     <Compile Include="MazePath.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -119,6 +120,10 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MouseAI.ML\MouseAI.ML.csproj">
+      <Project>{3a8ab4f8-deaa-4a8d-91ed-3ef53e4094e9}</Project>
+      <Name>MouseAI.ML</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MouseAI.PL\MouseAI.PL.csproj">
       <Project>{f22a2154-9ab6-49b4-a246-2a7a2b524613}</Project>
       <Name>MouseAI.PL</Name>

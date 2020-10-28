@@ -10,7 +10,6 @@ using System.Windows.Forms;
 using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
-using MouseAI.ML;
 
 #endregion
 
@@ -22,6 +21,7 @@ namespace MouseAI.UI
 
         private Settings oSettings;
         private Thread searchThread;
+        private Thread testThread;
         private readonly MazeText mazeText;
         private Maze maze;
         private bool isExit;
@@ -123,12 +123,6 @@ namespace MouseAI.UI
 
         #region Processing
 
-        private void InitNeuralNet()
-        {
-            Mnist mn = new Mnist();
-            mn.Run();
-        }
-
         private void MazeAI_Shown(object sender, EventArgs e)
         {
             if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
@@ -136,8 +130,6 @@ namespace MouseAI.UI
                 LoadMazes(oSettings.LastFileName);
                 SetMazeTextVisible();
             }
-
-            InitNeuralNet();
         }
 
         private static bool CreateMaze(Maze m)
@@ -239,6 +231,20 @@ namespace MouseAI.UI
 
             isFound = true;
             isDone = true;
+        }
+
+        private void RunNNTest()
+        {
+            if (testThread != null)
+                return;
+
+            testThread = new Thread(NNTest);
+            testThread.Start();
+        }
+
+        private void NNTest()
+        {
+            MazeNn.TestMnist();
         }
 
         #endregion
@@ -738,6 +744,11 @@ namespace MouseAI.UI
             BuildPaths();
         }
 
+        private void testToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            RunNNTest();
+        }
+
         #endregion
 
         #region Control States
@@ -856,6 +867,5 @@ namespace MouseAI.UI
         }
 
         #endregion
-
     }
 }

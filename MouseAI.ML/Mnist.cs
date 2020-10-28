@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Keras;
 using Keras.Datasets;
@@ -21,19 +22,13 @@ namespace MouseAI.ML
         {
             int batch_size = 128; //Training batch size
             int num_classes = 10; //No. of classes
-            int epochs = 12; //No. of epoches we will train
+            int epochs = 1; //No. of epoches we will train
 
             // input image dimensions
             int img_rows = 28, img_cols = 28;
 
             // Declare the input shape for the network
             Shape input_shape = null;
-            //var (N, D_in, H, D_out) = (64, 1000, 100, 10);
-
-            //var x_train = np.random.randn(N, D_in);
-            //var y_train = np.random.randn(N, D_out);
-            //var x_test = np.random.randn(D_in, H);
-            //var y_test = np.random.randn(H, D_out);
 
             // Load the MNIST dataset into Numpy array
             string path =
@@ -99,10 +94,15 @@ namespace MouseAI.ML
             Console.WriteLine("Test loss:" + score[0]);
             Console.WriteLine("Test accuracy:" + score[1]);
 
-            // Save the model to HDF5 format which can be loaded later or ported to other application
+            string json = model.ToJson();
+            File.WriteAllText("model.json", json);
             model.Save("model.h5");
-            // Save it to Tensorflow JS format and we will test it in browser.
-            model.SaveTensorflowJSFormat("./");
+            model.SaveWeight("paths");
+
+            //// Save the model to HDF5 format which can be loaded later or ported to other application
+            //model.Save("model.h5");
+            //// Save it to Tensorflow JS format and we will test it in browser.
+            //model.SaveTensorflowJSFormat("./");
         }
     }
 }
