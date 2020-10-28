@@ -16,6 +16,7 @@ namespace MouseAI
 
         // Serialized Values
         public string LastFileName { get; set; }
+        public string Guid { get; set; }
         public bool isLoadLast { get; set; }
         public bool isAutoRun { get; set; }
         public bool isDebugConsole { get; set; }

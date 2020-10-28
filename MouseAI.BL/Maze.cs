@@ -48,7 +48,8 @@ namespace MouseAI
         private string FileName;
         private bool isCheesePath;
         private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
-        private static DbTable_Stats dbtblStats;
+        private static DbTable_Mazes dbtblStats;
+        private static DbTable_Projects dbtblProjects;
 
         #endregion
 
@@ -743,15 +744,23 @@ namespace MouseAI
         {
             try
             {
-                dbtblStats = new DbTable_Stats();
+                dbtblProjects = new DbTable_Projects
+                {
+                    Guid = Guid.NewGuid().ToString(),
+                    Config = "None"
+                };
+                if (!mazeDb.InsertProject(dbtblProjects))
+                    throw new Exception("Failed to create projects table");
+
+                dbtblStats = new DbTable_Mazes();
 
                 foreach (MazeModel mm in mazeModels)
                 {
                     dbtblStats.Guid = mm.guid;
                     dbtblStats.LastUsed = DateTime.UtcNow.ToString();
 
-                    if (!mazeDb.InsertStats(dbtblStats))
-                        throw new Exception("Failed to create stats");
+                    if (!mazeDb.InsertMaze(dbtblStats))
+                        throw new Exception("Failed to create maze table");
                 }
 
                 FileIO.SerializeXml(mazeModels, filename);
@@ -798,7 +807,7 @@ namespace MouseAI
 
                 foreach (MazeModel mm in mms)
                 {
-                    if(mazeDb.ReadStats(mm.guid) == null)
+                    if(mazeDb.ReadMazes(mm.guid) == null)
                         throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
                 }
 
@@ -829,7 +838,7 @@ namespace MouseAI
             if (mazeModel == null)
                 return false;
 
-            DbTable_Stats dbTableStats = mazeDb.ReadStats(mazeModel.guid);
+            DbTable_Mazes dbTableStats = mazeDb.ReadMazes(mazeModel.guid);
 
             if (dbTableStats == null)
                 return false;

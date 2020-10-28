@@ -29,16 +29,23 @@ namespace MouseAI.BL
             }
         }
 
-        public bool InsertStats(DbTable_Stats tbl)
+        public bool InsertMaze(DbTable_Mazes tbl)
         {
             string values = string.Format("'{0}', {1}, {2}, '{3}'", tbl.Guid, tbl.Success, tbl.Failure, tbl.LastUsed);
 
-            return db.Insert(DbTable_Stats.TABLE, DbTable_Stats.COLUMNS, values);
+            return db.Insert(DbTable_Mazes.TABLE, DbTable_Mazes.COLUMNS, values);
         }
 
-        public DbTable_Stats ReadStats(string guid)
+        public DbTable_Mazes ReadMazes(string guid)
         {
-            return (DbTable_Stats) db.Read(DbTable_Stats.TABLE, "Guid", guid, new DbTable_Stats());
+            return (DbTable_Mazes) db.Read(DbTable_Mazes.TABLE, "Guid", guid, new DbTable_Mazes());
+        }
+
+        public bool InsertProject(DbTable_Projects tbl)
+        {
+            string values = string.Format("'{0}','{1}',{2},{3}", tbl.Guid, tbl.Config, tbl.Loss, tbl.Accuracy);
+
+            return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }
 
         public string GetError()
@@ -47,7 +54,7 @@ namespace MouseAI.BL
         }
     }
 
-    public class DbTable_Stats
+    public class DbTable_Mazes
     {
         public long Id { get; set; }
         public string Guid { get; set; }
@@ -55,7 +62,19 @@ namespace MouseAI.BL
         public long Failure { get; set; }
         public string LastUsed { get; set; }
 
-        public static readonly string TABLE = "stats";
+        public static readonly string TABLE = "mazes";
         public static readonly string COLUMNS = "Guid, Success, Failure, LastUsed";
+    }
+
+    public class DbTable_Projects
+    {
+        public long Id { get; set; }
+        public string Guid { get; set; }
+        public string Config { get; set; }
+        public double Loss { get; set; }
+        public double Accuracy { get; set; }
+
+        public static readonly string TABLE = "projects";
+        public static readonly string COLUMNS = "Guid, Config, Loss, Accuracy";
     }
 }

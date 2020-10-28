@@ -87,8 +87,11 @@ namespace MouseAI.UI
             Console.WindowHeight = 30;
             Console.WindowWidth = 100;
             //ConsoleHelper.SetCurrentFont("Consolas", 25);
-            mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT);
-            
+            mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT)
+            {
+                Visible = false
+            };
+
             LoadSettings();
             RunState = RUNSTATE.NONE;
             InitMaze();
@@ -153,7 +156,6 @@ namespace MouseAI.UI
 
         public void RenderMaze()
         {
-            // DisplayMazeText(false);
             DrawMaze();
             SetRunState(RUNSTATE.READY);
         }

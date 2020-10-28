@@ -88,7 +88,6 @@ namespace MouseAI.ML
                       verbose: 1,
                       validation_data: new NDarray[] { x_test, y_test });
 
-
             //Score the model for performance
             var score = model.Evaluate(x_test, y_test, verbose: 0);
             Console.WriteLine("Test loss:" + score[0]);
@@ -97,7 +96,7 @@ namespace MouseAI.ML
             string json = model.ToJson();
             File.WriteAllText("model.json", json);
             model.Save("model.h5");
-            model.SaveWeight("paths");
+            // model.SaveWeight("paths");
 
             //// Save the model to HDF5 format which can be loaded later or ported to other application
             //model.Save("model.h5");
