@@ -21,6 +21,7 @@ namespace MouseAI
         #region Declarations
 
         private static MazeDb mazeDb;
+        private NeuralNet neuralNet;
         private byte[,] mazedata;
         private readonly MazeGenerator mazeGenerator;
         private static int maze_width;
@@ -80,7 +81,7 @@ namespace MouseAI
             if (mazeDb == null)
                 mazeDb = new MazeDb();
 
-            NeuralNet nn = new NeuralNet(maze_width, maze_height);
+            neuralNet = new NeuralNet(maze_width, maze_height);
         }
 
         public void ClearMazeModels()
@@ -95,7 +96,7 @@ namespace MouseAI
 
         public bool isMazeModels()
         {
-            return (mazeModels != null && mazeModels.Count > 0);
+            return (mazeModels != null && mazeModels.Count() > 0);
         }
 
         public bool AddCharacters()
@@ -223,6 +224,25 @@ namespace MouseAI
                     mazedata[x, y] = MazeGenerator.GetObjectByte(x, y);
                     MazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
+            }
+        }
+
+        #endregion
+
+        #region Neural Net
+
+        public bool Train(string guid)
+        {
+            try
+            {
+                neuralNet.CreateDataSets(guid);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
             }
         }
 
@@ -646,10 +666,10 @@ namespace MouseAI
 
         public void UpdateMazeModelPaths()
         {
-            if (mazeModels.Count == 0 || mazePaths.Count == 0)
+            if (mazeModels.Count() == 0 || mazePaths.Count == 0)
                 return;
 
-            foreach (MazeModel mm in mazeModels)
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
             {
                 MazePath mp = mazePaths.GetPath(mm.guid);
 
@@ -668,10 +688,10 @@ namespace MouseAI
 
         public void UpdateMazePaths()
         {
-            if (mazeModels.Count == 0)
+            if (mazeModels.Count() == 0)
                 return;
 
-            foreach (MazeModel mm in mazeModels)
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
             {
                 MazePath mp = mazePaths.GetPath(mm.guid);
 
@@ -693,10 +713,10 @@ namespace MouseAI
 
         public bool isModelBMP(int index)
         {
-            if (index < 0 || index > mazeModels.Count)
+            if (index < 0 || index > mazeModels.Count())
                 return false;
 
-            MazeModel mm = mazeModels[index];
+            MazeModel mm = mazeModels.GetMazeModel(index);
 
             if (mm == null)
                 return false;
@@ -742,6 +762,16 @@ namespace MouseAI
             return FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
         }
 
+        public void SetMazeModelsGuid(string guid)
+        {
+            mazeModels.Guid = guid;
+        }
+
+        public string GetMazeModelsGuid()
+        {
+            return mazeModels.Guid;
+        }
+
         public string SaveMazeModels(string filename)
         {
             try
@@ -758,7 +788,7 @@ namespace MouseAI
 
                 dbtblStats = new DbTable_Mazes();
 
-                foreach (MazeModel mm in mazeModels)
+                foreach (MazeModel mm in mazeModels.GetMazeModels())
                 {
                     dbtblStats.Guid = mm.guid;
                     dbtblStats.LastUsed = DateTime.UtcNow.ToString();
@@ -809,7 +839,7 @@ namespace MouseAI
                     throw new Exception("Error Loading File");
 
 
-                foreach (MazeModel mm in mms)
+                foreach (MazeModel mm in mms.GetMazeModels())
                 {
                     if(mazeDb.ReadMazes(mm.guid) == null)
                         throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
@@ -834,10 +864,10 @@ namespace MouseAI
 
         public bool SelectMazeModel(int index)
         {
-            if (index < 0 || index > mazeModels.Count - 1)
+            if (index < 0 || index > mazeModels.Count() - 1)
                 return false;
 
-            mazeModel = mazeModels[index];
+            mazeModel = mazeModels.GetMazeModel(index);
 
             if (mazeModel == null)
                 return false;
@@ -865,7 +895,7 @@ namespace MouseAI
 
         public int GetMazeModelSize()
         {
-            return (mazeModels == null) ? 0 : mazeModels.Count;
+            return (mazeModels == null) ? 0 : mazeModels.Count();
         }
 
         private static byte[,] ConvertArray(byte[][] ibytes)

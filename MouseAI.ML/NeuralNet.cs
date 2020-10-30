@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region Using Statements
+
+using System;
 using System.IO;
 using System.Text;
 using Keras;
@@ -14,12 +16,27 @@ using System.Configuration;
 using System.Linq;
 using System.Reflection;
 
+#endregion
+
 namespace MouseAI.ML
 {
     public class NeuralNet
     {
+        #region Declarations
+
         private readonly int width; 
         private readonly int height;
+
+        private NDarray x_train;    // Training Data
+        private NDarray y_train;    // Training Labels
+        private NDarray x_test;     // Testing Data
+        private NDarray y_test;     // Testing Labels
+
+        private DataSets dataSets;
+
+        #endregion
+
+        #region Initialization
 
         public NeuralNet(int width, int height)
         {
@@ -34,16 +51,34 @@ namespace MouseAI.ML
             }
         }
 
-        public void TestMnist()
-        { 
-            // x: images, y: labels
-            var ((x_train, y_train), (x_test, y_test)) = MNIST.LoadData();
-            Process(5, 10, 128, true, null, x_train, y_train,x_test, y_test);
+        public void CreateDataSets(string guid)
+        {
+            dataSets = new DataSets(width, height, guid);
+
+
         }
 
-        public void Process(int epochs, int num_classes, int batch_size, bool isNormalize, string Guid, 
-                            NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test)
+        public void TestMnist()
+        { 
+            ((x_train, y_train), (x_test, y_test)) = MNIST.LoadData();
+
+            Process(5, 10, 128, true, null);
+        }
+
+        public bool BuildDataSets()
         {
+            return true;
+        }
+
+        #endregion
+
+        #region Processing
+
+        public void Process(int epochs, int num_classes, int batch_size, bool isNormalize, string Guid)
+        {
+            if (x_train == null || y_train == null || x_test == null || y_test == null)
+                throw new Exception("Dataset was null!");
+
             DateTime dtStart = DateTime.UtcNow;
             Shape input_shape;
 
@@ -93,6 +128,10 @@ namespace MouseAI.ML
             //model.Save("model.h5");
         }
 
+        #endregion
+
+        #region Models
+
         private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
             int epochs, int num_classes, int batch_size)
         {
@@ -141,5 +180,7 @@ namespace MouseAI.ML
 
             return model;
         }
+
+        #endregion
     }
 }

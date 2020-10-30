@@ -47,7 +47,41 @@ namespace MouseAI.BL
         }
     }
 
-    public class MazeModels : List<MazeModel>
+    public class MazeModels // : List<MazeModel>
     {
+        public string Guid { get; set; }
+        public List<MazeModel> mazeModels { get; set; }
+
+        public MazeModels()
+        {
+            mazeModels = new List<MazeModel>();
+        }
+
+        public void Clear()
+        {
+            mazeModels.Clear();
+        }
+
+        public void Add(MazeModel mm)
+        {
+            mazeModels.Add(mm);
+        }
+
+        public int Count()
+        {
+            return mazeModels.Count();
+        }
+
+        public MazeModel GetMazeModel(int index)
+        {
+            if (index > mazeModels.Count || index < 0)
+                return null;
+            return mazeModels[index];
+        }
+
+        public List<MazeModel> GetMazeModels()
+        {
+            return mazeModels;
+        }
     }
 }

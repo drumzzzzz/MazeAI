@@ -21,6 +21,7 @@ namespace MouseAI.UI
         private Settings oSettings;
         private Thread searchThread;
         private Thread testThread;
+        private Thread trainThread;
         private readonly MazeText mazeText;
         private Maze maze;
         private bool isExit;
@@ -69,7 +70,8 @@ namespace MouseAI.UI
             RESET,
             PROCESS,
             SELECT,
-            BUILD_PATHS
+            BUILD_PATHS,
+            TRAIN
         }
 
         private RUNSTATE RunState;
@@ -132,6 +134,8 @@ namespace MouseAI.UI
                 LoadMazes(oSettings.LastFileName);
                 SetMazeTextVisible();
             }
+
+            RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -234,18 +238,18 @@ namespace MouseAI.UI
             isDone = true;
         }
 
-        private void RunNNTest()
+        private void RunTrain()
         {
-            if (testThread != null)
+            if (trainThread != null || string.IsNullOrEmpty(oSettings.Guid))
                 return;
 
-            testThread = new Thread(NNTest);
-            testThread.Start();
+            trainThread = new Thread(AITrain);
+            trainThread.Start();
         }
 
-        private void NNTest()
+        private void AITrain()
         {
-
+            maze.Train(oSettings.Guid);
         }
 
         #endregion
@@ -469,6 +473,8 @@ namespace MouseAI.UI
 
             if (maze.isMazeModels())
             {
+                string guid = Guid.NewGuid().ToString();
+                maze.SetMazeModelsGuid(guid);
                 string result = maze.SaveMazeModels(filename);
                 if (!string.IsNullOrEmpty(result))
                 {
@@ -481,6 +487,7 @@ namespace MouseAI.UI
                     DisplayTsMessage("Mazes Generated and Saved");
                     AddMazeItems();
                     oSettings.LastFileName = maze.GetFileName();
+                    oSettings.Guid = guid;
                     UpdateSettings();
                     DisplayTitleMessage(oSettings.LastFileName);
                 }
@@ -747,7 +754,7 @@ namespace MouseAI.UI
 
         private void testToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            RunNNTest();
+            AITrain();
         }
 
         #endregion
