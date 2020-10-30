@@ -83,5 +83,18 @@ namespace MouseAI.BL
         {
             return mazeModels;
         }
+
+        public MazeModel CheckPaths()
+        {
+            foreach (MazeModel mm in mazeModels)
+            {
+                if (mm.mazepath == null || mm.mazepath.Length == 0)
+                {
+                    return mm;
+                }
+            }
+
+            return null;
+        }
     }
 }

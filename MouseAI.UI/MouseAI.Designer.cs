@@ -39,6 +39,7 @@
             this.buildToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trainToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,7 +55,6 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
-            this.testToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
@@ -144,16 +144,23 @@
             // testToolStripMenuItem
             // 
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.testToolStripMenuItem.Text = "Paths";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // trainToolStripMenuItem
             // 
             this.trainToolStripMenuItem.Name = "trainToolStripMenuItem";
-            this.trainToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.trainToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.trainToolStripMenuItem.Text = "Train";
             this.trainToolStripMenuItem.Click += new System.EventHandler(this.trainToolStripMenuItem_Click);
+            // 
+            // testToolStripMenuItem1
+            // 
+            this.testToolStripMenuItem1.Name = "testToolStripMenuItem1";
+            this.testToolStripMenuItem1.Size = new System.Drawing.Size(110, 22);
+            this.testToolStripMenuItem1.Text = "Test";
+            this.testToolStripMenuItem1.Click += new System.EventHandler(this.testToolStripMenuItem1_Click);
             // 
             // editToolStripMenuItem
             // 
@@ -285,6 +292,7 @@
             // pbxPath
             // 
             this.pbxPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pbxPath.BackColor = System.Drawing.Color.White;
             this.pbxPath.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbxPath.Location = new System.Drawing.Point(797, 541);
             this.pbxPath.Margin = new System.Windows.Forms.Padding(0);
@@ -304,13 +312,6 @@
             this.pbxMaze.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
-            // 
-            // testToolStripMenuItem1
-            // 
-            this.testToolStripMenuItem1.Name = "testToolStripMenuItem1";
-            this.testToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            this.testToolStripMenuItem1.Text = "Test";
-            this.testToolStripMenuItem1.Click += new System.EventHandler(this.testToolStripMenuItem1_Click);
             // 
             // MouseAI
             // 

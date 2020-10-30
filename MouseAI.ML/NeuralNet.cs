@@ -1,6 +1,7 @@
 ﻿#region Using Statements
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Keras;
@@ -51,11 +52,36 @@ namespace MouseAI.ML
             }
         }
 
-        public void CreateDataSets(string guid)
+        public void InitDataSets(string guid)
         {
+            dataSets = null;
             dataSets = new DataSets(width, height, guid);
+        }
 
+        public bool AddTrainingSet(ImageDatas imageDatas)
+        {
+            if (imageDatas == null)
+                return false;
 
+            foreach (ImageData id in imageDatas)
+            {
+                dataSets.AddTrainData(id.Data, id.Label);
+            }
+
+            return true;
+        }
+
+        public bool AddTestSet(ImageDatas imageDatas)
+        {
+            if (imageDatas == null)
+                return false;
+
+            foreach (ImageData id in imageDatas)
+            {
+                dataSets.AddTestData(id.Data, id.Label);
+            }
+
+            return true;
         }
 
         public void TestMnist()

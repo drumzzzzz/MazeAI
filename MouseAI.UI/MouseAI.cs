@@ -240,16 +240,24 @@ namespace MouseAI.UI
 
         private void RunTrain()
         {
-            if (trainThread != null || string.IsNullOrEmpty(oSettings.Guid))
+            if (string.IsNullOrEmpty(oSettings.Guid) || (trainThread != null && trainThread.ThreadState != ThreadState.Stopped))
                 return;
 
+            trainThread = null;
             trainThread = new Thread(AITrain);
             trainThread.Start();
         }
 
         private void AITrain()
         {
-            maze.Train(oSettings.Guid);
+            try
+            {
+                maze.Train(oSettings.Guid);
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error Training", e, false);
+            }
         }
 
         #endregion
@@ -744,7 +752,7 @@ namespace MouseAI.UI
 
         private void trainToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            RunTrain();
         }
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)

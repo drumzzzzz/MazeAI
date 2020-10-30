@@ -231,19 +231,31 @@ namespace MouseAI
 
         #region Neural Net
 
-        public bool Train(string guid)
+        public void Train(string guid)
         {
-            try
-            {
-                neuralNet.CreateDataSets(guid);
+            if (mazeModels == null || mazeModels.Count() == 0)
+                throw new Exception("No MazeModels!");
 
-                return true;
-            }
-            catch (Exception e)
+            MazeModel _mm = mazeModels.CheckPaths();
+            if (_mm != null)
             {
-                Console.WriteLine(e);
-                return false;
+                throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?", _mm.guid));
             }
+
+            neuralNet.InitDataSets(guid);
+
+            ImageDatas ImageDatas_Train = new ImageDatas();
+            ImageDatas ImageDatas_Test = new ImageDatas();
+
+            //foreach (MazeModel mm in mazeModels.GetMazeModels())
+            //{
+            //    ImageDatas_Train.Add(new ImageData(mm.bmp, mm.guid));
+            //}
+            
+            //neuralNet.AddTrainingSet(ImageDatas_Train);
+
+
+
         }
 
         #endregion
