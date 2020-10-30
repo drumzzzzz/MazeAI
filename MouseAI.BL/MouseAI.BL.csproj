@@ -108,7 +108,6 @@
     <Compile Include="MazeDb.cs" />
     <Compile Include="MazeGenerator.cs" />
     <Compile Include="MazeModel.cs" />
-    <Compile Include="MazeNn.cs" />
     <Compile Include="MazeObject.cs" />
     <Compile Include="MazePath.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

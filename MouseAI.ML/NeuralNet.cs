@@ -36,6 +36,7 @@ namespace MouseAI.ML
 
         public void TestMnist()
         { 
+            // x: images, y: labels
             var ((x_train, y_train), (x_test, y_test)) = MNIST.LoadData();
             Process(5, 10, 128, true, null, x_train, y_train,x_test, y_test);
         }
@@ -75,7 +76,9 @@ namespace MouseAI.ML
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
-            Sequential model = ProcessCnnModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size);
+            //Sequential model = ProcessCnnModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size);
+
+            Sequential model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size);
 
             DateTime dtEnd = DateTime.UtcNow;
 
@@ -89,6 +92,28 @@ namespace MouseAI.ML
             //File.WriteAllText("model.json", json);
             //model.Save("model.h5");
         }
+
+        private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
+            int epochs, int num_classes, int batch_size)
+        {
+            // Build model
+            Sequential model = new Sequential();
+            model.Add(new Dropout(0.25));
+            model.Add(new Flatten());
+            model.Add(new Dense(128, activation: "relu"));
+            model.Add(new Dropout(0.5));
+            model.Add(new Dense(num_classes, activation: "softmax"));
+
+            // Compile with loss, metrics and optimizer
+            model.Compile(loss: "categorical_crossentropy", optimizer: new Adadelta(), metrics: new[] { "accuracy" });
+
+            // Train the model
+            model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
+                validation_data: new[] { x_test, y_test });
+
+            return model;
+        }
+
 
         private static Sequential ProcessCnnModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test, 
                                         int epochs, int num_classes, int batch_size)

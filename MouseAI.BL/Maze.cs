@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using MouseAI.BL;
+using MouseAI.ML;
 using MouseAI.PL;
 
 #endregion
@@ -78,6 +79,8 @@ namespace MouseAI
 
             if (mazeDb == null)
                 mazeDb = new MazeDb();
+
+            NeuralNet nn = new NeuralNet(maze_width, maze_height);
         }
 
         public void ClearMazeModels()

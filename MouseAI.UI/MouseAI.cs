@@ -4,7 +4,6 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Resources;
 using System.Threading;
 using System.Windows.Forms;
 using MouseAI.BL;
@@ -246,7 +245,7 @@ namespace MouseAI.UI
 
         private void NNTest()
         {
-            MazeNn.TestMnist();
+
         }
 
         #endregion
