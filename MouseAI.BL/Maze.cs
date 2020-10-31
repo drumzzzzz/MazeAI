@@ -236,6 +236,9 @@ namespace MouseAI
             if (mazeModels == null || mazeModels.Count() == 0)
                 throw new Exception("No MazeModels!");
 
+            neuralNet.TestMnist();
+            return;
+
             MazeModel _mm = mazeModels.CheckPaths();
             if (_mm != null)
             {

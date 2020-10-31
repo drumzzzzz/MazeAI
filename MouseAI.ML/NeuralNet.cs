@@ -16,6 +16,7 @@ using Python.Runtime;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using Keras.Callbacks;
 
 #endregion
 
@@ -25,8 +26,8 @@ namespace MouseAI.ML
     {
         #region Declarations
 
-        private readonly int width; 
-        private readonly int height;
+        private int width; 
+        private int height;
         private readonly int outputs;
 
         private NDarray x_train;    // Training Data
@@ -81,8 +82,9 @@ namespace MouseAI.ML
         public void TestMnist()
         { 
             ((x_train, y_train), (x_test, y_test)) = MNIST.LoadData();
-
-            Process(5, 10, 128, true, null);
+            width = 28;
+            height = 28;
+            Process(100, 10, 128, true, null);
         }
 
         public void BuildDataSets()
@@ -133,8 +135,6 @@ namespace MouseAI.ML
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
-            //Sequential model = ProcessCnnModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size);
-
             Sequential model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size);
 
             DateTime dtEnd = DateTime.UtcNow;
@@ -169,9 +169,11 @@ namespace MouseAI.ML
             // Compile with loss, metrics and optimizer
             model.Compile(loss: "categorical_crossentropy", optimizer: new Adadelta(), metrics: new[] { "accuracy" });
 
+            EarlyStopping es = new EarlyStopping(monitor:"val_loss",0,0,1,mode:"min", 1);
+
             // Train the model
             model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
-                validation_data: new[] { x_test, y_test });
+                validation_data: new[] { x_test, y_test }, callbacks: new Callback[] { es });
 
             return model;
         }
