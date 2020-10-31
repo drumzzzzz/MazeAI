@@ -242,17 +242,22 @@ namespace MouseAI
                 throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?", _mm.guid));
             }
 
-            neuralNet.InitDataSets(guid);
-
-            ImageDatas ImageDatas_Train = new ImageDatas();
-            ImageDatas ImageDatas_Test = new ImageDatas();
+            int train_count = mazeModels.Count();
+            int test_count = mazeModels.Count();
+            neuralNet.InitDataSets(train_count, test_count, guid);
 
             foreach (MazeModel mm in mazeModels.GetMazeModels())
             {
-                ImageDatas_Train.Add(new ImageData(mm.bmp, mm.guid));
+                neuralNet.AddTrainingSet(mm.bmp, mm.guid);
             }
 
-            neuralNet.AddTrainingSet(ImageDatas_Train);
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
+            {
+                neuralNet.AddTestSet(mm.bmp, mm.guid);
+            }
+
+            neuralNet.BuildDataSets();
+            neuralNet.Process(100, mazeModels.Count(), 128, true, guid);
         }
 
         #endregion
@@ -565,21 +570,13 @@ namespace MouseAI
                 throw new Exception("Maze path was null!");
 
             mp.bmp = new Bitmap(maze_width, maze_height);
-
-            int _y, _x;
-
-            for (int i = 0; i < mp.bmp.Height * mp.bmp.Width; i++)
-            {
-                _y = i / mp.bmp.Width;
-                _x = i % mp.bmp.Width;
-                mp.bmp.SetPixel(_x, _y, Color.White);
-            }
+            Graphics g = Graphics.FromImage(mp.bmp);
+            g.Clear(GetColor(WHITE));
 
             foreach (MazeObject mo in PathObjects)
             {
                 b = GetByteColor(mo);
                 mp.mazepath[mo.y][mo.x] = b;
-                Console.WriteLine(b);
                 (mp.bmp).SetPixel(mo.x, mo.y, GetColor(b));
             }
             return true;
@@ -728,35 +725,7 @@ namespace MouseAI
 
         public Bitmap GetPathBMP(string guid)
         {
-            MazePath mp = mazePaths.GetPath(guid);
-
-            //if (mp.bmp != null)
-            //{
-            //    int height = mp.mazepath.Length;
-            //    int width = mp.mazepath[0].Length;
-            //    int y, x;
-            //    Color pixel;
-            //    byte b;
-
-            //    for (int i = 0; i < mp.bmp.Height * mp.bmp.Width; i++)
-            //    {
-            //        y = i / mp.bmp.Width;
-            //        x = i % mp.bmp.Width;
-            //        // Console.WriteLine("{0},{1}", col,row);
-
-            //        if (y < height && x < width)
-            //        {
-            //            b = mp.mazepath[y][x];
-            //            pixel = mp.bmp.GetPixel(x, y);
-            //            mp.bmp.SetPixel(x, y, GetColor(b));
-            //            //mp.bmp.SetPixel(x, y, Color.White);
-
-            //            //Console.WriteLine("{0}:{1} ", b, pixel);
-            //        }
-            //    }
-            //}
-
-            return mp?.bmp == null ? null : mp.bmp;
+            return mazePaths.GetPath(guid).bmp;
         }
 
         public bool isModelBMP(int index)
@@ -789,15 +758,17 @@ namespace MouseAI
 
         private static Color GetColor(byte b)
         {
-            if (b == WHITE)
-                return Color.White;
-            return b == GREY ? Color.Gray : Color.Black;
+            switch (b)
+            {
+                case BLACK: return Color.Black;
+                case GREY: return Color.Gray;
+                case WHITE: return Color.White;
+                default: return Color.Yellow;
+            }
         }
 
         private static byte GetByteColor(MazeObject mo)
         {
-            if (mo == null || !mo.isPath)
-                return (byte)WHITE;
             return mo.isDeadEnd ? (byte)GREY : (byte)BLACK;
         }
 
@@ -909,6 +880,15 @@ namespace MouseAI
         #endregion
 
         #region Object Tools
+
+        public static byte[] BitmapToArray(Bitmap bmp)
+        {
+            using (var stream = new MemoryStream())
+            {
+                bmp.Save(stream, ImageFormat.Bmp);
+                return stream.ToArray();
+            }
+        }
 
         public bool SelectMazeModel(int index)
         {

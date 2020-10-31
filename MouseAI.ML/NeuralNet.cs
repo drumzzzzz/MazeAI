@@ -27,6 +27,7 @@ namespace MouseAI.ML
 
         private readonly int width; 
         private readonly int height;
+        private readonly int outputs;
 
         private NDarray x_train;    // Training Data
         private NDarray y_train;    // Training Labels
@@ -52,35 +53,28 @@ namespace MouseAI.ML
             }
         }
 
-        public void InitDataSets(string guid)
+        // public DataSets(int Width, int Height, int Train_Count, int Test_Count, string Label)
+        public void InitDataSets(int train_count, int test_count, string label)
         {
             dataSets = null;
-            dataSets = new DataSets(width, height, guid);
+            dataSets = new DataSets(width, height, train_count, test_count, label);
         }
 
-        public bool AddTrainingSet(ImageDatas imageDatas)
+        public bool AddTrainingSet(byte[] imagedata, string label)
         {
-            if (imageDatas == null)
+            if (imagedata == null)
                 return false;
 
-            foreach (ImageData id in imageDatas)
-            {
-                dataSets.AddTrainData(id.Data, id.Label);
-            }
-
+            dataSets.AddTrainData(imagedata, label);
             return true;
         }
 
-        public bool AddTestSet(ImageDatas imageDatas)
+        public bool AddTestSet(byte[] imagedata, string label)
         {
-            if (imageDatas == null)
+            if (imagedata == null)
                 return false;
 
-            foreach (ImageData id in imageDatas)
-            {
-                dataSets.AddTestData(id.Data, id.Label);
-            }
-
+            dataSets.AddTestData(imagedata, label);
             return true;
         }
 
@@ -91,9 +85,10 @@ namespace MouseAI.ML
             Process(5, 10, 128, true, null);
         }
 
-        public bool BuildDataSets()
+        public void BuildDataSets()
         {
-            return true;
+            dataSets.BuildArrays();
+            ((x_train, y_train), (x_test, y_test)) = dataSets.GetData();
         }
 
         #endregion
@@ -130,6 +125,7 @@ namespace MouseAI.ML
             }
 
             Console.WriteLine("Test Started {0}", dtStart);
+            Console.WriteLine("Width: {0} Height: {1} Size:{2}", width, height, width * height);
             Console.WriteLine("x_train shape: {0} train samples: {1} x_test shape: {2}", 
                                 x_train.shape, x_train.shape[0], x_test.shape[0]);
 
@@ -146,6 +142,7 @@ namespace MouseAI.ML
             // Score the model for performance
             double[] score = model.Evaluate(x_test, y_test, verbose: 0);
             TimeSpan ts = dtEnd - dtStart;
+            model.Summary();
             Console.WriteLine("Test End: {0}  Duration: {1}:{2}.{3}", dtEnd, ts.Hours,ts.Minutes, ts.Seconds);
             Console.WriteLine("Loss: {0} Accuracy: {1}", score[0], score[1]);
 

@@ -135,7 +135,7 @@ namespace MouseAI.UI
                 SetMazeTextVisible();
             }
 
-            //RunTrain();
+            RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -350,7 +350,7 @@ namespace MouseAI.UI
 
             if (bmp != null)
             {
-                pbxPath.Image = bmp;
+                pbxPath.Image = new Bitmap(bmp);
                 if (maze.SetTested(true))
                 {
                     lvwMazes.Enabled = true;
