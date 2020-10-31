@@ -12,6 +12,7 @@ namespace MouseAI
     {
         public string guid { get; set; }
         public byte[][] mazepath { get; set; }
+
         public Bitmap bmp { get; set; }
 
         public MazePath(int width, int height, string guid)

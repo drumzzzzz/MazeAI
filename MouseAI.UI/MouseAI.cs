@@ -38,7 +38,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 20;
+        private const int MAZE_COUNT = 5;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -135,7 +135,7 @@ namespace MouseAI.UI
                 SetMazeTextVisible();
             }
 
-            RunTrain();
+            //RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -602,7 +602,6 @@ namespace MouseAI.UI
             {
                 lvwMazes.Items[index].Selected = true;
                 lvwMazes.Select();
-                //lvwMazes.Refresh();
                 return true;
             }
 

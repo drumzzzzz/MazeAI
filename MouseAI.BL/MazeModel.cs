@@ -18,7 +18,10 @@ namespace MouseAI.BL
         public int cheese_y { get; set; }
         public bool isPath { get; set; }
         public byte[][] mazepath { get; set; }
+
+        //[XmlIgnore]
         public byte[] bmp { get; set; }
+        // public Bitmap bmp { get; set; }
 
         public MazeModel()
         { }
@@ -88,7 +91,7 @@ namespace MouseAI.BL
         {
             foreach (MazeModel mm in mazeModels)
             {
-                if (mm.mazepath == null || mm.mazepath.Length == 0)
+                if (mm.mazepath == null || mm.mazepath.Length == 0 || mm.bmp == null)
                 {
                     return mm;
                 }
