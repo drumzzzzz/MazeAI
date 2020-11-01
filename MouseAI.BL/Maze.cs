@@ -265,6 +265,11 @@ namespace MouseAI
 
         #endregion
 
+        #region Vision
+
+
+        #endregion region
+
         #region Scanning
 
         private int ScanDirection(int x, int y)
@@ -579,6 +584,37 @@ namespace MouseAI
                 mp.mazepath[mo.y][mo.x] = b;
                 (mp.bmp).SetPixel(mo.x, mo.y, GetColor(b));
             }
+
+            return true;
+        }
+
+        public void CalculateSegments()
+        {
+            MazeObject m = PathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            
+            if (m == null)
+            {
+                throw new Exception("Couldn't find the mouse!");
+            }
+
+            m.dtLastVisit = DateTime.MinValue;
+            List<MazeObject> pathObjects = new List<MazeObject>(PathObjects.Where(o=>o.isPath && !o.isDeadEnd)).OrderBy(d=>d.dtLastVisit).ToList();
+
+            int index = pathObjects.IndexOf(m);
+
+            index = index;
+
+
+        }
+
+        private bool CheckPathObject(int x, int y, List<MazeObject> pathObjects)
+        {
+            MazeObject mo = PathObjects.FirstOrDefault(o => o.x == x && o.y == y && !pathObjects.Any(s => s.x == x && s.y == y));
+
+            if (mo == null)
+                return false;
+
+            pathObjects.Add(mo);
             return true;
         }
 
@@ -607,9 +643,10 @@ namespace MouseAI
 
             MazeObject m = new MazeObject(OBJECT_TYPE.SPACE, mouse_x, mouse_y)
             {
-                dtLastVisit = DateTime.UtcNow,
+                dtLastVisit = DateTime.MinValue,
                 isPath = true,
-                isDeadEnd = false
+                isDeadEnd = false,
+                object_state = OBJECT_STATE.MOUSE
             };
             PathObjects.Insert(0, m);
 
@@ -668,6 +705,7 @@ namespace MouseAI
             {
                 MazeObjects[x, y].isPath = true;
                 MazeObjects[x, y].isDeadEnd = true;
+                MazeObjects[x, y].dtLastVisit = DateTime.UtcNow;
                 pathObjects.Add(MazeObjects[x, y]);
                 pathsLast?.Add(pathObjects.Last());
                 return true;

@@ -38,7 +38,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 20;
+        private const int MAZE_COUNT = 5;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -194,6 +194,7 @@ namespace MouseAI.UI
             {
                 DrawPath();
                 DisplayMazeText(true);
+                maze.CalculateSegments();
             }
             else
                 DisplayError("Error Calculating Path!", false);
@@ -270,8 +271,8 @@ namespace MouseAI.UI
             if (!maze.isMazeModels())
                 return;
 
-            if (MessageBox.Show("Clear and calculate maze paths?", "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                return;
+            //if (MessageBox.Show("Clear and calculate maze paths?", "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
+            //    return;
 
             for (int i = 0; i < lvwMazes.Items.Count; i++)
             {
