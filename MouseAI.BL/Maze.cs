@@ -582,7 +582,7 @@ namespace MouseAI
             return true;
         }
 
-        private bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
+        private static bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
         {
             if (CheckPathMove(new_x, new_y))
             {
@@ -603,7 +603,7 @@ namespace MouseAI
         private void FinalizePathObjects()
         {
             List<MazeObject> pathObjects = new List<MazeObject>();
-            MazeObject pathLast = null;
+            List<MazeObject> pathsLast = new List<MazeObject>();
 
             MazeObject m = new MazeObject(OBJECT_TYPE.SPACE, mouse_x, mouse_y)
             {
@@ -615,42 +615,42 @@ namespace MouseAI
 
             foreach (MazeObject mo in PathObjects)
             {
-                pathLast = null;
+                pathsLast.Clear();
                 for (int x = mo.x - 1; x > 0; x--)
                 {
-                    if (!CheckPathValid(x, mo.y, pathObjects, ref pathLast))
+                    if (!CheckPathValid(x, mo.y, pathObjects, pathsLast))
                     {
-                        CheckPathTurn(pathObjects, pathLast);
+                        CheckPathTurn(pathObjects, pathsLast);
                         break;
                     }
                 }
 
-                pathLast = null;
+                pathsLast.Clear();
                 for (int x = mo.x + 1; x < maze_width; x++)
                 {
-                    if (!CheckPathValid(x, mo.y, pathObjects, ref pathLast))
+                    if (!CheckPathValid(x, mo.y, pathObjects, pathsLast))
                     {
-                        CheckPathTurn(pathObjects, pathLast);
+                        CheckPathTurn(pathObjects, pathsLast);
                         break;
                     }
                 }
 
-                pathLast = null;
+                pathsLast.Clear();
                 for (int y = mo.y - 1; y > 0; y--)
                 {
-                    if (!CheckPathValid(mo.x, y, pathObjects, ref pathLast))
+                    if (!CheckPathValid(mo.x, y, pathObjects, pathsLast))
                     {
-                        CheckPathTurn(pathObjects, pathLast);
+                        CheckPathTurn(pathObjects, pathsLast);
                         break;
                     }
                 }
 
-                pathLast = null;
+                pathsLast.Clear();
                 for (int y = mo.y + 1; y < maze_height; y++)
                 {
-                    if (!CheckPathValid(mo.x, y, pathObjects, ref pathLast))
+                    if (!CheckPathValid(mo.x, y, pathObjects, pathsLast))
                     {
-                        CheckPathTurn(pathObjects, pathLast);
+                        CheckPathTurn(pathObjects, pathsLast);
                         break;
                     }
                 }
@@ -660,7 +660,7 @@ namespace MouseAI
             oMouse.y = mouse_y;
         }
 
-        private bool CheckPathValid(int x, int y, ICollection<MazeObject> pathObjects, ref MazeObject pathLast)
+        private static bool CheckPathValid(int x, int y, ICollection<MazeObject> pathObjects, ICollection<MazeObject> pathsLast)
         {
             if (IsInBounds(x, y) && !MazeObjects[x, y].isPath &&
                 MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE &&
@@ -669,22 +669,27 @@ namespace MouseAI
                 MazeObjects[x, y].isPath = true;
                 MazeObjects[x, y].isDeadEnd = true;
                 pathObjects.Add(MazeObjects[x, y]);
-                pathLast = pathObjects.Last();
+                pathsLast?.Add(pathObjects.Last());
                 return true;
             }
             return false;
         }
 
-        private void CheckPathTurn(ICollection<MazeObject> pathObjects, MazeObject pathLast)
+        private static void CheckPathTurn(ICollection<MazeObject> pathObjects, IReadOnlyCollection<MazeObject> pathsLast)
         {
-            if (pathLast == null)
+            if (pathsLast.Count == 0)
                 return;
 
-            int[,] panArray = GetXYPan(pathLast.x, pathLast.y);
+            int[,] panArray;
 
-            for (int i = 0; i < panArray.Length / 2; i++)
+            foreach (MazeObject pathLast in pathsLast)
             {
-                CheckPathValid(panArray[i, 0], panArray[i, 1], pathObjects, ref pathLast);
+                panArray = GetXYPan(pathLast.x, pathLast.y);
+
+                for (int i = 0; i < panArray.Length / 2; i++)
+                {
+                    CheckPathValid(panArray[i, 0], panArray[i, 1], pathObjects, null);
+                }
             }
         }
 
