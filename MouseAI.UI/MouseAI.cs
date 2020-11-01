@@ -38,7 +38,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 5;
+        private const int MAZE_COUNT = 20;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -135,7 +135,7 @@ namespace MouseAI.UI
                 SetMazeTextVisible();
             }
 
-            RunTrain();
+            //RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -413,12 +413,12 @@ namespace MouseAI.UI
                 {
                     x_pos = x_idx * MAZE_SCALE_WIDTH_PX;
 
-                    ot = maze.GetObjectDataType(x_idx, y_idx);
+                    ot = Maze.GetObjectDataType(x_idx, y_idx);
 
                     offscreen.DrawRect(x_pos, y_pos, MAZE_SCALE_WIDTH_PX, MAZE_SCALE_HEIGHT_PX,
                             (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
 
-                    if (maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
+                    if (Maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
                         offscreen.DrawBitmap(Cheese_Bitmap, x_pos, y_pos);
                 }
             }

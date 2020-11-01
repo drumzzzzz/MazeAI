@@ -84,7 +84,7 @@ namespace MouseAI.ML
             ((x_train, y_train), (x_test, y_test)) = MNIST.LoadData();
             width = 28;
             height = 28;
-            Process(100, 10, 128, true, null);
+            Process(100, 10, 128, true, null, true);
         }
 
         public void BuildDataSets()
@@ -97,7 +97,7 @@ namespace MouseAI.ML
 
         #region Processing
 
-        public void Process(int epochs, int num_classes, int batch_size, bool isNormalize, string Guid)
+        public void Process(int epochs, int num_classes, int batch_size, bool isNormalize, string Guid, bool isEarlyStop)
         {
             if (x_train == null || y_train == null || x_test == null || y_test == null)
                 throw new Exception("Dataset was null!");
@@ -135,7 +135,7 @@ namespace MouseAI.ML
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
-            Sequential model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size);
+            Sequential model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size, isEarlyStop);
 
             DateTime dtEnd = DateTime.UtcNow;
 
@@ -156,7 +156,7 @@ namespace MouseAI.ML
         #region Models
 
         private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
-            int epochs, int num_classes, int batch_size)
+            int epochs, int num_classes, int batch_size, bool isEarlyStop)
         {
             // Build model
             Sequential model = new Sequential();
@@ -169,11 +169,20 @@ namespace MouseAI.ML
             // Compile with loss, metrics and optimizer
             model.Compile(loss: "categorical_crossentropy", optimizer: new Adadelta(), metrics: new[] { "accuracy" });
 
-            EarlyStopping es = new EarlyStopping(monitor:"val_loss",0,0,1,mode:"min", 1);
+            if (isEarlyStop)
+            {
+                EarlyStopping es = new EarlyStopping(monitor: "val_loss", 0, 0, 1, mode: "min", 1);
 
-            // Train the model
-            model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
-                validation_data: new[] { x_test, y_test }, callbacks: new Callback[] { es });
+                // Train the model
+                model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
+                    validation_data: new[] {x_test, y_test}, callbacks: new Callback[] {es});
+            }
+            else
+            {
+                // Train the model
+                model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
+                    validation_data: new[] { x_test, y_test });
+            }
 
             return model;
         }
