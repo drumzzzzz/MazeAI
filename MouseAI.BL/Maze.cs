@@ -717,6 +717,7 @@ namespace MouseAI
                     if (mo.Count(x => x.isDeadEnd) == mo.Count - 1)
                     {
                         PathObjects[i].isDeadEnd = true;
+                        PathObjects[i].isPath = false;
                         PathObjects.RemoveAt(i);
                     }
                 }

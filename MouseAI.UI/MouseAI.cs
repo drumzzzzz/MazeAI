@@ -88,6 +88,7 @@ namespace MouseAI.UI
             Console.WindowHeight = 30;
             Console.WindowWidth = 100;
             //ConsoleHelper.SetCurrentFont("Consolas", 25);
+
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT)
             {
                 Visible = false
@@ -626,6 +627,8 @@ namespace MouseAI.UI
 
                 RenderMaze();
                 DrawPath();
+                if (oSettings.isMazeText)
+                    DisplayMazeText(true);
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
                 SetRunState(RUNSTATE.READY);
                 return true;
