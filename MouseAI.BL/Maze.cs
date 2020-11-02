@@ -498,8 +498,10 @@ namespace MouseAI
 
             if (curr_x == cheese_x && curr_y == cheese_y)
             {
-                MazeObjects[curr_x, curr_y].object_state = OBJECT_STATE.CHEESE;
-                PathObjects.Add(MazeObjects[curr_x, curr_y]);
+                MazeObject m = MazeObjects[curr_x, curr_y];
+                m.object_state = OBJECT_STATE.CHEESE;
+                m.dtLastVisit = DateTime.UtcNow;
+                PathObjects.Add(m);
                 return true;
             }
 
@@ -591,39 +593,43 @@ namespace MouseAI
         public void CalculateSegments()
         {
             MazeObject m = PathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
-            
+
             if (m == null)
             {
                 throw new Exception("Couldn't find the mouse!");
             }
 
-            m.dtLastVisit = DateTime.MinValue;
             List<MazeObject> pathObjects = new List<MazeObject>(PathObjects.Where(o=>o.isPath && !o.isDeadEnd)).OrderBy(d=>d.dtLastVisit).ToList();
+            List<MazeObject> deadEndObjects = new List<MazeObject>(PathObjects.Where(o =>o.isDeadEnd)).ToList();
+            PathObjects.Clear();
+            PathObjects.AddRange( pathObjects);
+            PathObjects.AddRange(deadEndObjects);
 
-            int index = pathObjects.IndexOf(m);
-
-            index = index;
-
-
-        }
-
-        private bool CheckPathObject(int x, int y, List<MazeObject> pathObjects)
-        {
-            MazeObject mo = PathObjects.FirstOrDefault(o => o.x == x && o.y == y && !pathObjects.Any(s => s.x == x && s.y == y));
-
-            if (mo == null)
-                return false;
-
-            pathObjects.Add(mo);
-            return true;
+            // ToDo: debug state
+            foreach (MazeObject mo in MazeObjects)
+            {
+                if (mo.isDeadEnd)
+                {
+                    mo.isDeadEnd = false;
+                    mo.isVisited = false;
+                    mo.isPath = false;
+                    mo.object_state = OBJECT_STATE.NONE;
+                }
+            }
         }
 
         private static bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
         {
             if (CheckPathMove(new_x, new_y))
             {
-                MazeObjects[curr_x, curr_y].object_state = OBJECT_STATE.VISITED;
-                MazeObjects[new_x, new_y].object_state = OBJECT_STATE.MOUSE;
+                MazeObject mo = MazeObjects[curr_x, curr_y];
+                mo.object_state = OBJECT_STATE.VISITED;
+                mo.dtLastVisit = DateTime.UtcNow;
+                mo.isPath = true;
+                mo = MazeObjects[new_x, new_y];
+                mo.object_state = OBJECT_STATE.MOUSE;
+                mo.dtLastVisit = DateTime.UtcNow;
+                mo.isPath = true;
                 oMouse.x = new_x;
                 oMouse.y = new_y;
                 return true;
