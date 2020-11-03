@@ -69,6 +69,7 @@ namespace MouseAI.UI
         public void DisplayMaze()
         {
             sb.Clear();
+            guid_current = maze.GetGUID();
 
             pathObjects = maze.GetPathObjects();
             mazeObjects = maze.GetMazeObjects();
@@ -104,8 +105,13 @@ namespace MouseAI.UI
                             continue;
                         }
                     }
-     
-                    sb.Append(GetObjectChar(mazeObjects[x, y]));
+
+                    c = GetObjectChar(mazeObjects[x, y]);
+
+                    if ((rbPaths.Checked || rbSegments.Checked) && c == DEADEND)
+                        c = SPACE;
+
+                    sb.Append(c);
                 }
                 if (y < maze_height - 1)
                     sb.Append(Environment.NewLine);
@@ -123,6 +129,7 @@ namespace MouseAI.UI
 
             if (guid_last != guid_current || lbxSegments.Items.Count == 0)
             {
+                guid_last = guid_current;
                 ClearSegmentList();
                 for (int i = 0; i < mazeSegments.Count; i++)
                 {
@@ -181,6 +188,8 @@ namespace MouseAI.UI
                 {
                     if (mos.Any(mo => mo.x == x && mo.y == y))
                     {
+                        MazeObject mo = mos.FirstOrDefault(o => o.x == x && o.y == y);
+                        
                         return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
                     }
 
@@ -198,7 +207,7 @@ namespace MouseAI.UI
             return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
         }
 
-        private static char GetObjectChar(MazeObject mo)
+        private char GetObjectChar(MazeObject mo)
         {
             if (mo.object_type == OBJECT_TYPE.BLOCK)
                 return BLOCK;
@@ -210,8 +219,8 @@ namespace MouseAI.UI
             if (mo.isDeadEnd)
                 return DEADEND;
 
-            //if (mo.isPath)
-            //    return PATH;
+            if (mo.isPath && rbAll.Checked)
+                return NNPATH;
 
             if (mo.isJunction)
                 return JUNCTION;

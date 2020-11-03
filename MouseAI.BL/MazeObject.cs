@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MouseAI
 {
@@ -39,7 +40,6 @@ namespace MouseAI
         public bool isDeadEnd { get; set; }
         public bool isJunction { get; set; }
         public bool isPath { get; set; }
-        public bool isSegment { get; set; }
 
         public MazeObject Next { get; set; }
         public MazeObject Previous { get; set; }
@@ -78,6 +78,5 @@ namespace MouseAI
 
     public class MazeSegments : List<MazeObjects>
     {
-
     }
 }

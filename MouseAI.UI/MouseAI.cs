@@ -194,17 +194,17 @@ namespace MouseAI.UI
 
             if (isFound && isValid && maze.CalculatePath())
             {
-                DrawPath();
-                
                 maze.CalculateSegments();
+                DrawPath();
                 DisplayMazeText();
+
+
             }
             else
                 DisplayError("Error Calculating Path!", false);
 
             isFound = false;
             searchThread = null;
-            // SelectMaze();
             SetRunState(RUNSTATE.READY);
         }
 
