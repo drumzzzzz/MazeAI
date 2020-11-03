@@ -195,7 +195,7 @@ namespace MouseAI.UI
                 DrawPath();
                 
                 maze.CalculateSegments();
-                DisplayMazeText(true);
+                DisplayMazeText(false);
             }
             else
                 DisplayError("Error Calculating Path!", false);
