@@ -586,14 +586,15 @@ namespace MouseAI
             while (true)
             {
                 so = pathObjects[index++];
-
                 segmentObjects.Add(so);
+
+                segmentObjects.AddRange(SearchObjects(so.x, so.y));
                 if (so.isJunction)
                 {
                     mazeSegments.Add(new MazeObjects(segmentObjects));
                 }
 
-                segmentObjects.AddRange(SearchObjects(so.x, so.y));
+                //segmentObjects.AddRange(SearchObjects(so.x, so.y));
 
                 if (so.x == cheese_x && so.y == cheese_y)
                 {
@@ -626,6 +627,7 @@ namespace MouseAI
         private static MazeObjects SearchObjects(int x, int y)
         {
             MazeObjects pathObjects = new MazeObjects();
+            
             // Scan West
             for (int x_idx = x - 1; x_idx > 0; x_idx--)
             {
@@ -659,7 +661,7 @@ namespace MouseAI
 
         private static bool SearchObject(int x, int y, MazeObjects pathObjects)
         {
-            if (!CheckDeadEnd(x, y))
+            if (!isScanValid(x, y))
                 return false;
 
             if (!pathObjects.Any(o => o.x == x && o.y == y))
@@ -675,7 +677,8 @@ namespace MouseAI
             {
                 x = panArray[i, 0];
                 y = panArray[i, 1];
-                if (CheckDeadEnd(x,y) && !pathObjects.Any(o => o.x == x && o.y == y))
+                //if (CheckDeadEnd(x,y) && !pathObjects.Any(o => o.x == x && o.y == y))
+                if (isScanValid(x, y) && !pathObjects.Any(o => o.x == x && o.y == y))
                 {
                     pathObjects.Add(MazeObjects[x, y]);
                     MazeObjects[x, y].isSegment = true;
