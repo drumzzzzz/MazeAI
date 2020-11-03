@@ -18,8 +18,8 @@ namespace MouseAI.BL
         public int cheese_y { get; set; }
         public bool isPath { get; set; }
         public byte[][] mazepath { get; set; }
-
-        public byte[] bmp { get; set; }
+        public byte[] maze { get; set; }
+        public List<byte[]> segments { get; set; }
 
         public MazeModel()
         { }
@@ -35,6 +35,7 @@ namespace MouseAI.BL
             guid = Guid.NewGuid().ToString();
             mazedata = new byte[height][];
             isPath = false;
+            segments = new List<byte[]>();
 
             for (int y = 0; y < height; y++)
             {
@@ -89,7 +90,7 @@ namespace MouseAI.BL
         {
             foreach (MazeModel mm in mazeModels)
             {
-                if (mm.mazepath == null || mm.mazepath.Length == 0 || mm.bmp == null)
+                if (mm.mazepath == null || mm.mazepath.Length == 0 || mm.maze == null)
                 {
                     return mm;
                 }

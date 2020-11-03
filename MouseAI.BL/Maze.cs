@@ -252,12 +252,12 @@ namespace MouseAI
 
             foreach (MazeModel mm in mazeModels.GetMazeModels())
             {
-                neuralNet.AddTrainingSet(mm.bmp, mm.guid);
+                neuralNet.AddTrainingSet(mm.maze, mm.guid);
             }
 
             foreach (MazeModel mm in mazeModels.GetMazeModels())
             {
-                neuralNet.AddTestSet(mm.bmp, mm.guid);
+                neuralNet.AddTestSet(mm.maze, mm.guid);
             }
 
             neuralNet.BuildDataSets();
@@ -608,6 +608,41 @@ namespace MouseAI
                 if (mazeSegments[idx].Count == 0)
                     mazeSegments.RemoveAt(idx);
             }
+
+            GenerateSegments();
+        }
+
+        private void GenerateSegments()
+        {
+            byte b;
+            Bitmap bmp = new Bitmap(maze_width, maze_height);
+            Graphics g;
+            MazeObjects mos;
+
+            for (int idx = 0; idx < mazeSegments.Count - 1; idx++)
+            {
+                mos = mazeSegments[idx];
+                g = Graphics.FromImage(bmp);
+                g.Clear(GetColorNN(WHITE));
+
+                foreach (MazeObject mo in mos)
+                {
+                    b = GetByteColor(mo);
+                    (bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
+                }
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    bmp.Save(memoryStream, ImageFormat.Bmp);
+                    mazeModel.segments.Add(memoryStream.ToArray());
+                }
+            }
+
+            //foreach (MazeObject mo in mazeSegments.SelectMany(mos => mos))
+            //{
+            //    b = GetByteColor(mo);
+            //    (bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
+            //}
         }
 
         private static MazeObjects SearchObjects(int x, int y)
@@ -677,7 +712,7 @@ namespace MouseAI
 
         #region Paths
 
-        public bool CalculatePath()
+        public void CalculatePath()
         {
             byte b;
             PathObjects = PathObjects.OrderBy(x => x.dtLastVisit).ToList();
@@ -696,8 +731,6 @@ namespace MouseAI
                 mp.mazepath[mo.y][mo.x] = b;
                 (mp.bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
             }
-
-            return true;
         }
 
         private static bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
@@ -869,7 +902,7 @@ namespace MouseAI
                     using (var memoryStream = new MemoryStream())
                     {
                         mp.bmp.Save(memoryStream, ImageFormat.Bmp);
-                        mm.bmp = memoryStream.ToArray();
+                        mm.maze = memoryStream.ToArray();
                     }
                 }
             }
@@ -887,10 +920,10 @@ namespace MouseAI
             {
                 mp = mazePaths.GetPath(mm.guid);
 
-                if (mp != null && mm.bmp != null && mm.mazepath != null)
+                if (mp != null && mm.maze != null && mm.mazepath != null)
                 {
                     mp.mazepath = (byte[][])mm.mazepath.Clone();
-                    ms = new MemoryStream(mm.bmp);
+                    ms = new MemoryStream(mm.maze);
                     mp.bmp = (Bitmap)Image.FromStream(ms);
                 }
             }
@@ -911,7 +944,7 @@ namespace MouseAI
             if (mm == null)
                 return false;
 
-            return mm.bmp != null && mm.mazepath != null;
+            return mm.maze != null && mm.mazepath != null;
         }
 
         public string GetGUID()
