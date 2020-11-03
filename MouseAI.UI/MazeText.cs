@@ -12,30 +12,33 @@ namespace MouseAI.UI
         private readonly StringBuilder sb;
         private readonly int maze_height;
         private readonly int maze_width;
-        // private Maze maze;
-        private List<MazeObject> PathObjects;
-        private MazeObject[,] MazeObjects;
-        private bool isInit;
+        private readonly Maze maze;
+
+        private List<MazeObject> pathObjects;
+        private MazeObject[,] mazeObjects;
+        private MazeSegments mazeSegments;
 
         public const char BLOCK = '█';
-        private const char VISITED = '>';
         public const char SPACE = ' ';
         private const char MOUSE = 'ô';
         private const char CHEESE = 'Δ';
-        private const char SCANNED = ':';
         private const char DEADEND = 'X';
         private const char JUNCTION = '+';
-        private const char PATH = '●';
+        private const char NNPATH = '>';
         private const char PATHOBJ = '#';
-        private const char SEGMENT = '$';
+        private const char NULL = '?';
+        private const char ERROR = '!';
         private const int MARGIN = 30;
+        private readonly char[] SEGMENTS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
 
-        public MazeText(int maze_width, int maze_height)
+        public MazeText(int maze_width, int maze_height, Maze maze)
         {
             InitializeComponent();
 
             this.maze_width = maze_width;
             this.maze_height = maze_height;
+            this.maze = maze;
+
             sb = new StringBuilder();
 
             for (int y = 0; y < maze_height; y++)
@@ -51,52 +54,85 @@ namespace MouseAI.UI
             txtMaze.Text = sb.ToString();
 
             Size size = TextRenderer.MeasureText(txtMaze.Text, txtMaze.Font);
+            pnlSelections.Width = size.Width;
             txtMaze.Width = size.Width;
             txtMaze.Height = size.Height;
-            txtMaze.Location = new Point(0,0);
+            txtMaze.Location = new Point(MARGIN / 2, pnlSelections.Height);
 
-            Width = txtMaze.Width + MARGIN;
-            Height = txtMaze.Height + (MARGIN * 2);
+            Width = txtMaze.Width + (MARGIN * 2);
+            Height = txtMaze.Height + pnlSelections.Height + (MARGIN * 2);
         }
 
-        public void Display(Maze maze)
+        public void DisplayMaze()
         {
             sb.Clear();
-            MazeObjects = maze.GetMazeObjects();
+            pathObjects = maze.GetPathObjects();
+            mazeObjects = maze.GetMazeObjects();
+            mazeSegments = maze.GetMazeSegments();
 
+            char c;
             for (int y = 0; y < maze_height; y++)
             {
                 for (int x = 0; x < maze_width; x++)
                 {
-                    sb.Append(GetObjectChar(MazeObjects[x, y]));
+                    if (rbSegments.Checked)
+                    {
+                        c = GetSegmentChar(x, y);
+                        if (c != NULL)
+                        {
+                            sb.Append(c);
+                            continue;
+                        }
+                    }
+                    else if (rbPaths.Checked)
+                    {
+                        c = GetPathChar(x, y);
+                        if (c != NULL)
+                        {
+                            sb.Append(c);
+                            continue;
+                        }
+                    }
+     
+                    sb.Append(GetObjectChar(mazeObjects[x, y]));
                 }
                 if (y < maze_height - 1)
                     sb.Append(Environment.NewLine);
             }
-
             txtMaze.Text = sb.ToString();
         }
 
-        public void DisplayPaths(Maze maze)
+        private char GetPathChar(int x, int y)
         {
-            sb.Clear();
-            PathObjects = maze.GetPathObjects();
-            MazeObjects = maze.GetMazeObjects();
+            if (pathObjects == null || pathObjects.Count == 0)
+                return NULL;
 
-            for (int y = 0; y < maze_height; y++)
+            MazeObject mo = pathObjects.FirstOrDefault(o => o.x == x && o.y == y);
+
+            if (mo != null)
             {
-                for (int x = 0; x < maze_width; x++)
-                {
-                    if (PathObjects.Any(o => o.x == x && o.y == y))
-                        sb.Append(PATHOBJ);
-                    else
-                        sb.Append(GetObjectChar(MazeObjects[x, y]));
-                }
-                if (y < maze_height - 1)
-                    sb.Append(Environment.NewLine);
+                return !mo.isDeadEnd ? NNPATH : PATHOBJ;
             }
 
-            txtMaze.Text = sb.ToString();
+            return NULL;
+        }
+
+        private char GetSegmentChar(int x, int y)
+        {
+            if (mazeSegments == null || mazeSegments.Count == 0)
+                return NULL;
+
+            int index = 0;
+            foreach (MazeObjects mos in mazeSegments)
+            {
+                if (mos.Any(mo => mo.x == x && mo.y == y))
+                {
+                    return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
+                }
+                index++;
+            }
+
+            return NULL;
         }
 
         private static char GetObjectChar(MazeObject mo)
@@ -108,23 +144,20 @@ namespace MouseAI.UI
             if (mo.object_state == OBJECT_STATE.MOUSE)
                 return MOUSE;
 
-            if (mo.isSegment)
-                return SEGMENT;
-
             if (mo.isDeadEnd)
                 return DEADEND;
 
-            if (mo.isPath)
-                return PATH;
+            //if (mo.isPath)
+            //    return PATH;
 
             if (mo.isJunction)
                 return JUNCTION;
 
-            if (mo.object_state == OBJECT_STATE.VISITED)
-                return VISITED;
+            //if (mo.object_state == OBJECT_STATE.VISITED)
+            //    return VISITED;
 
-            if (mo.isScanned)
-                return SCANNED;
+            //if (mo.isScanned)
+            //    return SCANNED;
 
             switch (mo.object_state)
             {
@@ -135,9 +168,28 @@ namespace MouseAI.UI
             return SPACE;
         }
 
-        public bool CheckInit()
+        #region Controls
+
+        private void btnRefresh_Click(object sender, EventArgs e)
         {
-            return isInit;
+            DisplayMaze();
         }
+
+        private void rbSegments_CheckedChanged(object sender, EventArgs e)
+        {
+            DisplayMaze();
+        }
+
+        private void rbPaths_CheckedChanged(object sender, EventArgs e)
+        {
+            DisplayMaze();
+        }
+
+        private void rbAll_CheckedChanged(object sender, EventArgs e)
+        {
+            DisplayMaze();
+        }
+
+        #endregion
     }
 }

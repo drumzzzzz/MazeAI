@@ -89,7 +89,9 @@ namespace MouseAI.UI
             Console.WindowWidth = 100;
             //ConsoleHelper.SetCurrentFont("Consolas", 25);
 
-            mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT)
+            maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+
+            mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT, maze)
             {
                 Visible = false
             };
@@ -181,7 +183,7 @@ namespace MouseAI.UI
                 {
                     RenderMaze();
                     SetRunState(RUNSTATE.PAUSE);
-                    DisplayMazeText(true);
+                    DisplayMazeText();
                 }
 
                 Application.DoEvents();
@@ -195,13 +197,15 @@ namespace MouseAI.UI
                 DrawPath();
                 
                 maze.CalculateSegments();
-                DisplayMazeText(false);
+                DisplayMazeText();
             }
             else
                 DisplayError("Error Calculating Path!", false);
 
             isFound = false;
             searchThread = null;
+            SelectMaze();
+            SetRunState(RUNSTATE.READY);
         }
 
         private void AISearch()
@@ -456,7 +460,7 @@ namespace MouseAI.UI
             }
 
             if (oSettings.isMazeText)
-                DisplayMazeText(false);
+                DisplayMazeText();
         }
 
         #endregion
@@ -465,10 +469,10 @@ namespace MouseAI.UI
 
         private void NewMazes()
         {
-            if (maze == null)
-            {
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-            }
+            //if (maze == null)
+            //{
+            //    maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+            //}
 
             string filename = maze.GetSaveName();
 
@@ -510,10 +514,10 @@ namespace MouseAI.UI
 
         private void LoadMazes(string filename)
         {
-            if (maze == null)
-            {
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-            }
+            //if (maze == null)
+            //{
+            //    maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+            //}
 
             string result = maze.LoadMazeModels(filename);
 
@@ -633,7 +637,7 @@ namespace MouseAI.UI
                 RenderMaze();
                 DrawPath();
                 if (oSettings.isMazeText)
-                    DisplayMazeText(true);
+                    DisplayMazeText();
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
                 SetRunState(RUNSTATE.READY);
                 return true;
@@ -656,17 +660,9 @@ namespace MouseAI.UI
             mazeText.txtMaze.Clear();
         }
 
-        private void DisplayMazeText(bool isPath)
+        private void DisplayMazeText()
         {
-            if (maze == null)
-                return;
-           
-            if (isPath)
-                mazeText.DisplayPaths(maze);
-            else
-            {
-                mazeText.Display(maze);
-            }
+            mazeText.DisplayMaze();
         }
 
         #endregion
