@@ -565,6 +565,116 @@ namespace MouseAI
 
         #endregion
 
+        #region Segments
+
+        public void CalculateSegments()
+        {
+            MazeObject m = PathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+
+            if (m == null)
+            {
+                throw new Exception("Couldn't find the mouse!");
+            }
+            
+            MazeObjects pathObjects = new MazeObjects((PathObjects.Where(o => o.isPath && !o.isDeadEnd)).OrderBy(d => d.dtLastVisit).ToList());
+            MazeObjects deadEndObjects = new MazeObjects((PathObjects.Where(o => o.isDeadEnd)).ToList());
+            MazeSegments mazeSegments = new MazeSegments();
+            MazeObjects segmentObjects = new MazeObjects(m);
+
+            while (true)
+            {
+                segmentObjects.Add(pathObjects.First());
+                segmentObjects = CalculateSegment(segmentObjects);
+
+                foreach (MazeObject mo in segmentObjects)
+                {
+                    if (pathObjects.Contains(mo))
+                        pathObjects.Remove(mo);
+                    else if (deadEndObjects.Contains(mo))
+                        deadEndObjects.Remove(mo);
+                    //else
+                    //    throw new Exception("MazeObject segment not found!");
+                }
+
+                mazeSegments.Add(new MazeObjects(segmentObjects));
+                if (segmentObjects.Any(o => o.x == cheese_x && o.y == cheese_y))
+                    break;
+            }
+
+            int k = 0;
+        }
+
+        private MazeObjects CalculateSegment(MazeObjects pathObjects)
+        {
+            int x = pathObjects[0].x;
+            int y = pathObjects[0].y;
+            pathObjects[0].isSegment = true;
+            SearchObjects(x,y,pathObjects);
+
+            return pathObjects;
+        }
+
+        private static void SearchObjects(int x, int y, MazeObjects pathObjects)
+        {
+            // Scan West
+            for (int x_idx = x - 1; x_idx > 0; x_idx--)
+            {
+                if (!SearchObject(x_idx, y, pathObjects))
+                    break;
+            }
+
+            // Scan East
+            for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
+            {
+                if (!SearchObject(x_idx, y, pathObjects))
+                    break;
+            }
+
+            // Scan North
+            for (int y_idx = y - 1; y_idx > 0; y_idx--)
+            {
+                if (!SearchObject(x, y_idx, pathObjects))
+                    break;
+            }
+
+            // Scan South
+            for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
+            {
+                if (!SearchObject(x, y_idx, pathObjects))
+                    break;
+            }
+        }
+
+        private static bool SearchObject(int x, int y, MazeObjects pathObjects)
+        {
+            if (!isScanValid(x, y))
+                return false;
+
+            if (!pathObjects.Any(o => o.x == x && o.y == y))
+            {
+                pathObjects.Add(MazeObjects[x, y]);
+                MazeObjects[x, y].isSegment = true;
+            }
+
+            int[,] panArray = GetXYPan(x, y);
+            
+            // Scan all directions from a given point
+            for (int i = 0; i < panArray.Length / 2; i++)
+            {
+                x = panArray[i, 0];
+                y = panArray[i, 1];
+                if (GetScanValid(x, y) == 1 && !pathObjects.Any(o => o.x == x && o.y == y))
+                {
+                    pathObjects.Add(MazeObjects[x, y]);
+                    MazeObjects[x, y].isSegment = true;
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
         #region Paths
 
         public bool CalculatePath()
@@ -578,44 +688,16 @@ namespace MouseAI
 
             mp.bmp = new Bitmap(maze_width, maze_height);
             Graphics g = Graphics.FromImage(mp.bmp);
-            g.Clear(GetColor(WHITE));
+            g.Clear(GetColorNN(WHITE));
 
             foreach (MazeObject mo in PathObjects)
             {
                 b = GetByteColor(mo);
                 mp.mazepath[mo.y][mo.x] = b;
-                (mp.bmp).SetPixel(mo.x, mo.y, GetColor(b));
+                (mp.bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
             }
 
             return true;
-        }
-
-        public void CalculateSegments()
-        {
-            MazeObject m = PathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
-
-            if (m == null)
-            {
-                throw new Exception("Couldn't find the mouse!");
-            }
-
-            List<MazeObject> pathObjects = new List<MazeObject>(PathObjects.Where(o=>o.isPath && !o.isDeadEnd)).OrderBy(d=>d.dtLastVisit).ToList();
-            List<MazeObject> deadEndObjects = new List<MazeObject>(PathObjects.Where(o =>o.isDeadEnd)).ToList();
-            PathObjects.Clear();
-            PathObjects.AddRange( pathObjects);
-            PathObjects.AddRange(deadEndObjects);
-
-            // ToDo: debug state
-            foreach (MazeObject mo in MazeObjects)
-            {
-                if (mo.isDeadEnd)
-                {
-                    mo.isDeadEnd = false;
-                    mo.isVisited = false;
-                    mo.isPath = false;
-                    mo.object_state = OBJECT_STATE.NONE;
-                }
-            }
         }
 
         private static bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
@@ -850,6 +932,17 @@ namespace MouseAI
             {
                 case BLACK: return Color.Black;
                 case GREY: return Color.Gray;
+                case WHITE: return Color.White;
+                default: return Color.Yellow;
+            }
+        }
+
+        private static Color GetColorNN(byte b)
+        {
+            switch (b)
+            {
+                case BLACK: return Color.Black;
+                case GREY: return Color.Black;
                 case WHITE: return Color.White;
                 default: return Color.Yellow;
             }

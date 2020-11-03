@@ -19,9 +19,7 @@ namespace MouseAI.BL
         public bool isPath { get; set; }
         public byte[][] mazepath { get; set; }
 
-        //[XmlIgnore]
         public byte[] bmp { get; set; }
-        // public Bitmap bmp { get; set; }
 
         public MazeModel()
         { }

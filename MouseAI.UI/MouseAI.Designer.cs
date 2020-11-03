@@ -55,10 +55,12 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
+            this.pbxSegment = new System.Windows.Forms.PictureBox();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbxSegment)).BeginInit();
             this.SuspendLayout();
             // 
             // stpStatus
@@ -313,11 +315,25 @@
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
             // 
+            // pbxSegment
+            // 
+            this.pbxSegment.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pbxSegment.BackColor = System.Drawing.Color.White;
+            this.pbxSegment.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pbxSegment.Location = new System.Drawing.Point(797, 576);
+            this.pbxSegment.Margin = new System.Windows.Forms.Padding(0);
+            this.pbxSegment.Name = "pbxSegment";
+            this.pbxSegment.Size = new System.Drawing.Size(51, 25);
+            this.pbxSegment.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbxSegment.TabIndex = 14;
+            this.pbxSegment.TabStop = false;
+            // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(894, 725);
+            this.Controls.Add(this.pbxSegment);
             this.Controls.Add(this.pbxPath);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.lvwMazes);
@@ -341,6 +357,7 @@
             this.msMain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbxSegment)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -373,6 +390,7 @@
         private System.Windows.Forms.PictureBox pbxPath;
         private System.Windows.Forms.PictureBox pbxMaze;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem1;
+        private System.Windows.Forms.PictureBox pbxSegment;
     }
 }
 

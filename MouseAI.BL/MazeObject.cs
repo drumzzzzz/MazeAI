@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 
 namespace MouseAI
 {
@@ -38,6 +39,10 @@ namespace MouseAI
         public bool isDeadEnd { get; set; }
         public bool isJunction { get; set; }
         public bool isPath { get; set; }
+        public bool isSegment { get; set; }
+
+        public MazeObject Next { get; set; }
+        public MazeObject Previous { get; set; }
         public DateTime dtLastVisit { get; set; }
 
         public MazeObject(OBJECT_TYPE element_type, int x, int y)
@@ -52,5 +57,27 @@ namespace MouseAI
             this.y = y;
             direction = DIRECTION.SOUTH;
         }
+    }
+
+    public class MazeObjects : List<MazeObject>
+    {
+        public MazeObjects()
+        {
+        }
+
+        public MazeObjects(MazeObject m)
+        {
+            Add(m);
+        }
+
+        public MazeObjects(List<MazeObject> mazeObjects)
+        {
+            AddRange(mazeObjects);
+        }
+    }
+
+    public class MazeSegments : List<MazeObjects>
+    {
+
     }
 }

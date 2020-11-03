@@ -300,13 +300,16 @@ namespace MouseAI.UI
         {
             pbxPath.Width = MAZE_WIDTH * 3;
             pbxPath.Height = MAZE_HEIGHT * 4;
+            pbxSegment.Width = MAZE_WIDTH * 3;
+            pbxSegment.Height = MAZE_HEIGHT * 4;
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
-            lvwMazes.Height = pbxMaze.Height - pbxPath.Height - 10;
+            lvwMazes.Height = pbxMaze.Height - pbxPath.Height - pbxSegment.Height - 10;
             lvwMazes.Width = pbxPath.Width;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
             pbxMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
             pbxPath.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10);
+            pbxSegment.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10 + pbxPath.Height);
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
 

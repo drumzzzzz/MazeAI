@@ -35,11 +35,11 @@
             // 
             this.txtMaze.CausesValidation = false;
             this.txtMaze.Font = new System.Drawing.Font("Consolas", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtMaze.HideSelection = false;
             this.txtMaze.Location = new System.Drawing.Point(0, 0);
             this.txtMaze.Margin = new System.Windows.Forms.Padding(0);
             this.txtMaze.Multiline = true;
             this.txtMaze.Name = "txtMaze";
-            this.txtMaze.ReadOnly = true;
             this.txtMaze.ShortcutsEnabled = false;
             this.txtMaze.Size = new System.Drawing.Size(171, 131);
             this.txtMaze.TabIndex = 0;
@@ -50,7 +50,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(178, 137);
+            this.ClientSize = new System.Drawing.Size(1139, 630);
             this.ControlBox = false;
             this.Controls.Add(this.txtMaze);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;

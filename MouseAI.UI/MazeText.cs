@@ -27,6 +27,7 @@ namespace MouseAI.UI
         private const char JUNCTION = '+';
         private const char PATH = '●';
         private const char PATHOBJ = '#';
+        private const char SEGMENT = '$';
         private const int MARGIN = 30;
 
         public MazeText(int maze_width, int maze_height)
@@ -106,6 +107,9 @@ namespace MouseAI.UI
             // ToDo: Scan Debug
             if (mo.object_state == OBJECT_STATE.MOUSE)
                 return MOUSE;
+
+            if (mo.isSegment)
+                return SEGMENT;
 
             if (mo.isDeadEnd)
                 return DEADEND;
