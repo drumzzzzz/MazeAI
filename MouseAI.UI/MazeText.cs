@@ -30,6 +30,8 @@ namespace MouseAI.UI
         private const char ERROR = '!';
         private const int MARGIN = 30;
         private readonly char[] SEGMENTS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+        private string guid_last;
+        private string guid_current;
 
         public MazeText(int maze_width, int maze_height, Maze maze)
         {
@@ -58,17 +60,26 @@ namespace MouseAI.UI
             txtMaze.Width = size.Width;
             txtMaze.Height = size.Height;
             txtMaze.Location = new Point(MARGIN / 2, pnlSelections.Height);
-
-            Width = txtMaze.Width + (MARGIN * 2);
+            lbxSegments.Height = txtMaze.Height + (MARGIN / 2);
+            lbxSegments.Location = new Point(txtMaze.Width + (MARGIN / 2), pnlSelections.Height);
+            Width = txtMaze.Width + lbxSegments.Width + (MARGIN * 2);
             Height = txtMaze.Height + pnlSelections.Height + (MARGIN * 2);
         }
 
         public void DisplayMaze()
         {
             sb.Clear();
+
             pathObjects = maze.GetPathObjects();
             mazeObjects = maze.GetMazeObjects();
             mazeSegments = maze.GetMazeSegments();
+            UpdateSegmentList();
+            int segmentIndex = -1;
+
+            if (rbSegments.Checked && lbxSegments.SelectedItem != null)
+            {
+                segmentIndex = lbxSegments.SelectedIndex;
+            }
 
             char c;
             for (int y = 0; y < maze_height; y++)
@@ -77,7 +88,7 @@ namespace MouseAI.UI
                 {
                     if (rbSegments.Checked)
                     {
-                        c = GetSegmentChar(x, y);
+                        c = GetSegmentChar(x, y, segmentIndex);
                         if (c != NULL)
                         {
                             sb.Append(c);
@@ -102,6 +113,40 @@ namespace MouseAI.UI
             txtMaze.Text = sb.ToString();
         }
 
+        private void UpdateSegmentList()
+        {
+            if (!isGuidValid() || mazeSegments == null || mazeSegments.Count == 0)
+            {
+                ClearSegmentList();
+                return;
+            }
+
+            if (guid_last != guid_current || lbxSegments.Items.Count == 0)
+            {
+                ClearSegmentList();
+                for (int i = 0; i < mazeSegments.Count; i++)
+                {
+                    lbxSegments.Items.Add(GetSegmentChar(i));
+                }
+            }
+        }
+
+        private void ClearSegmentList()
+        {
+            if (lbxSegments.Items.Count != 0)
+                lbxSegments.Items.Clear();
+        }
+
+        private bool isGuidValid()
+        {
+            guid_current = maze.GetGUID();
+
+            if (string.IsNullOrEmpty(guid_last))
+                guid_last = maze.GetGUID();
+
+            return !string.IsNullOrEmpty(guid_last) && !string.IsNullOrEmpty(guid_current);
+        }
+
         private char GetPathChar(int x, int y)
         {
             if (pathObjects == null || pathObjects.Count == 0)
@@ -117,7 +162,7 @@ namespace MouseAI.UI
             return NULL;
         }
 
-        private char GetSegmentChar(int x, int y)
+        private char GetSegmentChar(int x, int y, int segmentIndex)
         {
             if (mazeSegments == null || mazeSegments.Count == 0)
                 return NULL;
@@ -125,14 +170,32 @@ namespace MouseAI.UI
             int index = 0;
             foreach (MazeObjects mos in mazeSegments)
             {
-                if (mos.Any(mo => mo.x == x && mo.y == y))
+                if (segmentIndex == -1)
                 {
-                    return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
+                    if (mos.Any(mo => mo.x == x && mo.y == y))
+                    {
+                        return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
+                    }
                 }
+                else if (index == segmentIndex)
+                {
+                    if (mos.Any(mo => mo.x == x && mo.y == y))
+                    {
+                        return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
+                    }
+
+                    return NULL;
+                }
+
                 index++;
             }
 
             return NULL;
+        }
+
+        private char GetSegmentChar(int index)
+        {
+            return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
         }
 
         private static char GetObjectChar(MazeObject mo)
@@ -177,19 +240,38 @@ namespace MouseAI.UI
 
         private void rbSegments_CheckedChanged(object sender, EventArgs e)
         {
-            DisplayMaze();
+            if (rbSegments.Checked)
+                DisplayMaze();
+            else
+            {
+                lbxSegments.SelectedItem = null;
+            }
+
+            lbxSegments.Enabled = rbSegments.Checked;
+        }
+
+        private void lbxSegments_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lbxSegments.SelectedItem != null)
+            {
+                DisplayMaze();
+            }
         }
 
         private void rbPaths_CheckedChanged(object sender, EventArgs e)
         {
-            DisplayMaze();
+            if (rbPaths.Checked)
+                DisplayMaze();
         }
 
         private void rbAll_CheckedChanged(object sender, EventArgs e)
         {
-            DisplayMaze();
+            if (rbAll.Checked)
+                DisplayMaze();
         }
 
         #endregion
+
+
     }
 }

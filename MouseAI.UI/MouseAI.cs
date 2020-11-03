@@ -204,7 +204,7 @@ namespace MouseAI.UI
 
             isFound = false;
             searchThread = null;
-            SelectMaze();
+            // SelectMaze();
             SetRunState(RUNSTATE.READY);
         }
 

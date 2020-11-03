@@ -34,6 +34,7 @@
             this.rbPaths = new System.Windows.Forms.RadioButton();
             this.rbSegments = new System.Windows.Forms.RadioButton();
             this.btnRefresh = new System.Windows.Forms.Button();
+            this.lbxSegments = new System.Windows.Forms.ListBox();
             this.pnlSelections.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -109,12 +110,25 @@
             this.btnRefresh.UseVisualStyleBackColor = true;
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
+            // lbxSegments
+            // 
+            this.lbxSegments.Enabled = false;
+            this.lbxSegments.FormattingEnabled = true;
+            this.lbxSegments.ItemHeight = 14;
+            this.lbxSegments.Location = new System.Drawing.Point(620, 10);
+            this.lbxSegments.Name = "lbxSegments";
+            this.lbxSegments.ScrollAlwaysVisible = true;
+            this.lbxSegments.Size = new System.Drawing.Size(73, 494);
+            this.lbxSegments.TabIndex = 4;
+            this.lbxSegments.SelectedIndexChanged += new System.EventHandler(this.lbxSegments_SelectedIndexChanged);
+            // 
             // MazeText
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(648, 251);
+            this.ClientSize = new System.Drawing.Size(705, 517);
             this.ControlBox = false;
+            this.Controls.Add(this.lbxSegments);
             this.Controls.Add(this.txtMaze);
             this.Controls.Add(this.pnlSelections);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
@@ -137,5 +151,6 @@
         private System.Windows.Forms.RadioButton rbSegments;
         private System.Windows.Forms.RadioButton rbPaths;
         private System.Windows.Forms.RadioButton rbAll;
+        private System.Windows.Forms.ListBox lbxSegments;
     }
 }

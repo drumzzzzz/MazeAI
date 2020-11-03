@@ -586,12 +586,12 @@ namespace MouseAI
             while (true)
             {
                 so = pathObjects[index++];
-                
+
+                segmentObjects.Add(so);
                 if (so.isJunction)
                 {
                     mazeSegments.Add(new MazeObjects(segmentObjects));
                 }
-                segmentObjects.Add(so);
 
                 segmentObjects.AddRange(SearchObjects(so.x, so.y));
 
