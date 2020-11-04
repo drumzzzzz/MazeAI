@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
+using MouseAI.ML;
 
 namespace MouseAI.BL
 {
@@ -49,7 +52,7 @@ namespace MouseAI.BL
         }
     }
 
-    public class MazeModels // : List<MazeModel>
+    public class MazeModels
     {
         public string Guid { get; set; }
         public List<MazeModel> mazeModels { get; set; }
@@ -74,6 +77,44 @@ namespace MouseAI.BL
             return mazeModels.Count();
         }
 
+        public int GetSegmentCount()
+        {
+            return mazeModels.Where(mm => mm.segments != null).Sum(mm => mm.segments.Count);
+        }
+
+        public int[] GetSegmentArray()
+        {
+            List<int> segments = new List<int>();
+
+            int index = 0;
+            foreach (MazeModel m in mazeModels)
+            {
+                if (m.segments == null || m.segments.Count == 0)
+                    throw  new Exception("Invalid Segment Found");
+
+                for (int i = 0; i < m.segments.Count; i++)
+                {
+                    segments.Add(index);
+                }
+
+                index++;
+            }
+
+            return segments.ToArray();
+        }
+
+        public int[] GetModelArray()
+        {
+            List<int> models = new List<int>();
+
+            for (int index = 0; index < mazeModels.Count; index++)
+            {
+                models.Add(index);
+            }
+
+            return models.ToArray();
+        }
+
         public MazeModel GetMazeModel(int index)
         {
             if (index > mazeModels.Count || index < 0)
@@ -85,6 +126,34 @@ namespace MouseAI.BL
         {
             return mazeModels;
         }
+
+        public ImageDatas GetImageDatas()
+        {
+            List<string> Guids = new List<string>();
+            foreach (MazeModel mm in mazeModels)
+            {
+                if (string.IsNullOrEmpty(mm.guid))
+                    throw new Exception("Invalid Guid found in MazeModel!");
+
+                Guids.Add(mm.guid);
+            }
+
+            ImageDatas imageDatas = new ImageDatas(Guid, Guids);
+
+            MazeModel m;
+            for (int i = 0; i < mazeModels.Count; i++)
+            {
+                m = mazeModels[i];
+                if (m.maze == null || m.maze.Length == 0 || m.segments == null || m.segments.Count == 0)
+                    throw new Exception(string.Format("Invalid Image Data Found at Index {0}", i));
+
+                imageDatas.Add(new ImageData(m.maze, m.guid));
+                imageDatas.AddRange(m.segments.Select(t => new ImageData(t, m.guid)));
+            }
+
+            return imageDatas;
+        }
+
 
         public MazeModel CheckPaths()
         {

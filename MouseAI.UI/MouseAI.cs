@@ -23,6 +23,7 @@ namespace MouseAI.UI
         private Thread testThread;
         private Thread trainThread;
         private readonly MazeText mazeText;
+        private readonly MazeSegments mazeSegments;
         private Maze maze;
         private bool isExit;
         private bool isFound;
@@ -38,7 +39,8 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 5;
+        private const int MAZE_COUNT = 100;
+        private const double DATA_SPLIT = 0.70;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
 
@@ -96,6 +98,11 @@ namespace MouseAI.UI
                 Visible = false
             };
 
+            mazeSegments = new MazeSegments(MAZE_WIDTH, MAZE_HEIGHT, maze)
+            {
+                Visible = false
+            };
+
             LoadSettings();
             RunState = RUNSTATE.NONE;
             InitMaze();
@@ -138,7 +145,7 @@ namespace MouseAI.UI
                 SetMazeTextVisible();
             }
 
-            //RunTrain();
+            RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -196,6 +203,7 @@ namespace MouseAI.UI
             {
                 maze.CalculatePath();
                 maze.CalculateSegments();
+                mazeSegments.ShowImages();
 
                 DrawPath();
                 DisplayMazeText();
@@ -259,7 +267,7 @@ namespace MouseAI.UI
         {
             try
             {
-                maze.Train(oSettings.Guid);
+                maze.Train(DATA_SPLIT, oSettings.Guid);
             }
             catch (Exception e)
             {
@@ -304,16 +312,13 @@ namespace MouseAI.UI
         {
             pbxPath.Width = MAZE_WIDTH * 3;
             pbxPath.Height = MAZE_HEIGHT * 4;
-            pbxSegment.Width = MAZE_WIDTH * 3;
-            pbxSegment.Height = MAZE_HEIGHT * 4;
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
-            lvwMazes.Height = pbxMaze.Height - pbxPath.Height - pbxSegment.Height - 10;
+            lvwMazes.Height = pbxMaze.Height - pbxPath.Height - 10;
             lvwMazes.Width = pbxPath.Width;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
             pbxMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
             pbxPath.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10);
-            pbxSegment.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10 + pbxPath.Height);
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
 
@@ -638,6 +643,9 @@ namespace MouseAI.UI
                 DrawPath();
                 if (oSettings.isMazeText)
                     DisplayMazeText();
+                if (oSettings.isMazeSegments)
+                    DisplayMazeSegments();
+
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
                 SetRunState(RUNSTATE.READY);
                 return true;
@@ -652,7 +660,7 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Maze Text
+        #region Maze Text and Segments
 
         private void SetMazeTextVisible()
         {
@@ -663,6 +671,16 @@ namespace MouseAI.UI
         private void DisplayMazeText()
         {
             mazeText.DisplayMaze();
+        }
+
+        private void SetMazeSegmentsVisible()
+        {
+            mazeSegments.Visible = (oSettings.isMazeSegments);
+        }
+
+        private void DisplayMazeSegments()
+        {
+            mazeSegments.ShowImages();
         }
 
         #endregion
@@ -752,6 +770,15 @@ namespace MouseAI.UI
             UpdateSettings();
             SetMazeTextVisible();
         }
+
+        private void mazeSegmentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mazeSegmentsToolStripMenuItem.Checked = !mazeSegmentsToolStripMenuItem.Checked;
+            oSettings.isMazeSegments = mazeSegmentsToolStripMenuItem.Checked;
+            UpdateSettings();
+            SetMazeSegmentsVisible();
+        }
+
 
         private void trainToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -886,5 +913,6 @@ namespace MouseAI.UI
         }
 
         #endregion
+
     }
 }

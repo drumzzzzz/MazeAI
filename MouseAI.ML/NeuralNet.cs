@@ -28,7 +28,7 @@ namespace MouseAI.ML
 
         private int width; 
         private int height;
-        private readonly int outputs;
+        private string label;
 
         private NDarray x_train;    // Training Data
         private NDarray y_train;    // Training Labels
@@ -54,29 +54,11 @@ namespace MouseAI.ML
             }
         }
 
-        // public DataSets(int Width, int Height, int Train_Count, int Test_Count, string Label)
-        public void InitDataSets(int train_count, int test_count, string label)
+        public void InitDataSets(ImageDatas imageDatas, double split, string label, Random r)
         {
+            this.label = label;
             dataSets = null;
-            dataSets = new DataSets(width, height, train_count, test_count, label);
-        }
-
-        public bool AddTrainingSet(byte[] imagedata, string label)
-        {
-            if (imagedata == null)
-                return false;
-
-            dataSets.AddTrainData(imagedata, label);
-            return true;
-        }
-
-        public bool AddTestSet(byte[] imagedata, string label)
-        {
-            if (imagedata == null)
-                return false;
-
-            dataSets.AddTestData(imagedata, label);
-            return true;
+            dataSets = new DataSets(width, height, imageDatas, split, r);
         }
 
         public void TestMnist()
@@ -89,8 +71,8 @@ namespace MouseAI.ML
 
         public void BuildDataSets()
         {
-            dataSets.BuildArrays();
-            ((x_train, y_train), (x_test, y_test)) = dataSets.GetData();
+            ((x_train, y_train), (x_test, y_test)) = dataSets.BuildDataSets();
+            Console.WriteLine("X_Train:{0} Y_Train:{1} X_Test:{2} Y_Test:{3}", x_train.shape, y_train.shape, x_test.shape, y_test.shape);
         }
 
         #endregion
@@ -128,10 +110,9 @@ namespace MouseAI.ML
 
             Console.WriteLine("Test Started {0}", dtStart);
             Console.WriteLine("Width: {0} Height: {1} Size:{2}", width, height, width * height);
-            Console.WriteLine("x_train shape: {0} train samples: {1} x_test shape: {2}", 
-                                x_train.shape, x_train.shape[0], x_test.shape[0]);
+            Console.WriteLine("x_train shape: {0} x_train samples: {1} x_test shape: {2} x_test samples: {3}", 
+                                x_train.shape, x_train.shape[0], x_test.shape, x_test.shape[0]);
 
-            // Convert class vectors to binary class matrices
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
@@ -162,7 +143,8 @@ namespace MouseAI.ML
             Sequential model = new Sequential();
             model.Add(new Dropout(0.25));
             model.Add(new Flatten());
-            model.Add(new Dense(128, activation: "relu"));
+            model.Add(new Dense(1024, activation: "relu"));
+            model.Add(new Dense(1024, activation: "relu"));
             model.Add(new Dropout(0.5));
             model.Add(new Dense(num_classes, activation: "softmax"));
 

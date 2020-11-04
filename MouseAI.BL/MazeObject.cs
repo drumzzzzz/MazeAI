@@ -71,9 +71,9 @@ namespace MouseAI
         }
     }
 
-    public class MazeSegments : List<MazeObjects>
+    public class MazeObjectSegments : List<MazeObjects>
     {
-        public MazeSegments()
+        public MazeObjectSegments()
         { }
     }
 }

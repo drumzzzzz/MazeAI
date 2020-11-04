@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Numpy;
 
 namespace MouseAI.ML
 {
     public class ImageData
     {
-        public byte[] Data;
-        public string Label;
+        public byte[] Data { get; }
+        public string Label { get; }
+        public int Reference { get; set; }
+        public bool isTrain { get; set; }
 
         public ImageData(byte[] Data, string Label)
         {
@@ -22,115 +21,169 @@ namespace MouseAI.ML
 
     public class ImageDatas : List<ImageData>
     {
-    }
+        private readonly string label;
+        private readonly List<string> labels;
 
-    public class DataSet
-    {
-        public int[] Data;
-        public string Label { get; set; }   
+        public ImageDatas(string label, List<string> labels)
+        {
+            this.label = label;
+            this.labels = labels;
+        }
+
+        public string GetLabel()
+        {
+            return label;
+        }
+
+        public List<string> GetLabels()
+        {
+            return labels;
+        }
     }
 
     public class DataSets
     {
-        private int Width;
-        private int Height;
+        private readonly Random r;
         private static int ImageSize;
         private const int HEADER_SIZE = 54;
         private const int BYTE_NUM = 4;
-        private string Label { get; set; }
+        
+        private readonly ImageDatas imageDatas;
+        private readonly double split;
 
-        private int[,] X_Train_Data;
-        private int[,] Y_Train_Data;
-        private int[,] X_Test_Data;
-        private int[,] Y_Test_Data;
-        private List<string> TrainLabels;
-        private List<string> TestLabels;
-        private int train_idx = 0;
-        private int test_idx = 0;
-
-        // X: length x width pixel data, y: n Images
-        // X: 1 column, y: label per n images 
-        public NDarray X_train; 
-        public NDarray Y_train; 
-        public NDarray X_test;
-        public NDarray Y_test;
-
-        public DataSets(int Width, int Height, int Train_Count, int Test_Count, string Label)
+        private List<int> GetRandomList(int min, int max)
         {
-            this.Width = Width;
-            this.Height = Height;
-            ImageSize = (Width * Height);
-            this.Label = Label;
+            List<int> Values = new List<int>();
+            List<int> RandomValues = new List<int>();
 
-            // X: Width * Height in pixels, Count in nSamples
-            // Y: nSamples, 1 column
-            X_Train_Data = new int[Train_Count, ImageSize];
-            Y_Train_Data = new int[Train_Count, 1];
-            X_Test_Data = new int[Test_Count, ImageSize];
-            Y_Test_Data = new int[Test_Count, 1];
-
-            TrainLabels = new List<string>();
-            TestLabels = new List<string>();
-
-            for (int idx = 0; idx < Train_Count; idx++)
+            for (int i = min; i < max; i++)
             {
-                Y_Train_Data[idx, 0] = idx;
+                Values.Add(i);
             }
 
-            for (int idx = 0; idx < Test_Count; idx++)
+            int index;
+            while (Values.Count != 0)
             {
-                Y_Test_Data[idx, 0] = idx;
+                index = r.Next(Values.Count - 1);
+                RandomValues.Add(Values[index]);
+                Values.RemoveAt(index);
             }
+
+            return RandomValues;
         }
 
-        public ((NDarray, NDarray), (NDarray, NDarray)) GetData()
+        public DataSets(int Width, int Height, ImageDatas imageDatas, double split, Random r)
         {
-            (NDarray, NDarray) tuple1 = (X_train, Y_train);
-            (NDarray, NDarray) tuple2 = (X_test, Y_test);
+            if (split < 0 || split > 1.00)
+                throw new Exception(string.Format("Invalid split parameter: {0}", split));
+            
+            ImageSize = (Width * Height);
+
+            this.imageDatas = imageDatas;
+            this.r = r;
+            this.split = split;
+        }
+
+        public ((NDarray, NDarray), (NDarray, NDarray)) BuildDataSets()
+        {
+            List<string> Labels = imageDatas.GetLabels();
+
+            if (Labels == null || Labels.Count == 0)
+                throw new Exception("Invalid Dataset Labels!");
+
+            List<byte[]> train = new List<byte[]>();
+            List<int> train_labels = new List<int>();
+            List<byte[]> test = new List<byte[]>();
+            List<int> test_labels = new List<int>();
+            
+            if (BuildSets(train, train_labels, test, test_labels, Labels) != imageDatas.Count)
+                throw  new Exception(string.Format("Error creating data sets: Expected:{0}", imageDatas.Count));
+
+            (NDarray, NDarray) tuple1 = GetDataSets(train, train_labels);
+            (NDarray, NDarray) tuple2 = GetDataSets(test, test_labels);
             return (tuple1, tuple2);
         }
 
-        public void BuildArrays()
+        private int BuildSets(ICollection<byte[]> train, ICollection<int> train_labels, ICollection<byte[]> test, ICollection<int> test_labels, IEnumerable<string> Labels)
         {
-            X_train = X_Train_Data;
-            Y_train = Y_Train_Data;
-            X_test = X_Test_Data;
-            Y_test = Y_Test_Data;
+            List<ImageData> id;
+            List<int> indexes;
+            int label_count = 0;
+            int set_count = 0;
+            int count, sum, train_count, index;
 
-            Console.WriteLine("X_Train:{0} Y_Train:{1} X_Test:{2} Y_Test:{3}",X_train.shape, Y_train.shape, X_test.shape, Y_test.shape);
-        }
-        
-        public void AddTrainData(byte[] imagedata, string label)
-        {
-            if (train_idx > X_Train_Data.Length)
-                throw new Exception("Train Index Excedded!");
+            Console.WriteLine("Splitting data sets by {0}%", split * 100);
 
-            TrainLabels.Add(label);
-
-            for (int idx = 0; idx < ImageSize; idx++)
+            foreach (string label in Labels)
             {
-                X_Train_Data[train_idx, idx] = imagedata[GetByteOffset(idx)];
-            }
+                id = imageDatas.Where(o => o.Label == label).ToList();
+                if (id.Count == 0)
+                {
+                    throw new Exception(string.Format("Image Data label for {0} not found!", label));
+                }
 
-            train_idx++;
+                count = id.Count;
+                sum = 0;
+                indexes = GetRandomList(1, count);
+                indexes.Insert(0, 0);
+                train_count = (int)((count) * split);
+
+                for (int i = 0; i < train_count; i++)
+                {
+                    index = indexes[i];
+                    train.Add(id[index].Data);
+                    train_labels.Add(label_count);
+                    id[index].isTrain = true;
+                    id[index].Reference = train.Count - 1;
+                    sum++;
+                    set_count++;
+                }
+
+                indexes.RemoveAt(0);
+                indexes.RemoveRange(0, train_count - 1);
+
+                foreach (int idx in indexes)
+                {
+                    test.Add(id[idx].Data);
+                    test_labels.Add(label_count);
+                    id[idx].isTrain = false;
+                    id[idx].Reference = test.Count - 1;
+                    sum++;
+                    set_count++;
+                }
+
+                if (sum != count)
+                    throw new Exception("Invalid Data Selection!");
+
+                label_count++;
+            }
+            return set_count;
+        }
+
+        private static (NDarray, NDarray) GetDataSets(IReadOnlyList<byte[]> data, IReadOnlyList<int> labels)
+        {
+            int count = data.Count;
+            int[,] x_data = new int[count, ImageSize];
+            int[] y_labels = new int[count];
+
+            byte[] bytes;
+
+            for (int i = 0; i < count; i++)
+            {
+                bytes = data[i];
+
+                for (int byteIdx = 0; byteIdx < ImageSize; byteIdx++)
+                {
+                    x_data[i, byteIdx] =  bytes[GetByteOffset(byteIdx)];
+                }
+                y_labels[i] = labels[i];
+            }
+            return (x_data, y_labels);
         }
 
         private static int GetByteOffset(int index)
         {
             return HEADER_SIZE + (index * BYTE_NUM);
-        }
-
-        public void AddTestData(byte[] imagedata, string label)
-        {
-            if (test_idx > X_Test_Data.Length)
-                throw new Exception("Test Index Excedded!");
-
-            TestLabels.Add(label);
-
-            for (int idx = 0; idx < ImageSize; idx++)
-                X_Test_Data[test_idx, idx] = imagedata[GetByteOffset(idx)];
-
-            test_idx++;
         }
     }
 }

@@ -55,12 +55,11 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
-            this.pbxSegment = new System.Windows.Forms.PictureBox();
+            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbxSegment)).BeginInit();
             this.SuspendLayout();
             // 
             // stpStatus
@@ -170,7 +169,8 @@
             this.debugToolStripMenuItem,
             this.autorunToolStripMenuItem,
             this.loadLastToolStripMenuItem,
-            this.mazeTextToolStripMenuItem});
+            this.mazeTextToolStripMenuItem,
+            this.mazeSegmentsToolStripMenuItem});
             this.editToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(65, 31);
@@ -179,28 +179,28 @@
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugToolStripMenuItem.Text = "Debug";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // loadLastToolStripMenuItem
             // 
             this.loadLastToolStripMenuItem.Name = "loadLastToolStripMenuItem";
-            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadLastToolStripMenuItem.Text = "Load Last";
             this.loadLastToolStripMenuItem.Click += new System.EventHandler(this.loadLastToolStripMenuItem_Click);
             // 
             // mazeTextToolStripMenuItem
             // 
             this.mazeTextToolStripMenuItem.Name = "mazeTextToolStripMenuItem";
-            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.mazeTextToolStripMenuItem.Text = "Maze Text";
             this.mazeTextToolStripMenuItem.Click += new System.EventHandler(this.mazeTextToolStripMenuItem_Click);
             // 
@@ -315,25 +315,18 @@
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
             // 
-            // pbxSegment
+            // mazeSegmentsToolStripMenuItem
             // 
-            this.pbxSegment.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pbxSegment.BackColor = System.Drawing.Color.White;
-            this.pbxSegment.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pbxSegment.Location = new System.Drawing.Point(797, 576);
-            this.pbxSegment.Margin = new System.Windows.Forms.Padding(0);
-            this.pbxSegment.Name = "pbxSegment";
-            this.pbxSegment.Size = new System.Drawing.Size(51, 25);
-            this.pbxSegment.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbxSegment.TabIndex = 14;
-            this.pbxSegment.TabStop = false;
+            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
+            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
+            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
             // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(894, 725);
-            this.Controls.Add(this.pbxSegment);
             this.Controls.Add(this.pbxPath);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.lvwMazes);
@@ -357,7 +350,6 @@
             this.msMain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbxSegment)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -390,7 +382,7 @@
         private System.Windows.Forms.PictureBox pbxPath;
         private System.Windows.Forms.PictureBox pbxMaze;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem1;
-        private System.Windows.Forms.PictureBox pbxSegment;
+        private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
     }
 }
 

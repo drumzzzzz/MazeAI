@@ -43,7 +43,7 @@ namespace MouseAI
         private static MazeModels mazeModels;
         private static MazeModel mazeModel;
         private static List<MazeObject> PathObjects;
-        private MazeSegments mazeSegments;
+        private MazeObjectSegments mazeObjectSegments;
         private static MazeObject oMouse;
         private static MazePaths mazePaths;
         private readonly string AppDir;
@@ -232,7 +232,7 @@ namespace MouseAI
 
         #region Neural Net
 
-        public void Train(string guid)
+        public void Train(double split, string guid)
         {
             if (mazeModels == null || mazeModels.Count() == 0)
                 throw new Exception("No MazeModels!");
@@ -246,22 +246,16 @@ namespace MouseAI
                 throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?", _mm.guid));
             }
 
-            int train_count = mazeModels.Count();
-            int test_count = mazeModels.Count();
-            neuralNet.InitDataSets(train_count, test_count, guid);
-
-            foreach (MazeModel mm in mazeModels.GetMazeModels())
+            if (mazeModels.Count() == 0|| mazeModels.GetSegmentCount() == 0)
             {
-                neuralNet.AddTrainingSet(mm.maze, mm.guid);
+                throw new Exception("Maze test data not found!");
             }
 
-            foreach (MazeModel mm in mazeModels.GetMazeModels())
-            {
-                neuralNet.AddTestSet(mm.maze, mm.guid);
-            }
+            ImageDatas imageDatas = mazeModels.GetImageDatas();
 
+            neuralNet.InitDataSets(imageDatas, split, guid, r);
             neuralNet.BuildDataSets();
-            neuralNet.Process(100, mazeModels.Count(), 128, true, guid, false);
+            neuralNet.Process(100, mazeModels.Count(), 10, true, guid, false);
         }
 
         #endregion
@@ -581,7 +575,7 @@ namespace MouseAI
             MazeObjects segmentObjects = new MazeObjects();
             int index = 0;
 
-            mazeSegments = new MazeSegments();
+            mazeObjectSegments = new MazeObjectSegments();
 
             while (true)
             {
@@ -592,21 +586,21 @@ namespace MouseAI
                 
                 if (so.isJunction)
                 {
-                    mazeSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
+                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
                 }
 
                 if (so.x == cheese_x && so.y == cheese_y)
                 {
-                    mazeSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
+                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
                     break;
                 }
             }
 
-            for (int idx = mazeSegments.Count - 1; idx > -1; idx--)
+            for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
             {
-                mazeSegments[idx].RemoveAll(item=>!PathObjects.Contains(item));
-                if (mazeSegments[idx].Count == 0)
-                    mazeSegments.RemoveAt(idx);
+                mazeObjectSegments[idx].RemoveAll(item=>!PathObjects.Contains(item));
+                if (mazeObjectSegments[idx].Count == 0)
+                    mazeObjectSegments.RemoveAt(idx);
             }
 
             GenerateSegments();
@@ -619,9 +613,9 @@ namespace MouseAI
             Graphics g;
             MazeObjects mos;
 
-            for (int idx = 0; idx < mazeSegments.Count - 1; idx++)
+            for (int idx = 0; idx < mazeObjectSegments.Count - 1; idx++)
             {
-                mos = mazeSegments[idx];
+                mos = mazeObjectSegments[idx];
                 g = Graphics.FromImage(bmp);
                 g.Clear(GetColorNN(WHITE));
 
@@ -643,6 +637,11 @@ namespace MouseAI
             //    b = GetByteColor(mo);
             //    (bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
             //}
+        }
+
+        public List<byte[]> GetSegments()
+        {
+            return mazeModel.segments;
         }
 
         private static MazeObjects SearchObjects(int x, int y)
@@ -703,9 +702,9 @@ namespace MouseAI
             return true;
         }
 
-        public MazeSegments GetMazeSegments()
+        public MazeObjectSegments GetMazeSegments()
         {
-            return mazeSegments;
+            return mazeObjectSegments;
         }
 
         #endregion

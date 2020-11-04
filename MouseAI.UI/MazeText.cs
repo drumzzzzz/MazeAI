@@ -16,7 +16,7 @@ namespace MouseAI.UI
 
         private List<MazeObject> pathObjects;
         private MazeObject[,] mazeObjects;
-        private MazeSegments mazeSegments;
+        private MazeObjectSegments mazeObjectSegments;
 
         public const char BLOCK = '█';
         public const char SPACE = ' ';
@@ -68,12 +68,15 @@ namespace MouseAI.UI
 
         public void DisplayMaze()
         {
+            if (!Visible)
+                return;
+
             sb.Clear();
             guid_current = maze.GetGUID();
 
             pathObjects = maze.GetPathObjects();
             mazeObjects = maze.GetMazeObjects();
-            mazeSegments = maze.GetMazeSegments();
+            mazeObjectSegments = maze.GetMazeSegments();
             UpdateSegmentList();
             int segmentIndex = -1;
 
@@ -121,7 +124,7 @@ namespace MouseAI.UI
 
         private void UpdateSegmentList()
         {
-            if (!isGuidValid() || mazeSegments == null || mazeSegments.Count == 0)
+            if (!isGuidValid() || mazeObjectSegments == null || mazeObjectSegments.Count == 0)
             {
                 ClearSegmentList();
                 return;
@@ -131,7 +134,7 @@ namespace MouseAI.UI
             {
                 guid_last = guid_current;
                 ClearSegmentList();
-                for (int i = 0; i < mazeSegments.Count; i++)
+                for (int i = 0; i < mazeObjectSegments.Count; i++)
                 {
                     lbxSegments.Items.Add(GetSegmentChar(i));
                 }
@@ -171,11 +174,11 @@ namespace MouseAI.UI
 
         private char GetSegmentChar(int x, int y, int segmentIndex)
         {
-            if (mazeSegments == null || mazeSegments.Count == 0)
+            if (mazeObjectSegments == null || mazeObjectSegments.Count == 0)
                 return NULL;
 
             int index = 0;
-            foreach (MazeObjects mos in mazeSegments)
+            foreach (MazeObjects mos in mazeObjectSegments)
             {
                 if (segmentIndex == -1)
                 {
