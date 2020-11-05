@@ -203,6 +203,14 @@ namespace MouseAI.PL
             Directory.CreateDirectory(path);
         }
 
+        public static bool CheckCreateDirectory(string path)
+        {
+            if(!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            return Directory.Exists(path);
+        }
+
         public static void CopyFile(string sourcepath,string filename,  string destinationpath, bool isOverWrite)
         {
             File.Copy(Path.Combine(sourcepath, filename), Path.Combine(destinationpath, filename), isOverWrite);

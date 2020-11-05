@@ -26,9 +26,12 @@ namespace MouseAI.ML
     {
         #region Declarations
 
-        private int width; 
-        private int height;
+        private readonly int width; 
+        private readonly int height;
         private string label;
+        private string model_dir;
+        private readonly string log_dir;
+        private string log_ext;
 
         private NDarray x_train;    // Training Data
         private NDarray y_train;    // Training Labels
@@ -36,15 +39,22 @@ namespace MouseAI.ML
         private NDarray y_test;     // Testing Labels
 
         private DataSets dataSets;
+        private Sequential model;
+        private DateTime dtStart;
+        private DateTime dtEnd;
+        private double[] score;
 
         #endregion
 
         #region Initialization
 
-        public NeuralNet(int width, int height)
+        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir)
         {
             this.width = width;
             this.height = height;
+            this.log_dir = log_dir;
+            this.log_ext = log_ext;
+            this.model_dir = model_dir;
 
             string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
             if (!string.IsNullOrEmpty(paths))
@@ -59,14 +69,6 @@ namespace MouseAI.ML
             this.label = label;
             dataSets = null;
             dataSets = new DataSets(width, height, imageDatas, split, r);
-        }
-
-        public void TestMnist()
-        { 
-            ((x_train, y_train), (x_test, y_test)) = MNIST.LoadData();
-            width = 28;
-            height = 28;
-            Process(100, 10, 128, true, null, true);
         }
 
         public void BuildDataSets()
@@ -84,7 +86,7 @@ namespace MouseAI.ML
             if (x_train == null || y_train == null || x_test == null || y_test == null)
                 throw new Exception("Dataset was null!");
 
-            DateTime dtStart = DateTime.UtcNow;
+            dtStart = DateTime.UtcNow;
             Shape input_shape;
 
             if (K.ImageDataFormat() == "channels_first")
@@ -116,20 +118,18 @@ namespace MouseAI.ML
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
-            Sequential model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size, isEarlyStop);
+            string logname = log_dir + @"\" + DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss") + ".csv";
 
-            DateTime dtEnd = DateTime.UtcNow;
+            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size, isEarlyStop, logname);
+            
+            dtEnd = DateTime.UtcNow;
 
             // Score the model for performance
-            double[] score = model.Evaluate(x_test, y_test, verbose: 0);
+            score = model.Evaluate(x_test, y_test, verbose: 0);
             TimeSpan ts = dtEnd - dtStart;
             model.Summary();
             Console.WriteLine("Test End: {0}  Duration: {1}:{2}.{3}", dtEnd, ts.Hours,ts.Minutes, ts.Seconds);
             Console.WriteLine("Loss: {0} Accuracy: {1}", score[0], score[1]);
-
-            //string json = model.ToJson();
-            //File.WriteAllText("model.json", json);
-            //model.Save("model.h5");
         }
 
         #endregion
@@ -137,7 +137,7 @@ namespace MouseAI.ML
         #region Models
 
         private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
-            int epochs, int num_classes, int batch_size, bool isEarlyStop)
+            int epochs, int num_classes, int batch_size, bool isEarlyStop, string logname)
         {
             // Build model
             Sequential model = new Sequential();
@@ -151,19 +151,23 @@ namespace MouseAI.ML
             // Compile with loss, metrics and optimizer
             model.Compile(loss: "categorical_crossentropy", optimizer: new Adadelta(), metrics: new[] { "accuracy" });
 
+            CSVLogger csv_logger = new CSVLogger(logname);
+
             if (isEarlyStop)
             {
                 EarlyStopping es = new EarlyStopping(monitor: "val_loss", 0, 0, 1, mode: "min", 1);
-
+                Callback[] callbacks = { csv_logger, es };
+                
                 // Train the model
                 model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
-                    validation_data: new[] {x_test, y_test}, callbacks: new Callback[] {es});
+                    validation_data: new[] {x_test, y_test}, callbacks: callbacks);
             }
             else
             {
+                Callback[] callbacks = { csv_logger };
                 // Train the model
                 model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
-                    validation_data: new[] { x_test, y_test });
+                    validation_data: new[] { x_test, y_test }, callbacks: callbacks);
             }
 
             return model;
@@ -196,6 +200,26 @@ namespace MouseAI.ML
 
             return model;
         }
+
+        #endregion
+
+        #region File Saving and Loading
+
+
+        public void SaveFiles(string path)
+        {
+            if (model == null)
+                throw new Exception("Model Error");
+
+            string model_json = model.ToJson();
+
+            string dt = dtStart.ToFileTimeUtc().ToString();
+
+
+            // File.WriteAllText("model.json", model_json);
+            // model.Save("model.h5");
+        }
+
 
         #endregion
     }

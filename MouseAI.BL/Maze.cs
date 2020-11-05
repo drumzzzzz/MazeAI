@@ -31,8 +31,13 @@ namespace MouseAI
         private int cheese_x;
         private int cheese_y;
 
-        private const string FILE_EXT = "mze";
-        private const string FILE_DIR = "mazes";
+        
+        private const string MAZE_DIR = "mazes";
+        private const string MAZE_EXT = "mze";
+        private const string LOG_DIR = "logs";
+        private const string LOG_EXT = "csv";
+        private const string MODELS_DIR = "models";
+        private const string DIR = @"\";
         public const int BLACK = 0x00;
         public const int WHITE = 0xff;
         public const int GREY = 0x80;
@@ -46,13 +51,16 @@ namespace MouseAI
         private MazeObjectSegments mazeObjectSegments;
         private static MazeObject oMouse;
         private static MazePaths mazePaths;
-        private readonly string AppDir;
+        private readonly string appdir;
+        private string models_dir;
+        private string log_dir;
+        private string maze_dir;
         private string FileName;
         private bool isCheesePath;
         private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
         private static DbTable_Mazes dbtblStats;
         private static DbTable_Projects dbtblProjects;
-
+        
         #endregion
 
         #region Initialization
@@ -77,12 +85,32 @@ namespace MouseAI
                 scanObjects[i] = new List<MazeObject>();
             }
 
-            AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + FILE_DIR;
+            appdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            maze_dir = appdir + DIR + MAZE_DIR;
+            log_dir = appdir + DIR + LOG_DIR;
+            models_dir = appdir + DIR + MODELS_DIR;
+
+            if (!FileIO.CheckCreateDirectory(maze_dir))
+                throw new Exception("Could not create maze directory");
+            if (!FileIO.CheckCreateDirectory(log_dir))
+                throw new Exception("Could not create log directory");
+            if (!FileIO.CheckCreateDirectory(models_dir))
+                throw new Exception("Could not create log directory");
 
             if (mazeDb == null)
                 mazeDb = new MazeDb();
 
-            neuralNet = new NeuralNet(maze_width, maze_height);
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir);
+        }
+
+        public string GetLogDir()
+        {
+            return log_dir;
+        }
+
+        public string GetModelsDir()
+        {
+            return models_dir;
         }
 
         public void ClearMazeModels()
@@ -237,9 +265,6 @@ namespace MouseAI
             if (mazeModels == null || mazeModels.Count() == 0)
                 throw new Exception("No MazeModels!");
 
-            //neuralNet.TestMnist();
-            //return;
-
             MazeModel _mm = mazeModels.CheckPaths();
             if (_mm != null)
             {
@@ -255,7 +280,12 @@ namespace MouseAI
 
             neuralNet.InitDataSets(imageDatas, split, guid, r);
             neuralNet.BuildDataSets();
-            neuralNet.Process(100, mazeModels.Count(), 10, true, guid, false);
+            neuralNet.Process(5, mazeModels.Count(), 10, true, guid, false);
+        }
+
+        public void SaveResults()
+        {
+            neuralNet.SaveFiles(log_dir);
         }
 
         #endregion
@@ -994,7 +1024,7 @@ namespace MouseAI
 
         public string GetSaveName()
         {
-            return FileIO.SaveFileAs_Dialog(AppDir, FILE_EXT);
+            return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
         }
 
         public void SetMazeModelsGuid(string guid)
@@ -1062,7 +1092,7 @@ namespace MouseAI
             try
             {
                 if (string.IsNullOrEmpty(filename))
-                    filename = FileIO.OpenFile_Dialog(AppDir, FILE_EXT);
+                    filename = FileIO.OpenFile_Dialog(maze_dir, MAZE_EXT);
 
                 if (string.IsNullOrEmpty(filename) || !File.Exists(filename))
                     throw new Exception("Error Loading File");

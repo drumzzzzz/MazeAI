@@ -20,17 +20,16 @@ namespace MouseAI.UI
 
         private Settings oSettings;
         private Thread searchThread;
-        private Thread testThread;
         private Thread trainThread;
         private readonly MazeText mazeText;
         private readonly MazeSegments mazeSegments;
-        private Maze maze;
-        private bool isExit;
+        private readonly Maze maze;
+        
         private bool isFound;
         private bool isStep;
-        private bool isTest;
         private bool isDone;
         private bool isValid;
+        private bool isExit;
 
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
@@ -39,7 +38,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 100;
+        private const int MAZE_COUNT = 500;
         private const double DATA_SPLIT = 0.70;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
@@ -57,6 +56,9 @@ namespace MouseAI.UI
         private SKBitmap Cheese_Bitmap;
         private SKBitmap[] Mouse_Bitmaps;
         private Point mouse_last;
+
+        private string log_dir;
+        private string models_dir;
 
         private const int PROCESS_DELAY = 1;
         private const int SEARCH_DELAY = 1;
@@ -91,7 +93,16 @@ namespace MouseAI.UI
             Console.WindowWidth = 100;
             //ConsoleHelper.SetCurrentFont("Consolas", 25);
 
-            maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+            try
+            {
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+                CheckDirectories();
+            }
+            catch (Exception e)
+            {
+                DisplayError("Initialization Error", e, true);
+            }
+            
 
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT, maze)
             {
@@ -107,6 +118,17 @@ namespace MouseAI.UI
             RunState = RUNSTATE.NONE;
             InitMaze();
             DisplayTitleMessage(string.Empty);
+        }
+
+        private void CheckDirectories()
+        {
+            log_dir = maze.GetLogDir();
+            models_dir = maze.GetModelsDir();
+
+            if (string.IsNullOrEmpty(log_dir) || string.IsNullOrEmpty(models_dir))
+                throw new Exception("Error Loading Directories");
+
+            
         }
 
         private void LoadSettings()
@@ -145,7 +167,7 @@ namespace MouseAI.UI
                 SetMazeTextVisible();
             }
 
-            RunTrain();
+            //RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -268,10 +290,29 @@ namespace MouseAI.UI
             try
             {
                 maze.Train(DATA_SPLIT, oSettings.Guid);
+
+                if (DisplayDialog("Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.No)
+                    return;
+
+                bool isdone = false;
+
+                while (!isdone)
+                {
+                    try
+                    {
+                        maze.SaveResults();
+                        isDone = true;
+                    }
+                    catch (Exception e)
+                    {
+                        isdone = (DisplayDialog(string.Format("Error Saving Results:{0}", e.Message),
+                                      "Save Error", MessageBoxButtons.RetryCancel) == DialogResult.Cancel);
+                    }
+                }
             }
             catch (Exception e)
             {
-                DisplayError("Error Training", e, false);
+                DisplayError("Training Error", e, false);
             }
         }
 
@@ -897,6 +938,11 @@ namespace MouseAI.UI
             MessageBox.Show(string.Format("{0}:{1}  ", message, e.Message));
             if (isAppExit)
                 Application.Exit();
+        }
+
+        private static DialogResult DisplayDialog(string message, string title, MessageBoxButtons mb)
+        {
+            return MessageBox.Show(message, title, mb);
         }
 
         private void DisplayTsMessage(string message)

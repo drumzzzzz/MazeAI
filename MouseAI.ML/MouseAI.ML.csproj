@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataSet.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="NeuralNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
