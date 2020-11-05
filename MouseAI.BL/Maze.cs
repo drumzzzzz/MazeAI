@@ -20,30 +20,9 @@ namespace MouseAI
     {
         #region Declarations
 
-        private static MazeDb mazeDb;
-        private NeuralNet neuralNet;
+        private readonly NeuralNet neuralNet;
         private static byte[,] mazedata;
         private readonly MazeGenerator mazeGenerator;
-        private static int maze_width;
-        private static int maze_height;
-        private int mouse_x;
-        private int mouse_y;
-        private int cheese_x;
-        private int cheese_y;
-
-        
-        private const string MAZE_DIR = "mazes";
-        private const string MAZE_EXT = "mze";
-        private const string LOG_DIR = "logs";
-        private const string LOG_EXT = "csv";
-        private const string MODELS_DIR = "models";
-        private const string DIR = @"\";
-        public const int BLACK = 0x00;
-        public const int WHITE = 0xff;
-        public const int GREY = 0x80;
-
-        private static Random r;
-        private static StringBuilder sb;
         private static MazeObject[,] MazeObjects;
         private static MazeModels mazeModels;
         private static MazeModel mazeModel;
@@ -51,15 +30,39 @@ namespace MouseAI
         private MazeObjectSegments mazeObjectSegments;
         private static MazeObject oMouse;
         private static MazePaths mazePaths;
-        private readonly string appdir;
-        private string models_dir;
-        private string log_dir;
-        private string maze_dir;
-        private string FileName;
-        private bool isCheesePath;
         private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
+
+        // Db
+        private static MazeDb mazeDb;
         private static DbTable_Mazes dbtblStats;
         private static DbTable_Projects dbtblProjects;
+
+        private static Random r;
+        private static StringBuilder sb;
+
+        private static int maze_width;
+        private static int maze_height;
+        private int mouse_x;
+        private int mouse_y;
+        private int cheese_x;
+        private int cheese_y;
+        private bool isCheesePath;
+
+        private const string MAZE_DIR = "mazes";
+        private const string MAZE_EXT = "mze";
+        private const string LOG_DIR = "logs";
+        private const string LOG_EXT = "csv";
+        private const string MODELS_DIR = "models";
+        private const string MODELS_EXT = "h5";
+        private const string DIR = @"\";
+        public const int BLACK = 0x00;
+        public const int WHITE = 0xff;
+        public const int GREY = 0x80;
+
+        private readonly string models_dir;
+        private readonly string log_dir;
+        private readonly string maze_dir;
+        private string FileName;
         
         #endregion
 
@@ -85,7 +88,7 @@ namespace MouseAI
                 scanObjects[i] = new List<MazeObject>();
             }
 
-            appdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string appdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             maze_dir = appdir + DIR + MAZE_DIR;
             log_dir = appdir + DIR + LOG_DIR;
             models_dir = appdir + DIR + MODELS_DIR;
@@ -100,7 +103,7 @@ namespace MouseAI
             if (mazeDb == null)
                 mazeDb = new MazeDb();
 
-            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir);
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT);
         }
 
         public string GetLogDir()
@@ -278,14 +281,32 @@ namespace MouseAI
 
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
-            neuralNet.InitDataSets(imageDatas, split, guid, r);
+            neuralNet.InitDataSets(imageDatas, split, r);
             neuralNet.BuildDataSets();
-            neuralNet.Process(5, mazeModels.Count(), 10, true, guid, false);
+            neuralNet.Process(50, mazeModels.Count(), 10, true, guid, false);
+        }
+
+        public string GetLogName()
+        {
+            return neuralNet.GetLogName();
         }
 
         public void SaveResults()
         {
-            neuralNet.SaveFiles(log_dir);
+            dbtblProjects = new DbTable_Projects
+            {
+                Guid = GetGUID(),
+                Accuracy = neuralNet.GetAccuracy(),
+                Epochs = neuralNet.GetEpochs(),
+                Start = neuralNet.GetStartTime(),
+                End = neuralNet.GetEndTime(),
+                Log = neuralNet.GetLogName()
+            };
+
+            if (!mazeDb.InsertProject(dbtblProjects))
+                throw new Exception("Failed to insert db record");
+
+            neuralNet.SaveFiles();
         }
 
         #endregion

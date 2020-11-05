@@ -28,10 +28,12 @@ namespace MouseAI.ML
 
         private readonly int width; 
         private readonly int height;
-        private string label;
-        private string model_dir;
+        private readonly string model_dir;
+        private readonly string model_ext;
         private readonly string log_dir;
-        private string log_ext;
+        private readonly string log_ext;
+        private string starttime;
+        private string log_file;
 
         private NDarray x_train;    // Training Data
         private NDarray y_train;    // Training Labels
@@ -48,13 +50,14 @@ namespace MouseAI.ML
 
         #region Initialization
 
-        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir)
+        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext)
         {
             this.width = width;
             this.height = height;
             this.log_dir = log_dir;
             this.log_ext = log_ext;
             this.model_dir = model_dir;
+            this.model_ext = model_ext;
 
             string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
             if (!string.IsNullOrEmpty(paths))
@@ -64,9 +67,8 @@ namespace MouseAI.ML
             }
         }
 
-        public void InitDataSets(ImageDatas imageDatas, double split, string label, Random r)
+        public void InitDataSets(ImageDatas imageDatas, double split, Random r)
         {
-            this.label = label;
             dataSets = null;
             dataSets = new DataSets(width, height, imageDatas, split, r);
         }
@@ -118,10 +120,10 @@ namespace MouseAI.ML
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
-            string logname = log_dir + @"\" + DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss") + ".csv";
+            starttime = DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss");
+            log_file = log_dir + @"\" + starttime + "." + log_ext;
 
-            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size, isEarlyStop, logname);
-            
+            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size, isEarlyStop, log_file);
             dtEnd = DateTime.UtcNow;
 
             // Score the model for performance
@@ -172,8 +174,7 @@ namespace MouseAI.ML
 
             return model;
         }
-
-
+        
         private static Sequential ProcessCnnModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test, 
                                         int epochs, int num_classes, int batch_size)
         {
@@ -205,21 +206,49 @@ namespace MouseAI.ML
 
         #region File Saving and Loading
 
-
-        public void SaveFiles(string path)
+        public void SaveFiles()
         {
-            if (model == null)
-                throw new Exception("Model Error");
+            if (model == null || string.IsNullOrEmpty(starttime))
+                throw new Exception("Model Save Error");
 
-            string model_json = model.ToJson();
-
-            string dt = dtStart.ToFileTimeUtc().ToString();
-
-
-            // File.WriteAllText("model.json", model_json);
-            // model.Save("model.h5");
+            File.WriteAllText(model_dir + @"\" + starttime + ".json", model.ToJson());
+            model.Save(model_dir + @"\" + starttime + "." + model_ext);
         }
 
+        public string GetLogName()
+        {
+            return !string.IsNullOrEmpty(starttime) ? starttime : string.Empty;
+        }
+
+        public double[] GetScore()
+        {
+            return score;
+        }
+
+        public string GetStartTime()
+        {
+            return dtStart.ToString();
+        }
+
+        public string GetEndTime()
+        {
+            return dtEnd.ToString();
+        }
+
+        public int GetEpochs()
+        {
+            if (score == null || score.Length != 2)
+                return -1;
+            return (int) score[0];
+        }
+
+        public double GetAccuracy()
+        {
+            if (score == null || score.Length != 2)
+                return -1;
+
+            return score[1];
+        }
 
         #endregion
     }

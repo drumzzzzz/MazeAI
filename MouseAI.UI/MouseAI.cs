@@ -291,23 +291,11 @@ namespace MouseAI.UI
             {
                 maze.Train(DATA_SPLIT, oSettings.Guid);
 
-                if (DisplayDialog("Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.No)
-                    return;
-
-                bool isdone = false;
-
-                while (!isdone)
+                if (DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
+                                  "Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    try
-                    {
-                        maze.SaveResults();
-                        isDone = true;
-                    }
-                    catch (Exception e)
-                    {
-                        isdone = (DisplayDialog(string.Format("Error Saving Results:{0}", e.Message),
-                                      "Save Error", MessageBoxButtons.RetryCancel) == DialogResult.Cancel);
-                    }
+                    maze.SaveResults();
+                    DisplayDialog("Files Saved", "Save Models");
                 }
             }
             catch (Exception e)
@@ -943,6 +931,11 @@ namespace MouseAI.UI
         private static DialogResult DisplayDialog(string message, string title, MessageBoxButtons mb)
         {
             return MessageBox.Show(message, title, mb);
+        }
+
+        private static void DisplayDialog(string message, string title)
+        {
+            MessageBox.Show(message, title);
         }
 
         private void DisplayTsMessage(string message)

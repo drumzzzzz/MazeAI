@@ -1,3 +1,5 @@
 pip install keras
 pip install numpy
 pip install tensorflow
+
+CREATE TABLE "projects" ( `Id` INTEGER, `Guid` TEXT, `Accuracy` REAL, `Epochs` INTEGER, `Start` TEXT, `End` TEXT, `Log` TEXT, PRIMARY KEY(`Id`) )
