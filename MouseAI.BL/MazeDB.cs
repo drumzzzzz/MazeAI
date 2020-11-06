@@ -1,6 +1,7 @@
 ﻿#region Using Statements
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using MouseAI.PL;
@@ -36,7 +37,7 @@ namespace MouseAI.BL
 
         public DbTable_Mazes ReadMazes(string guid)
         {
-            return (DbTable_Mazes) db.Read(DbTable_Mazes.TABLE, "Guid", guid, new DbTable_Mazes());
+            return (DbTable_Mazes) db.ReadRow(DbTable_Mazes.TABLE, "Guid", guid, new DbTable_Mazes());
         }
 
         public bool InsertProject(DbTable_Projects tbl)
@@ -45,6 +46,11 @@ namespace MouseAI.BL
                 tbl.Guid, tbl.Accuracy, tbl.Epochs, tbl.Start, tbl.End, tbl.Log);
 
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
+        }
+
+        public List<object> ReadProjects(string guid)
+        {
+            return db.ReadRows(DbTable_Projects.TABLE, "Guid", guid, new DbTable_Projects());
         }
     }
 
@@ -73,4 +79,6 @@ namespace MouseAI.BL
         public static readonly string TABLE = "projects";
         public static readonly string COLUMNS = "Guid, Accuracy, Epochs, Start, End, Log";
     }
+
+
 }

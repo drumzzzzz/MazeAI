@@ -92,23 +92,20 @@ namespace MouseAI.ML
                 throw new Exception("Dataset was null!");
 
             dtStart = DateTime.UtcNow;
-            Shape input_shape;
             config = _config;
 
             if (K.ImageDataFormat() == "channels_first")
             {
                 x_train = x_train.reshape(x_train.shape[0], 1, height, width);
                 x_test = x_test.reshape(x_test.shape[0], 1, height, width);
-                input_shape = (1, height, width);
             }
             else
             {
                 x_train = x_train.reshape(x_train.shape[0], height, width, 1);
                 x_test = x_test.reshape(x_test.shape[0], height, width, 1);
-                input_shape = (height, width, 1);
             }
 
-            if (_config.isNormalize)
+            if (config.isNormalize)
             {
                 x_train = x_train.astype(np.float32);
                 x_test = x_test.astype(np.float32);
@@ -127,7 +124,7 @@ namespace MouseAI.ML
             starttime = DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss");
             log_file = log_dir + @"\" + starttime + "." + log_ext;
 
-            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, _config.Epochs, num_classes, _config.Batch,_config.isEarlyStop, log_file);
+            model = ProcessModel(x_train, y_train, x_test, y_test, num_classes, log_file, config);
             dtEnd = DateTime.UtcNow;
 
             // Score the model for performance
@@ -142,37 +139,44 @@ namespace MouseAI.ML
 
         #region Models
 
-        private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
-            int epochs, int num_classes, int batch_size, bool isEarlyStop, string logname)
+        //private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
+        //    int epochs, int num_classes, int batch_size, bool isEarlyStop, string logname)
+        private static Sequential ProcessModel(NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
+            int num_classes, string logname, Config config)
         {
             // Build model
             Sequential model = new Sequential();
             model.Add(new Dropout(0.25));
             model.Add(new Flatten());
-            model.Add(new Dense(1024, activation: "relu"));
-            model.Add(new Dense(1024, activation: "relu"));
-            model.Add(new Dropout(0.5));
+
+            for (int i = 0; i < config.Layers;i++)
+            {
+                model.Add(new Dense(config.Nodes, activation: "relu"));
+            }
+
+            if (config.isDropOut)
+                model.Add(new Dropout(0.5));
+
             model.Add(new Dense(num_classes, activation: "softmax"));
 
             // Compile with loss, metrics and optimizer
-            model.Compile(loss: "categorical_crossentropy", optimizer: new Adadelta(), metrics: new[] { "accuracy" });
+            model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
 
             CSVLogger csv_logger = new CSVLogger(logname);
 
-            if (isEarlyStop)
+            if (config.isEarlyStop)
             {
-                EarlyStopping es = new EarlyStopping(monitor: "val_loss", 0, 0, 1, mode: "min", 1);
-                Callback[] callbacks = { csv_logger, es };
+                Callback[] callbacks = { csv_logger, new EarlyStopping(monitor: "val_loss", 0, 0, 1, mode: "min", 1) };
                 
                 // Train the model
-                model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
+                model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
                     validation_data: new[] {x_test, y_test}, callbacks: callbacks);
             }
             else
             {
                 Callback[] callbacks = { csv_logger };
                 // Train the model
-                model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
+                model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
                     validation_data: new[] { x_test, y_test }, callbacks: callbacks);
             }
 

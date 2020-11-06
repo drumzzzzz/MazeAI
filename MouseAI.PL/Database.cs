@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using System.Reflection;
@@ -43,7 +44,7 @@ namespace MouseAI.PL
             }
         }
 
-        public object Read(string table, string column, string value, object obj)
+        public object ReadRow(string table, string column, string value, object obj)
         {
             try
             {
@@ -57,6 +58,7 @@ namespace MouseAI.PL
                 SQLiteDataReader rdr = cmd.ExecuteReader();
                 Type ObjType = obj.GetType();
                 bool isFound;
+                // string name;
 
                 rdr.Read();
                 if (!rdr.HasRows || rdr.FieldCount <= 0)
@@ -67,7 +69,7 @@ namespace MouseAI.PL
                     isFound = false;
                     for (int i = 0; i < rdr.FieldCount; i++)
                     {
-                        string name = string.Format("<{0}>", rdr.GetName(i));
+                        // name = string.Format("<{0}>", rdr.GetName(i));
                         if (item.Name.Contains(string.Format("<{0}>",rdr.GetName(i))) && rdr.GetFieldType(i) == item.FieldType)
                         {
                             var v = rdr.GetValue(i);
@@ -81,6 +83,59 @@ namespace MouseAI.PL
                 }
 
                 return obj;
+            }
+            catch (Exception e)
+            {
+                err = e.Message;
+                return null;
+            }
+        }
+
+        public List<object> ReadRows(string table, string column, string value, object obj)
+        {
+            try
+            {
+                SQLiteConnection conn = new SQLiteConnection(db_file);
+                conn.Open();
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = string.Format("SELECT * FROM {0} WHERE {1} = '{2}'", table, column, value)
+                };
+
+                SQLiteDataReader rdr = cmd.ExecuteReader();
+                Type ObjType = obj.GetType();
+                bool isFound = false;
+
+                List<object> objList = new List<object>();
+
+                while (rdr.Read())
+                {
+                    if (!rdr.HasRows || rdr.FieldCount <= 0)
+                        throw new Exception("No Row Returned");
+
+                    object instance = Activator.CreateInstance(ObjType);
+
+                    foreach (FieldInfo item in ObjType.GetRuntimeFields().Where(x => x.IsStatic == false))
+                    {
+                        for (int i = 0; i < rdr.FieldCount; i++)
+                        {
+                            if (item.Name.Contains(string.Format("<{0}>", rdr.GetName(i))) &&
+                                rdr.GetFieldType(i) == item.FieldType)
+                            {
+                                var v = rdr.GetValue(i);
+                                item.SetValue(instance, v);
+                                isFound = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!isFound)
+                         throw new Exception("Error Reading Fields");
+                    objList.Add(instance);
+                }
+
+                return objList;
             }
             catch (Exception e)
             {

@@ -37,8 +37,9 @@
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.buildToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pathsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trainToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -107,47 +108,55 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // buildToolStripMenuItem
             // 
             this.buildToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.testToolStripMenuItem,
-            this.trainToolStripMenuItem});
+            this.pathsToolStripMenuItem,
+            this.trainToolStripMenuItem,
+            this.testToolStripMenuItem});
             this.buildToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buildToolStripMenuItem.Name = "buildToolStripMenuItem";
             this.buildToolStripMenuItem.Size = new System.Drawing.Size(49, 31);
             this.buildToolStripMenuItem.Text = "Build";
             // 
-            // testToolStripMenuItem
+            // pathsToolStripMenuItem
             // 
-            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
-            this.testToolStripMenuItem.Text = "Paths";
-            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
+            this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pathsToolStripMenuItem.Text = "Paths";
+            this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
             // trainToolStripMenuItem
             // 
             this.trainToolStripMenuItem.Name = "trainToolStripMenuItem";
-            this.trainToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.trainToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.trainToolStripMenuItem.Text = "Train";
             this.trainToolStripMenuItem.Click += new System.EventHandler(this.trainToolStripMenuItem_Click);
+            // 
+            // testToolStripMenuItem
+            // 
+            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.testToolStripMenuItem.Text = "Test";
+            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
             // 
@@ -285,7 +294,7 @@
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem buildToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem trainToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pathsToolStripMenuItem;
         public System.Windows.Forms.StatusStrip stpStatus;
         public System.Windows.Forms.ToolStripStatusLabel tsStatus;
         private System.Windows.Forms.ListView lvwMazes;
@@ -297,6 +306,7 @@
         private System.Windows.Forms.PictureBox pbxPath;
         private System.Windows.Forms.PictureBox pbxMaze;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
     }
 }
 

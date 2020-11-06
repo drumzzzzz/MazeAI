@@ -263,16 +263,6 @@ namespace MouseAI
 
         #region Neural Net
 
-        public Config GetConfig()
-        {
-            return config;
-        }
-
-        public void SetConfig(Config _config)
-        {
-            config = _config;
-        }
-
         public void Train(double split, string guid)
         {
             if (config == null)
@@ -301,11 +291,6 @@ namespace MouseAI
             neuralNet.Process(config, mazeModels.Count());
         }
 
-        public string GetLogName()
-        {
-            return neuralNet.GetLogName();
-        }
-
         public void SaveResults()
         {
             dbtblProjects = new DbTable_Projects
@@ -323,6 +308,21 @@ namespace MouseAI
 
             neuralNet.SaveFiles();
             mazeModels.StartTime = config.StartTime;
+        }
+
+        public Config GetConfig()
+        {
+            return config;
+        }
+
+        public void SetConfig(Config _config)
+        {
+            config = _config;
+        }
+
+        public string GetLogName()
+        {
+            return neuralNet.GetLogName();
         }
 
         #endregion
@@ -1065,9 +1065,32 @@ namespace MouseAI
 
         #endregion
 
-        #region Saving and Loading
+        #region Test
 
-        public string GetSaveName()
+        public List<string> GetProjectModels(string guid)
+        {
+            IEnumerable<object> oList = mazeDb.ReadProjects(guid);
+
+            if (oList == null)
+                return null;
+
+            DbTable_Projects dbTableProjects;
+            List<string> starttimes = new List<string>();
+
+            foreach (DbTable_Projects obj in oList)
+            {
+                dbTableProjects = obj;
+                starttimes.Add(dbTableProjects.Log);
+            }
+            
+            return starttimes;
+        }
+
+        #endregion
+
+    #region Saving and Loading
+
+    public string GetSaveName()
         {
             return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
         }

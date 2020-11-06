@@ -1,6 +1,7 @@
 ﻿#region Using Statements
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -369,6 +370,19 @@ namespace MouseAI.UI
         }
 
         #endregion
+
+        #region Test
+
+        private void RunTest()
+        {
+            if (maze == null ||!maze.isMazeModels())
+                return;
+
+            List<string> starttimes = maze.GetProjectModels(maze.GetGUID());
+        }
+        
+        #endregion
+
 
         #region Graphics Rendering
 
@@ -756,7 +770,7 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
-                // DisplayError("Error Selecting Maze", e, false);
+                Console.WriteLine("Maze selection error:{0}", e.Message);
                 SetRunState(RUNSTATE.SELECT);
                 return false;
             }
@@ -898,14 +912,14 @@ namespace MouseAI.UI
             RunTrain();
         }
 
-        private void testToolStripMenuItem_Click(object sender, EventArgs e)
+        private void pathsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SolvePaths();
         }
 
-        private void testToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AITrain();
+            RunTest();
         }
 
         #endregion
@@ -992,6 +1006,7 @@ namespace MouseAI.UI
             else
                 Text = string.Format("{0} ({1})", TITLE, value);
         }
+
 
         #endregion
 
