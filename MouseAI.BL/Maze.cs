@@ -636,6 +636,8 @@ namespace MouseAI
             MazeObjects pathObjects = new MazeObjects(PathObjects.Where(o => o.isPath && !o.isDeadEnd).OrderBy(d => d.dtLastVisit).ToList());
             MazeObjects segmentObjects = new MazeObjects();
             int index = 0;
+            bool isFirstJunction = false;
+            int count1, count2;
 
             mazeObjectSegments = null;
             mazeObjectSegments = new MazeObjectSegments();
@@ -653,9 +655,20 @@ namespace MouseAI
                     break;
                 }
 
-                if (so.isJunction)
+                if (!so.isJunction && isFirstJunction == false)
+                {
+                    count1 = mazeObjectSegments.Count;
+                    count2 = segmentObjects.Distinct().ToList().Count;
+                    if (count1 == 0 || mazeObjectSegments[count1 - 1].Count != count2)
+                    {
+                        mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
+                    }
+                }
+
+                else if (so.isJunction)
                 {
                     mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
+                    isFirstJunction = true;
                 }
             }
 
@@ -667,6 +680,61 @@ namespace MouseAI
             }
 
             GenerateSegments();
+        }
+
+        private static MazeObjects SearchObjects(int x, int y)
+        {
+            MazeObjects pathObjects = new MazeObjects();
+            
+            // Scan West
+            for (int x_idx = x - 1; x_idx > 0; x_idx--)
+            {
+                if (!SearchObject(x_idx, y, pathObjects))
+                    break;
+            }
+            // Scan East
+            for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
+            {
+                if (!SearchObject(x_idx, y, pathObjects))
+                    break;
+            }
+            // Scan North
+            for (int y_idx = y - 1; y_idx > 0; y_idx--)
+            {
+                if (!SearchObject(x, y_idx, pathObjects))
+                    break;
+            }
+            // Scan South
+            for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
+            {
+                if (!SearchObject(x, y_idx, pathObjects))
+                    break;
+            }
+
+            return pathObjects;
+        }
+
+        private static bool SearchObject(int x, int y, MazeObjects pathObjects)
+        {
+            if (!isScanValid(x, y))
+                return false;
+
+            pathObjects.Add(MazeObjects[x, y]);
+
+            int[,] panArray = GetXYPan(x, y);
+
+            // Scan all directions from a given point
+            for (int i = 0; i < panArray.Length / 2; i++)
+            {
+                x = panArray[i, 0];
+                y = panArray[i, 1];
+
+                if (isScanValid(x, y))
+                {
+                    pathObjects.Add(MazeObjects[x, y]);
+                }
+            }
+            return true;
         }
 
         private void GenerateSegments()
@@ -694,75 +762,11 @@ namespace MouseAI
                     mazeModel.segments.Add(memoryStream.ToArray());
                 }
             }
-
-            //foreach (MazeObject mo in mazeSegments.SelectMany(mos => mos))
-            //{
-            //    b = GetByteColor(mo);
-            //    (bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
-            //}
         }
 
         public List<byte[]> GetSegments()
         {
             return mazeModel.segments;
-        }
-
-        private static MazeObjects SearchObjects(int x, int y)
-        {
-            MazeObjects pathObjects = new MazeObjects();
-            
-            // Scan West
-            for (int x_idx = x - 1; x_idx > 0; x_idx--)
-            {
-                if (!SearchObject(x_idx, y, pathObjects))
-                    break;
-            }
-
-            // Scan East
-            for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
-            {
-                if (!SearchObject(x_idx, y, pathObjects))
-                    break;
-            }
-
-            // Scan North
-            for (int y_idx = y - 1; y_idx > 0; y_idx--)
-            {
-                if (!SearchObject(x, y_idx, pathObjects))
-                    break;
-            }
-
-            // Scan South
-            for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
-            {
-                if (!SearchObject(x, y_idx, pathObjects))
-                    break;
-            }
-
-            return pathObjects;
-        }
-
-        private static bool SearchObject(int x, int y, MazeObjects pathObjects)
-        {
-            if (!isScanValid(x, y))
-                return false;
-
-            pathObjects.Add(MazeObjects[x, y]);
-
-            int[,] panArray = GetXYPan(x, y);
-            
-            // Scan all directions from a given point
-            for (int i = 0; i < panArray.Length / 2; i++)
-            {
-                x = panArray[i, 0];
-                y = panArray[i, 1];
-
-                if (isScanValid(x, y))
-                {
-                    pathObjects.Add(MazeObjects[x, y]);
-                }
-            }
-            return true;
         }
 
         public MazeObjectSegments GetMazeSegments()
