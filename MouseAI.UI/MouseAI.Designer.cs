@@ -39,12 +39,12 @@
             this.buildToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trainToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.testToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadLastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mazeTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRun = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.btnPause = new System.Windows.Forms.Button();
@@ -55,7 +55,6 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
-            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
@@ -135,8 +134,7 @@
             // 
             this.buildToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testToolStripMenuItem,
-            this.trainToolStripMenuItem,
-            this.testToolStripMenuItem1});
+            this.trainToolStripMenuItem});
             this.buildToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buildToolStripMenuItem.Name = "buildToolStripMenuItem";
             this.buildToolStripMenuItem.Size = new System.Drawing.Size(49, 31);
@@ -145,23 +143,16 @@
             // testToolStripMenuItem
             // 
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.testToolStripMenuItem.Text = "Paths";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // trainToolStripMenuItem
             // 
             this.trainToolStripMenuItem.Name = "trainToolStripMenuItem";
-            this.trainToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.trainToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.trainToolStripMenuItem.Text = "Train";
             this.trainToolStripMenuItem.Click += new System.EventHandler(this.trainToolStripMenuItem_Click);
-            // 
-            // testToolStripMenuItem1
-            // 
-            this.testToolStripMenuItem1.Name = "testToolStripMenuItem1";
-            this.testToolStripMenuItem1.Size = new System.Drawing.Size(110, 22);
-            this.testToolStripMenuItem1.Text = "Test";
-            this.testToolStripMenuItem1.Click += new System.EventHandler(this.testToolStripMenuItem1_Click);
             // 
             // editToolStripMenuItem
             // 
@@ -179,30 +170,37 @@
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.debugToolStripMenuItem.Text = "Debug";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // loadLastToolStripMenuItem
             // 
             this.loadLastToolStripMenuItem.Name = "loadLastToolStripMenuItem";
-            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.loadLastToolStripMenuItem.Text = "Load Last";
             this.loadLastToolStripMenuItem.Click += new System.EventHandler(this.loadLastToolStripMenuItem_Click);
             // 
             // mazeTextToolStripMenuItem
             // 
             this.mazeTextToolStripMenuItem.Name = "mazeTextToolStripMenuItem";
-            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.mazeTextToolStripMenuItem.Text = "Maze Text";
             this.mazeTextToolStripMenuItem.Click += new System.EventHandler(this.mazeTextToolStripMenuItem_Click);
+            // 
+            // mazeSegmentsToolStripMenuItem
+            // 
+            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
+            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
+            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
             // 
             // btnRun
             // 
@@ -315,13 +313,6 @@
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
             // 
-            // mazeSegmentsToolStripMenuItem
-            // 
-            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
-            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
-            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
-            // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
@@ -381,7 +372,6 @@
         private System.Windows.Forms.ToolStripMenuItem mazeTextToolStripMenuItem;
         private System.Windows.Forms.PictureBox pbxPath;
         private System.Windows.Forms.PictureBox pbxMaze;
-        private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
     }
 }

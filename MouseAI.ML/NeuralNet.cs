@@ -1,11 +1,8 @@
 ﻿#region Using Statements
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Keras;
-using Keras.Datasets;
 using Keras.Layers;
 using Keras.Models;
 using Keras.Optimizers;
@@ -17,6 +14,7 @@ using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using Keras.Callbacks;
+using MouseAI.SH;
 
 #endregion
 
@@ -83,7 +81,7 @@ namespace MouseAI.ML
 
         #region Processing
 
-        public void Process(int epochs, int num_classes, int batch_size, bool isNormalize, string Guid, bool isEarlyStop)
+        public void Process(Config config, int num_classes)
         {
             if (x_train == null || y_train == null || x_test == null || y_test == null)
                 throw new Exception("Dataset was null!");
@@ -104,7 +102,7 @@ namespace MouseAI.ML
                 input_shape = (height, width, 1);
             }
 
-            if (isNormalize)
+            if (config.isNormalize)
             {
                 x_train = x_train.astype(np.float32);
                 x_test = x_test.astype(np.float32);
@@ -123,7 +121,7 @@ namespace MouseAI.ML
             starttime = DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss");
             log_file = log_dir + @"\" + starttime + "." + log_ext;
 
-            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, epochs, num_classes, batch_size, isEarlyStop, log_file);
+            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, config.Epochs, num_classes, config.Batch,config.isEarlyStop, log_file);
             dtEnd = DateTime.UtcNow;
 
             // Score the model for performance

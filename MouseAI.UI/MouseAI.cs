@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using MouseAI.BL;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
+using MouseAI.SH;
 
 #endregion
 
@@ -24,7 +24,8 @@ namespace MouseAI.UI
         private readonly MazeText mazeText;
         private readonly MazeSegments mazeSegments;
         private readonly Maze maze;
-        
+        private TrainSettings trainSettings;
+
         private bool isFound;
         private bool isStep;
         private bool isDone;
@@ -96,14 +97,12 @@ namespace MouseAI.UI
             try
             {
                 maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-                CheckDirectories();
             }
             catch (Exception e)
             {
                 DisplayError("Initialization Error", e, true);
             }
             
-
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT, maze)
             {
                 Visible = false
@@ -118,17 +117,6 @@ namespace MouseAI.UI
             RunState = RUNSTATE.NONE;
             InitMaze();
             DisplayTitleMessage(string.Empty);
-        }
-
-        private void CheckDirectories()
-        {
-            log_dir = maze.GetLogDir();
-            models_dir = maze.GetModelsDir();
-
-            if (string.IsNullOrEmpty(log_dir) || string.IsNullOrEmpty(models_dir))
-                throw new Exception("Error Loading Directories");
-
-            
         }
 
         private void LoadSettings()
@@ -166,8 +154,6 @@ namespace MouseAI.UI
                 LoadMazes(oSettings.LastFileName);
                 SetMazeTextVisible();
             }
-
-            //RunTrain();
         }
 
         private static bool CreateMaze(Maze m)
@@ -280,9 +266,28 @@ namespace MouseAI.UI
             if (string.IsNullOrEmpty(oSettings.Guid) || (trainThread != null && trainThread.ThreadState != ThreadState.Stopped))
                 return;
 
+            trainSettings = new TrainSettings(maze.GetConfig());
+            trainSettings.Closing += TrainSettings_Closing;
+            DialogResult dlr = trainSettings.ShowDialog();
+
+            if (dlr != DialogResult.OK)
+                return;
+
             trainThread = null;
             trainThread = new Thread(AITrain);
             trainThread.Start();
+
+            while (trainThread.ThreadState != ThreadState.Stopped)
+            {
+                Application.DoEvents();
+                Thread.Sleep(100);
+            }
+        }
+
+        private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (trainSettings.DialogResult == DialogResult.OK)
+                maze.SetConfig(trainSettings.GetConfig());
         }
 
         private void AITrain()
@@ -302,6 +307,8 @@ namespace MouseAI.UI
             {
                 DisplayError("Training Error", e, false);
             }
+
+            // isDone = true;
         }
 
         #endregion
@@ -313,8 +320,9 @@ namespace MouseAI.UI
             if (!maze.isMazeModels())
                 return;
 
-            //if (MessageBox.Show("Clear and calculate maze paths?", "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
-            //    return;
+            if (MessageBox.Show("Build and calculate maze paths?\nthis will clear any current build"
+                    , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
+                return;
 
             for (int i = 0; i < lvwMazes.Items.Count; i++)
             {

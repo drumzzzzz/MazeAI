@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region Using Statements
+
+using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using MouseAI.PL;
+
+#endregion
 
 namespace MouseAI.BL
 {
     public class MazeDb
     {
         private readonly Database db;
-        private string db_file;
         private const string DB_NAME = "stats.db";
-        private string err = string.Empty;
 
         public MazeDb()
         {
             try
             {
-                db_file = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + DB_NAME;
-                db = new Database(db_file);
+                string dbFile = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + DB_NAME;
+                db = new Database(dbFile);
             }
             catch (Exception e)
             {
@@ -47,11 +45,6 @@ namespace MouseAI.BL
                 tbl.Guid, tbl.Accuracy, tbl.Epochs, tbl.Start, tbl.End, tbl.Log);
 
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
-        }
-
-        public string GetError()
-        {
-            return err;
         }
     }
 

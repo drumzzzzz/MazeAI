@@ -11,6 +11,7 @@ using System.Text;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
+using MouseAI.SH;
 
 #endregion
 
@@ -31,6 +32,7 @@ namespace MouseAI
         private static MazeObject oMouse;
         private static MazePaths mazePaths;
         private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
+        private Config config;
 
         // Db
         private static MazeDb mazeDb;
@@ -263,8 +265,21 @@ namespace MouseAI
 
         #region Neural Net
 
+        public Config GetConfig()
+        {
+            return config;
+        }
+
+        public void SetConfig(Config _config)
+        {
+            config = _config;
+        }
+
         public void Train(double split, string guid)
         {
+            if (config == null)
+                throw new Exception("Invalid Config!");
+
             if (mazeModels == null || mazeModels.Count() == 0)
                 throw new Exception("No MazeModels!");
 
@@ -283,7 +298,7 @@ namespace MouseAI
 
             neuralNet.InitDataSets(imageDatas, split, r);
             neuralNet.BuildDataSets();
-            neuralNet.Process(50, mazeModels.Count(), 10, true, guid, false);
+            neuralNet.Process(config, mazeModels.Count());
         }
 
         public string GetLogName()

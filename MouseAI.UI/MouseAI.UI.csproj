@@ -136,6 +136,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="TrainSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrainSettings.Designer.cs">
+      <DependentUpon>TrainSettings.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="MazeSegments.resx">
       <DependentUpon>MazeSegments.cs</DependentUpon>
     </EmbeddedResource>
@@ -157,6 +163,9 @@
     <EmbeddedResource Include="Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TrainSettings.resx">
+      <DependentUpon>TrainSettings.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
@@ -195,6 +204,10 @@
     <ProjectReference Include="..\MouseAI.BL\MouseAI.BL.csproj">
       <Project>{8a915bdc-1d48-44f0-9dd8-dcb8117a4670}</Project>
       <Name>MouseAI.BL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MouseAI.SH\MouseAI.SH.csproj">
+      <Project>{459615c5-2fb3-45cd-9dc2-a145db0d2dae}</Project>
+      <Name>MouseAI.SH</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
