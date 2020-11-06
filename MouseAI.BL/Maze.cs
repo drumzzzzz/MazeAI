@@ -327,11 +327,6 @@ namespace MouseAI
 
         #endregion
 
-        #region Vision
-
-
-        #endregion region
-
         #region Scanning
 
         private int ScanDirection(int x, int y)
@@ -642,6 +637,7 @@ namespace MouseAI
             MazeObjects segmentObjects = new MazeObjects();
             int index = 0;
 
+            mazeObjectSegments = null;
             mazeObjectSegments = new MazeObjectSegments();
 
             while (true)
@@ -680,7 +676,7 @@ namespace MouseAI
             Graphics g;
             MazeObjects mos;
 
-            for (int idx = 0; idx < mazeObjectSegments.Count - 1; idx++)
+            for (int idx = 0; idx < mazeObjectSegments.Count; idx++)
             {
                 mos = mazeObjectSegments[idx];
                 g = Graphics.FromImage(bmp);

@@ -13,36 +13,33 @@ namespace MouseAI.UI
 {
     public partial class MazeSegments : Form
     {
-        private Maze maze;
-        private int width;
-        private int height;
-        private const int COLUMNS = 4;
-        private const int ROWS = 8;
-        private const int MARGIN = 10;
+        private readonly Maze maze;
+        private const int COLUMNS = 3;
+        private const int ROWS = 7;
+        private const int MARGIN = 5;
+        private const int SCALE = 3;
 
         public MazeSegments(int width, int height, Maze maze)
         {
             InitializeComponent();
 
             this.maze = maze;
-            this.width = width * 2;
-            this.height = height * 2;
+            width *= SCALE;
+            height *= SCALE;
+            Width = COLUMNS * (width + (MARGIN * SCALE));
+            Height = (ROWS + 1) * (height + (MARGIN * SCALE));
 
-            Width = COLUMNS * (width + MARGIN);
-            Height = ROWS * (height + MARGIN);
-
-            for (int x = 0; x < COLUMNS; x++)
+            for (int x = 0; x < COLUMNS + 1; x++)
             {
-                for (int y = 0; y < ROWS; y++)
+                for (int y = 0; y < ROWS + 1; y++)
                 {
                     PictureBox pbx = new PictureBox
                     {
                         Width = width,
                         Height = height,
-                        Location = new Point(x * (width + MARGIN), y * (height + MARGIN)),
+                        Location = new Point(x * width + (MARGIN * SCALE), y * height + (MARGIN * SCALE)),
                         Visible = false,
                         SizeMode = PictureBoxSizeMode.StretchImage
-                        
                     };
                     Controls.Add(pbx);
                 }
@@ -56,10 +53,7 @@ namespace MouseAI.UI
 
             List<byte[]> segments = maze.GetSegments();
             if (segments == null || segments.Count == 0 || segments.Count > ROWS * COLUMNS)
-            {
-                Console.WriteLine("Invalid Object Segments!");
                 return;
-            }
 
             MemoryStream ms;
             int index = 0;
@@ -76,6 +70,7 @@ namespace MouseAI.UI
                         ms = new MemoryStream(segments[index++]);
                         ((PictureBox) c).Image = (Bitmap) Image.FromStream(ms);
                         ((PictureBox) c).Visible = true;
+                        ((PictureBox) c).SizeMode = PictureBoxSizeMode.StretchImage;
                     }
                 }
             }

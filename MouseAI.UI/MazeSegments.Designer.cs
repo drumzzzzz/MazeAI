@@ -38,7 +38,10 @@
             this.ControlBox = false;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "MazeSegments";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.Text = "Maze Segments";
+            this.TopMost = true;
             this.ResumeLayout(false);
 
         }

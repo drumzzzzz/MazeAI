@@ -756,7 +756,7 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
-                DisplayError("Error Selecting Maze", e, false);
+                // DisplayError("Error Selecting Maze", e, false);
                 SetRunState(RUNSTATE.SELECT);
                 return false;
             }

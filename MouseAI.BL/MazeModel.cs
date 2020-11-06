@@ -79,39 +79,6 @@ namespace MouseAI.BL
             return mazeModels.Where(mm => mm.segments != null).Sum(mm => mm.segments.Count);
         }
 
-        public int[] GetSegmentArray()
-        {
-            List<int> segments = new List<int>();
-
-            int index = 0;
-            foreach (MazeModel m in mazeModels)
-            {
-                if (m.segments == null || m.segments.Count == 0)
-                    throw  new Exception("Invalid Segment Found");
-
-                for (int i = 0; i < m.segments.Count; i++)
-                {
-                    segments.Add(index);
-                }
-
-                index++;
-            }
-
-            return segments.ToArray();
-        }
-
-        public int[] GetModelArray()
-        {
-            List<int> models = new List<int>();
-
-            for (int index = 0; index < mazeModels.Count; index++)
-            {
-                models.Add(index);
-            }
-
-            return models.ToArray();
-        }
-
         public MazeModel GetMazeModel(int index)
         {
             if (index > mazeModels.Count || index < 0)
