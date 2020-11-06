@@ -103,10 +103,7 @@ namespace MouseAI
             if (!FileIO.CheckCreateDirectory(models_dir))
                 throw new Exception("Could not create log directory");
 
-            if (mazeDb == null)
-                mazeDb = new MazeDb();
-
-            
+            mazeDb = new MazeDb();
         }
 
         public string GetLogDir()
@@ -1109,40 +1106,29 @@ namespace MouseAI
             FileIO.SerializeXml(mazeModels, filename);
         }
 
-        public string LoadMazeModels(string filename)
+        public void LoadMazeModels(string filename)
         {
-            try
+            if (string.IsNullOrEmpty(filename))
+                filename = FileIO.OpenFile_Dialog(maze_dir, MAZE_EXT);
+
+            if (string.IsNullOrEmpty(filename) || !File.Exists(filename))
+                throw new Exception("Error Loading File");
+
+            MazeModels mms = (MazeModels)FileIO.DeSerializeXml(typeof(MazeModels), filename);
+
+            if (mms == null)
+                throw new Exception("Error Loading File");
+
+            foreach (MazeModel mm in mms.GetMazeModels())
             {
-                if (string.IsNullOrEmpty(filename))
-                    filename = FileIO.OpenFile_Dialog(maze_dir, MAZE_EXT);
-
-                if (string.IsNullOrEmpty(filename) || !File.Exists(filename))
-                    throw new Exception("Error Loading File");
-
-
-                MazeModels mms = (MazeModels)FileIO.DeSerializeXml(typeof(MazeModels), filename);
-
-                if (mms == null)
-                    throw new Exception("Error Loading File");
-
-
-                foreach (MazeModel mm in mms.GetMazeModels())
-                {
-                    if (mazeDb.ReadMazes(mm.guid) == null)
-                        throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
-                }
-
-                mazeModels.Clear();
-                mazeModels = mms;
-
-                FileName = filename;
-
-                return string.Empty;
+                if (mazeDb.ReadMazes(mm.guid) == null)
+                    throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
             }
-            catch (Exception e)
-            {
-                return e.Message;
-            }
+
+            mazeModels.Clear();
+            mazeModels = mms;
+
+            FileName = filename;
         }
 
         #endregion

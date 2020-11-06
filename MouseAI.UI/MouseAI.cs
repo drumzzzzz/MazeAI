@@ -23,7 +23,7 @@ namespace MouseAI.UI
         private Thread trainThread;
         private readonly MazeText mazeText;
         private readonly MazeSegments mazeSegments;
-        private readonly Maze maze;
+        private Maze maze;
         private TrainSettings trainSettings;
 
         private bool isFound;
@@ -100,7 +100,7 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
-                DisplayError("Initialization Error", e, true);
+                DisplayError("Maze Initialization Error", e, true);
             }
             
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT, maze)
@@ -115,7 +115,7 @@ namespace MouseAI.UI
 
             LoadSettings();
             RunState = RUNSTATE.NONE;
-            InitMaze();
+            InitMazeGraphics();
             DisplayTitleMessage(string.Empty);
         }
 
@@ -344,7 +344,7 @@ namespace MouseAI.UI
 
         #region Graphics Rendering
 
-        private void InitMaze()
+        private void InitMazeGraphics()
         {
             pbxPath.Width = MAZE_WIDTH * 3;
             pbxPath.Height = MAZE_HEIGHT * 4;
@@ -550,21 +550,29 @@ namespace MouseAI.UI
 
         private void LoadMazes(string filename)
         {
-            string result = maze.LoadMazeModels(filename);
-
-            if (result != string.Empty || !maze.isMazeModels())
+            try
             {
-                DisplayError(result, false);
-                return;
+                maze = null;
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+                maze.LoadMazeModels(filename);
+
+                if (!maze.isMazeModels())
+                {
+                    throw new Exception("Failed to load maze models!");
+                }
+
+                maze.UpdateMazePaths();
+                AddMazeItems();
+                oSettings.LastFileName = maze.GetFileName();
+                UpdateSettings();
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error Loading Project", e, true);
             }
 
-            DisplayTsMessage("Mazes Loaded");
-
-            maze.UpdateMazePaths();
-            AddMazeItems();
-            oSettings.LastFileName = maze.GetFileName();
-            UpdateSettings();
             DisplayTitleMessage(oSettings.LastFileName);
+            DisplayTsMessage("Mazes Loaded");
         }
 
         private void SaveMazes()
