@@ -45,14 +45,9 @@
             this.loadLastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mazeTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnRun = new System.Windows.Forms.Button();
-            this.btnStop = new System.Windows.Forms.Button();
-            this.btnPause = new System.Windows.Forms.Button();
-            this.btnStep = new System.Windows.Forms.Button();
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.c2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.btnReset = new System.Windows.Forms.Button();
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
             this.stpStatus.SuspendLayout();
@@ -143,14 +138,14 @@
             // testToolStripMenuItem
             // 
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.testToolStripMenuItem.Text = "Paths";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // trainToolStripMenuItem
             // 
             this.trainToolStripMenuItem.Name = "trainToolStripMenuItem";
-            this.trainToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.trainToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.trainToolStripMenuItem.Text = "Train";
             this.trainToolStripMenuItem.Click += new System.EventHandler(this.trainToolStripMenuItem_Click);
             // 
@@ -202,55 +197,6 @@
             this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
             this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
             // 
-            // btnRun
-            // 
-            this.btnRun.Enabled = false;
-            this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(299, 9);
-            this.btnRun.Margin = new System.Windows.Forms.Padding(0);
-            this.btnRun.Name = "btnRun";
-            this.btnRun.Size = new System.Drawing.Size(66, 23);
-            this.btnRun.TabIndex = 7;
-            this.btnRun.Text = "RUN";
-            this.btnRun.UseVisualStyleBackColor = true;
-            this.btnRun.Click += new System.EventHandler(this.btnRun_Click);
-            // 
-            // btnStop
-            // 
-            this.btnStop.Enabled = false;
-            this.btnStop.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(586, 9);
-            this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(66, 23);
-            this.btnStop.TabIndex = 8;
-            this.btnStop.Text = "STOP";
-            this.btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
-            // 
-            // btnPause
-            // 
-            this.btnPause.Enabled = false;
-            this.btnPause.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPause.Location = new System.Drawing.Point(377, 9);
-            this.btnPause.Name = "btnPause";
-            this.btnPause.Size = new System.Drawing.Size(66, 23);
-            this.btnPause.TabIndex = 9;
-            this.btnPause.Text = "PAUSE";
-            this.btnPause.UseVisualStyleBackColor = true;
-            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
-            // 
-            // btnStep
-            // 
-            this.btnStep.Enabled = false;
-            this.btnStep.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStep.Location = new System.Drawing.Point(461, 9);
-            this.btnStep.Name = "btnStep";
-            this.btnStep.Size = new System.Drawing.Size(66, 23);
-            this.btnStep.TabIndex = 10;
-            this.btnStep.Text = "STEP";
-            this.btnStep.UseVisualStyleBackColor = true;
-            this.btnStep.Click += new System.EventHandler(this.btnStep_Click);
-            // 
             // lvwMazes
             // 
             this.lvwMazes.AutoArrange = false;
@@ -276,18 +222,6 @@
             // c2
             // 
             this.c2.Text = "Path";
-            // 
-            // btnReset
-            // 
-            this.btnReset.Enabled = false;
-            this.btnReset.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnReset.Location = new System.Drawing.Point(678, 9);
-            this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(66, 23);
-            this.btnReset.TabIndex = 12;
-            this.btnReset.Text = "RESET";
-            this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
             // pbxPath
             // 
@@ -319,12 +253,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(894, 725);
             this.Controls.Add(this.pbxPath);
-            this.Controls.Add(this.btnReset);
             this.Controls.Add(this.lvwMazes);
-            this.Controls.Add(this.btnStep);
-            this.Controls.Add(this.btnPause);
-            this.Controls.Add(this.btnStop);
-            this.Controls.Add(this.btnRun);
             this.Controls.Add(this.stpStatus);
             this.Controls.Add(this.msMain);
             this.Controls.Add(this.pbxMaze);
@@ -350,14 +279,10 @@
         private System.Windows.Forms.MenuStrip msMain;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
-        private System.Windows.Forms.Button btnRun;
-        private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
-        private System.Windows.Forms.Button btnPause;
         private System.Windows.Forms.ToolStripMenuItem autorunToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadLastToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
-        private System.Windows.Forms.Button btnStep;
         private System.Windows.Forms.ToolStripMenuItem buildToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem trainToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
@@ -366,7 +291,6 @@
         private System.Windows.Forms.ListView lvwMazes;
         private System.Windows.Forms.ColumnHeader c1;
         private System.Windows.Forms.ColumnHeader c2;
-        private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mazeTextToolStripMenuItem;

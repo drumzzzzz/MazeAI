@@ -664,22 +664,14 @@ namespace MouseAI
                         mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
                     }
                 }
-
                 else if (so.isJunction)
                 {
                     mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
                     isFirstJunction = true;
                 }
             }
-
-            for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
-            {
-                mazeObjectSegments[idx].RemoveAll(item=>!PathObjects.Contains(item));
-                if (mazeObjectSegments[idx].Count == 0)
-                    mazeObjectSegments.RemoveAt(idx);
-            }
-
-            GenerateSegments();
+            ValidateSegments(mazeObjectSegments);
+            GenerateSegmentImages(mazeObjectSegments);
         }
 
         private static MazeObjects SearchObjects(int x, int y)
@@ -737,7 +729,23 @@ namespace MouseAI
             return true;
         }
 
-        private void GenerateSegments()
+        private static void ValidateSegments(MazeObjectSegments mazeObjectSegments)
+        {
+            for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
+            {
+                mazeObjectSegments[idx].RemoveAll(item => !PathObjects.Contains(item));
+                if (mazeObjectSegments[idx].Count == 0)
+                    mazeObjectSegments.RemoveAt(idx);
+            }
+
+            int count1 = mazeObjectSegments[mazeObjectSegments.Count - 1].Count;
+            int count2 = PathObjects.Count - 1;
+
+            if (count1 != count2)
+                throw new Exception(string.Format("Segment length not equal: {0}, {1}", count1, count2));
+        }
+
+        private static void GenerateSegmentImages(MazeObjectSegments mazeObjectSegments)
         {
             byte b;
             Bitmap bmp = new Bitmap(maze_width, maze_height);

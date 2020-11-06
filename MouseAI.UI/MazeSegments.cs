@@ -1,12 +1,7 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MouseAI.UI
@@ -39,7 +34,8 @@ namespace MouseAI.UI
                         Height = height,
                         Location = new Point(x * width + (MARGIN * SCALE), y * height + (MARGIN * SCALE)),
                         Visible = false,
-                        SizeMode = PictureBoxSizeMode.StretchImage
+                        SizeMode = PictureBoxSizeMode.StretchImage,
+                        BorderStyle = BorderStyle.FixedSingle
                     };
                     Controls.Add(pbx);
                 }

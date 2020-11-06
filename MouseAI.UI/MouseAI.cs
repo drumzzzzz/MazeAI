@@ -918,11 +918,6 @@ namespace MouseAI.UI
 
             if (r == RUNSTATE.BUILD_PATHS)
             {
-                btnRun.Enabled = false;
-                btnStop.Enabled = true;
-                btnPause.Enabled = true;
-                btnStep.Enabled = false;
-                btnReset.Enabled = false;
                 lvwMazes.Enabled = false;
                 return;
             }
@@ -930,64 +925,27 @@ namespace MouseAI.UI
             switch (r)
             {
                 case RUNSTATE.PROCESS:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = false;
                     lvwMazes.Enabled = false;
                     return;
                 case RUNSTATE.SELECT:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = false;
                     lvwMazes.Enabled = true;
                     return;
                 case RUNSTATE.NONE:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = false;
                     lvwMazes.Enabled = false;
                     return;
                 case RUNSTATE.READY:
-                    btnRun.Enabled = true;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = false;
                     lvwMazes.Enabled = true;
                     return;
                 case RUNSTATE.RUN:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = true;
-                    btnPause.Enabled = true;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = false;
                     lvwMazes.Enabled = false;
                     return;
                 case RUNSTATE.STOP:
-                    btnRun.Enabled = true;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
-                    btnReset.Enabled = true;
                     lvwMazes.Enabled = true;
                     return;
                 case RUNSTATE.PAUSE:
-                    btnRun.Enabled = true;
-                    btnStop.Enabled = true;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = true;
                     return;
                 case RUNSTATE.STEP:
-                    btnRun.Enabled = false;
-                    btnStop.Enabled = false;
-                    btnPause.Enabled = false;
-                    btnStep.Enabled = false;
+
                     return;
                 case RUNSTATE.RESET:
                     return;
