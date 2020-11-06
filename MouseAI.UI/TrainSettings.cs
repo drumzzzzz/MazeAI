@@ -17,6 +17,8 @@ namespace MouseAI.UI
         private const bool NORMALIZE = true;
         private const bool EARLYSTOP = true;
         private const bool DROPOUT = true;
+        private const int SEED = 0;
+        private const double SPLIT = 0.70;
 
         public TrainSettings(Config config)
         {
@@ -32,7 +34,9 @@ namespace MouseAI.UI
                     Nodes = NODES,
                     isNormalize = NORMALIZE,
                     isEarlyStop = EARLYSTOP,
-                    isDropOut = DROPOUT
+                    isDropOut = DROPOUT,
+                    Split = SPLIT,
+                    Seed = SEED
                 };
             }
             else
@@ -53,6 +57,8 @@ namespace MouseAI.UI
             nudBatch.Value = config.Batch;
             nudLayers.Value = config.Layers;
             nudNodes.Value = config.Nodes;
+            nudSeed.Value = config.Seed;
+            nudSplit.Value = Convert.ToDecimal(config.Split);
             chkNormalize.Checked = config.isNormalize;
             chkEarlyStop.Checked = config.isEarlyStop;
             chkDropOut.Checked = config.isDropOut;
@@ -64,6 +70,8 @@ namespace MouseAI.UI
             config.Batch = (int) nudBatch.Value;
             config.Layers = (int) nudLayers.Value;
             config.Nodes = (int) nudNodes.Value;
+            config.Seed = (int) nudSeed.Value;
+            config.Split = Convert.ToDouble(nudSplit.Value);
             config.isNormalize = chkNormalize.Checked;
             config.isEarlyStop = chkEarlyStop.Checked;
             config.isDropOut = chkDropOut.Checked;

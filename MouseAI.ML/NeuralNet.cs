@@ -13,8 +13,10 @@ using Python.Runtime;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using Keras.Callbacks;
 using MouseAI.SH;
+using MouseAI.PL;
 
 #endregion
 
@@ -30,8 +32,10 @@ namespace MouseAI.ML
         private readonly string model_ext;
         private readonly string log_dir;
         private readonly string log_ext;
+        private readonly string config_ext;
         private string starttime;
         private string log_file;
+        private Config config;
 
         private NDarray x_train;    // Training Data
         private NDarray y_train;    // Training Labels
@@ -48,7 +52,7 @@ namespace MouseAI.ML
 
         #region Initialization
 
-        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext)
+        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext, string config_ext)
         {
             this.width = width;
             this.height = height;
@@ -56,6 +60,7 @@ namespace MouseAI.ML
             this.log_ext = log_ext;
             this.model_dir = model_dir;
             this.model_ext = model_ext;
+            this.config_ext = config_ext;
 
             string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
             if (!string.IsNullOrEmpty(paths))
@@ -67,8 +72,8 @@ namespace MouseAI.ML
 
         public void InitDataSets(ImageDatas imageDatas, double split, Random r)
         {
-            dataSets = null;
             dataSets = new DataSets(width, height, imageDatas, split, r);
+            BuildDataSets();
         }
 
         public void BuildDataSets()
@@ -81,13 +86,14 @@ namespace MouseAI.ML
 
         #region Processing
 
-        public void Process(Config config, int num_classes)
+        public void Process(Config _config, int num_classes)
         {
             if (x_train == null || y_train == null || x_test == null || y_test == null)
                 throw new Exception("Dataset was null!");
 
             dtStart = DateTime.UtcNow;
             Shape input_shape;
+            config = _config;
 
             if (K.ImageDataFormat() == "channels_first")
             {
@@ -102,7 +108,7 @@ namespace MouseAI.ML
                 input_shape = (height, width, 1);
             }
 
-            if (config.isNormalize)
+            if (_config.isNormalize)
             {
                 x_train = x_train.astype(np.float32);
                 x_test = x_test.astype(np.float32);
@@ -121,7 +127,7 @@ namespace MouseAI.ML
             starttime = DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss");
             log_file = log_dir + @"\" + starttime + "." + log_ext;
 
-            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, config.Epochs, num_classes, config.Batch,config.isEarlyStop, log_file);
+            model = ProcessModel(input_shape, x_train, y_train, x_test, y_test, _config.Epochs, num_classes, _config.Batch,_config.isEarlyStop, log_file);
             dtEnd = DateTime.UtcNow;
 
             // Score the model for performance
@@ -206,11 +212,14 @@ namespace MouseAI.ML
 
         public void SaveFiles()
         {
-            if (model == null || string.IsNullOrEmpty(starttime))
+            if (model == null || string.IsNullOrEmpty(starttime) || string.IsNullOrEmpty(config.Guid))
                 throw new Exception("Model Save Error");
 
-            File.WriteAllText(model_dir + @"\" + starttime + ".json", model.ToJson());
-            model.Save(model_dir + @"\" + starttime + "." + model_ext);
+            config.StartTime = starttime;
+            config.Model = model.ToJson();
+            string filename = model_dir + @"\" + starttime + ".";
+            FileIO.SerializeXml(config, filename + config_ext);
+            model.Save(filename + model_ext);
         }
 
         public string GetLogName()

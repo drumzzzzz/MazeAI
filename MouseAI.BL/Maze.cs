@@ -21,7 +21,7 @@ namespace MouseAI
     {
         #region Declarations
 
-        private readonly NeuralNet neuralNet;
+        private NeuralNet neuralNet;
         private static byte[,] mazedata;
         private readonly MazeGenerator mazeGenerator;
         private static MazeObject[,] MazeObjects;
@@ -56,6 +56,7 @@ namespace MouseAI
         private const string LOG_EXT = "csv";
         private const string MODELS_DIR = "models";
         private const string MODELS_EXT = "h5";
+        private const string CONFIG_EXT = "xml";
         private const string DIR = @"\";
         public const int BLACK = 0x00;
         public const int WHITE = 0xff;
@@ -105,7 +106,7 @@ namespace MouseAI
             if (mazeDb == null)
                 mazeDb = new MazeDb();
 
-            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT);
+            
         }
 
         public string GetLogDir()
@@ -294,10 +295,12 @@ namespace MouseAI
                 throw new Exception("Maze test data not found!");
             }
 
+            config.Guid = guid;
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
-            neuralNet.InitDataSets(imageDatas, split, r);
-            neuralNet.BuildDataSets();
+            neuralNet = null;
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
+            neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
         }
 
@@ -322,6 +325,7 @@ namespace MouseAI
                 throw new Exception("Failed to insert db record");
 
             neuralNet.SaveFiles();
+            mazeModels.StartTime = config.StartTime;
         }
 
         #endregion
@@ -1077,16 +1081,6 @@ namespace MouseAI
         {
             try
             {
-                //dbtblProjects = new DbTable_Projects
-                //{
-                //    Guid = Guid.NewGuid().ToString(),
-                //    Config = string.Empty,
-                //    dtStart = string.Empty,
-                //    dtEnd = string.Empty
-                //};
-                //if (!mazeDb.InsertProject(dbtblProjects))
-                //    throw new Exception("Failed to create projects table");
-
                 dbtblStats = new DbTable_Mazes();
 
                 foreach (MazeModel mm in mazeModels.GetMazeModels())
@@ -1110,17 +1104,9 @@ namespace MouseAI
             }
         }
 
-        public string SaveUpdatedMazeModels(string filename)
+        public void SaveUpdatedMazeModels(string filename)
         {
-            try
-            {
-                FileIO.SerializeXml(mazeModels, filename);
-                return string.Empty;
-            }
-            catch (Exception e)
-            {
-                return e.Message;
-            }
+            FileIO.SerializeXml(mazeModels, filename);
         }
 
         public string LoadMazeModels(string filename)

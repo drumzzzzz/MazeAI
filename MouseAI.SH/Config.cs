@@ -15,5 +15,10 @@ namespace MouseAI.SH
         public bool isNormalize { get; set; }
         public bool isEarlyStop { get; set; }
         public bool isDropOut { get; set; }
+        public int Seed { get; set; }
+        public double Split { get; set; }
+        public string Guid { get; set; }
+        public string StartTime { get; set; }
+        public string Model { get; set; }
     }
 }

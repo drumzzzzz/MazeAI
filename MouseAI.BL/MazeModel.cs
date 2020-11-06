@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Xml.Serialization;
 using MouseAI.ML;
 
 namespace MouseAI.BL
@@ -55,6 +51,7 @@ namespace MouseAI.BL
     public class MazeModels
     {
         public string Guid { get; set; }
+        public string StartTime { get; set; }
         public List<MazeModel> mazeModels { get; set; }
 
         public MazeModels()
@@ -153,7 +150,6 @@ namespace MouseAI.BL
 
             return imageDatas;
         }
-
 
         public MazeModel CheckPaths()
         {

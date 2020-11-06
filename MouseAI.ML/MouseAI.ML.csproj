@@ -87,6 +87,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MouseAI.PL\MouseAI.PL.csproj">
+      <Project>{f22a2154-9ab6-49b4-a246-2a7a2b524613}</Project>
+      <Name>MouseAI.PL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MouseAI.SH\MouseAI.SH.csproj">
       <Project>{459615c5-2fb3-45cd-9dc2-a145db0d2dae}</Project>
       <Name>MouseAI.SH</Name>

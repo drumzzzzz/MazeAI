@@ -300,6 +300,7 @@ namespace MouseAI.UI
                                   "Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
                     maze.SaveResults();
+                    maze.SaveUpdatedMazeModels(oSettings.LastFileName);
                     DisplayDialog("Files Saved", "Save Models");
                 }
             }
@@ -307,8 +308,6 @@ namespace MouseAI.UI
             {
                 DisplayError("Training Error", e, false);
             }
-
-            // isDone = true;
         }
 
         #endregion
@@ -511,11 +510,6 @@ namespace MouseAI.UI
 
         private void NewMazes()
         {
-            //if (maze == null)
-            //{
-            //    maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-            //}
-
             string filename = maze.GetSaveName();
 
             if (string.IsNullOrEmpty(filename))
@@ -556,11 +550,6 @@ namespace MouseAI.UI
 
         private void LoadMazes(string filename)
         {
-            //if (maze == null)
-            //{
-            //    maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-            //}
-
             string result = maze.LoadMazeModels(filename);
 
             if (result != string.Empty || !maze.isMazeModels())
@@ -588,10 +577,7 @@ namespace MouseAI.UI
             try
             {
                 maze.UpdateMazeModelPaths();
-                string result = maze.SaveUpdatedMazeModels(oSettings.LastFileName);
-
-                if (!string.IsNullOrEmpty(result))
-                    throw  new Exception(result);
+                maze.SaveUpdatedMazeModels(oSettings.LastFileName);
 
                 DisplayTsMessage("Saved.");
             }
