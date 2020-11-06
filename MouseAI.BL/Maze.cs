@@ -1067,9 +1067,12 @@ namespace MouseAI
 
         #region Test
 
-        public List<string> GetProjectModels(string guid)
+        public List<string> GetProjectModels()
         {
-            IEnumerable<object> oList = mazeDb.ReadProjects(guid);
+            if (string.IsNullOrEmpty(mazeModel.guid))
+                return null;
+
+            IEnumerable<object> oList = mazeDb.ReadProjects(mazeModel.guid);
 
             if (oList == null)
                 return null;
@@ -1084,6 +1087,11 @@ namespace MouseAI
             }
             
             return starttimes;
+        }
+
+        public string GetProjectModel()
+        {
+            return mazeModels.StartTime;
         }
 
         #endregion

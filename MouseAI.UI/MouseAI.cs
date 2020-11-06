@@ -22,6 +22,7 @@ namespace MouseAI.UI
         private Settings oSettings;
         private Thread searchThread;
         private readonly MazeText mazeText;
+        private MazeTest mazeTest;
         private readonly MazeSegments mazeSegments;
         private Maze maze;
         private TrainSettings trainSettings;
@@ -378,7 +379,17 @@ namespace MouseAI.UI
             if (maze == null ||!maze.isMazeModels())
                 return;
 
-            List<string> starttimes = maze.GetProjectModels(maze.GetGUID());
+            List<string> starttimes = maze.GetProjectModels();
+
+            if (starttimes == null)
+            {
+                DisplayDialog("No models found for project", "Test Error");
+                return;
+            }
+
+            mazeTest = new MazeTest(starttimes, maze.GetProjectModel());
+
+            mazeTest.Show();
         }
         
         #endregion

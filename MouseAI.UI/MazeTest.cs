@@ -12,9 +12,15 @@ namespace MouseAI.UI
 {
     public partial class MazeTest : Form
     {
-        public MazeTest()
+        public MazeTest(IEnumerable<string> starttimes, string starttime)
         {
             InitializeComponent();
+
+            foreach (string s in starttimes)
+                lbxModels.Items.Add(s);
+
+            if (!string.IsNullOrEmpty(starttime))
+                lbxModels.SelectedItem = starttime;
         }
     }
 }

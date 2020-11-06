@@ -34,6 +34,7 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.btnRun = new System.Windows.Forms.Button();
             this.lbxModels = new System.Windows.Forms.ListBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnReset
@@ -103,12 +104,24 @@
             this.lbxModels.Size = new System.Drawing.Size(149, 244);
             this.lbxModels.TabIndex = 18;
             // 
+            // button1
+            // 
+            this.button1.Enabled = false;
+            this.button1.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.Location = new System.Drawing.Point(44, 301);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(66, 23);
+            this.button1.TabIndex = 19;
+            this.button1.Text = "EXIT";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
             // MazeTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(564, 368);
+            this.ClientSize = new System.Drawing.Size(560, 364);
             this.ControlBox = false;
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.lbxModels);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.btnStep);
@@ -133,5 +146,6 @@
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.Button btnRun;
         public System.Windows.Forms.ListBox lbxModels;
+        private System.Windows.Forms.Button button1;
     }
 }
