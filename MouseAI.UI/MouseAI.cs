@@ -20,17 +20,19 @@ namespace MouseAI.UI
 
         private Settings oSettings;
         private Thread searchThread;
-        private Thread trainThread;
         private readonly MazeText mazeText;
         private readonly MazeSegments mazeSegments;
         private Maze maze;
         private TrainSettings trainSettings;
+        private Progress progress;
 
         private bool isFound;
         private bool isStep;
         private bool isDone;
         private bool isValid;
         private bool isExit;
+        private bool isThreadDone;
+        private bool isThreadCancel;
 
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
@@ -119,6 +121,15 @@ namespace MouseAI.UI
             DisplayTitleMessage(string.Empty);
         }
 
+        private void MazeAI_Shown(object sender, EventArgs e)
+        {
+            if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
+            {
+                LoadMazes(oSettings.LastFileName);
+                SetMazeTextVisible();
+            }
+        }
+
         private void LoadSettings()
         {
             if (!Settings.isSettings())
@@ -147,41 +158,67 @@ namespace MouseAI.UI
 
         #region Processing
 
-        private void MazeAI_Shown(object sender, EventArgs e)
+        private void InitProcessing(string message, bool isCancel)
         {
-            if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
+            Console.Clear();
+            Enabled = false;
+            isThreadCancel = false;
+            isThreadDone = false;
+            progress = new Progress(message, isCancel)
             {
-                LoadMazes(oSettings.LastFileName);
-                SetMazeTextVisible();
-            }
+                TopMost = true
+            };
+
+            if (isCancel)
+                progress.btnProgressCancel.Click += btnProgressCancel_Click;
+
+            progress.Show();
+            progress.Focus();
         }
 
-        private static bool CreateMaze(Maze m)
+        private void FinalizeProcessing()
         {
-            try
-            {
-                m.Reset();
-                m.Generate();
-                m.Update();
-                if (!m.AddCharacters_Random())
-                    return false;
-                m.AddMazeModel();
-                return true;
-            }
-            catch (Exception e)
-            {
-                DisplayError("Error Creating Maze", e, false);
-                return false;
-            }
+            progress?.Close();
+            Enabled = true;
+            Focus();
         }
 
-        public void RenderMaze()
+        #endregion
+
+        #region Path Solving
+
+        private void SolvePaths()
         {
-            DrawMaze();
+            if (!maze.isMazeModels())
+                return;
+
+            if (MessageBox.Show("Calculate and solve maze paths?\nthis will clear any current build"
+                    , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
+                return;
+
+            InitProcessing("Solving Paths ...", true);
+
+            for (int i = 0; i < lvwMazes.Items.Count; i++)
+            {
+                RunState = RUNSTATE.BUILD_PATHS;
+
+                if (SelectItem(i) && SelectMaze(i))
+                {
+                    SetRunState(RUNSTATE.RUN);
+
+                    if (searchThread == null)
+                        RunSearch();
+                }
+                if (isThreadCancel)
+                    break;
+            }
+
+            Console.WriteLine("Path Solving {0}", (isThreadCancel) ? "Cancelled." : "Completed.");
+            FinalizeProcessing();
             SetRunState(RUNSTATE.READY);
         }
 
-        private void RunProcess()
+        private void RunSearch()
         {
             maze.Reset();
             searchThread = new Thread(AISearch);
@@ -196,7 +233,7 @@ namespace MouseAI.UI
 
                 if (RunState == RUNSTATE.STEP && !isStep)
                 {
-                    RenderMaze();
+                    DrawMaze();
                     SetRunState(RUNSTATE.PAUSE);
                     DisplayMazeText();
                 }
@@ -205,7 +242,8 @@ namespace MouseAI.UI
                 Thread.Sleep(PROCESS_DELAY);
             }
 
-            RenderMaze();
+            DrawMaze();
+            SetRunState(RUNSTATE.READY);
 
             if (isFound && isValid)
             {
@@ -218,7 +256,7 @@ namespace MouseAI.UI
             }
             else
                 DisplayError("Error Calculating Path!", false);
-
+            
             isFound = false;
             searchThread = null;
             SetRunState(RUNSTATE.READY);
@@ -238,7 +276,7 @@ namespace MouseAI.UI
                         {
                             if (maze.ProcessMouseMove())
                             {
-                                Console.WriteLine("Cheese found via path!");
+                                Console.WriteLine("Path solved for {0}",maze.GetGUID());
                                 isFound = true;
                                 break;
                             }
@@ -261,9 +299,13 @@ namespace MouseAI.UI
             isDone = true;
         }
 
+        #endregion
+
+        #region Training
+
         private void RunTrain()
         {
-            if (string.IsNullOrEmpty(oSettings.Guid) || (trainThread != null && trainThread.ThreadState != ThreadState.Stopped))
+            if (string.IsNullOrEmpty(oSettings.Guid))
                 return;
 
             trainSettings = new TrainSettings(maze.GetConfig());
@@ -273,28 +315,38 @@ namespace MouseAI.UI
             if (dlr != DialogResult.OK)
                 return;
 
-            trainThread = null;
-            trainThread = new Thread(AITrain);
+            Thread trainThread = new Thread(AITrain);
             trainThread.Start();
 
-            while (trainThread.ThreadState != ThreadState.Stopped)
+            InitProcessing("Training Neural Network ...", true);
+
+            while (trainThread.ThreadState != ThreadState.Stopped && !isThreadCancel)
             {
+                if (isThreadDone && progress.isCancel())
+                {
+                    progress.SetCancel(false);
+                    progress.Visible = false;
+                }
+
                 Application.DoEvents();
                 Thread.Sleep(100);
             }
-        }
 
-        private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (trainSettings.DialogResult == DialogResult.OK)
-                maze.SetConfig(trainSettings.GetConfig());
+            if (isThreadCancel && trainThread.ThreadState != ThreadState.Stopped)
+            {
+                trainThread.Abort();
+            }
+
+            FinalizeProcessing();
         }
 
         private void AITrain()
         {
             try
             {
+                Console.Clear();
                 maze.Train(DATA_SPLIT, oSettings.Guid);
+                isThreadDone = true;
 
                 if (DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
                                   "Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.Yes)
@@ -306,38 +358,16 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
-                DisplayError("Training Error", e, false);
+                Console.WriteLine("Training Cancelled");
+                if (e.HResult != -2146233040)
+                    DisplayError("Training Error", e, false);
             }
         }
 
-        #endregion
-
-        #region Building
-
-        private void BuildPaths()
+        private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!maze.isMazeModels())
-                return;
-
-            if (MessageBox.Show("Build and calculate maze paths?\nthis will clear any current build"
-                    , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                return;
-
-            for (int i = 0; i < lvwMazes.Items.Count; i++)
-            {
-                RunState = RUNSTATE.BUILD_PATHS;
-
-                if (SelectItem(i) && SelectMaze(i))
-                {
-                    SetRunState(RUNSTATE.RUN);
-
-                    if (searchThread == null)
-                        RunProcess();
-                }
-                if (RunState == RUNSTATE.STOP)
-                    break;
-            }
-            SetRunState(RUNSTATE.READY);
+            if (trainSettings.DialogResult == DialogResult.OK)
+                maze.SetConfig(trainSettings.GetConfig());
         }
 
         #endregion
@@ -548,6 +578,25 @@ namespace MouseAI.UI
             }
         }
 
+        private static bool CreateMaze(Maze m)
+        {
+            try
+            {
+                m.Reset();
+                m.Generate();
+                m.Update();
+                if (!m.AddCharacters_Random())
+                    return false;
+                m.AddMazeModel();
+                return true;
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error Creating Maze", e, false);
+                return false;
+            }
+        }
+
         private void LoadMazes(string filename)
         {
             try
@@ -670,8 +719,10 @@ namespace MouseAI.UI
                 if (!maze.AddCharacters())
                     throw new Exception("Could not add characters");
 
-                RenderMaze();
+                DrawMaze();
                 DrawPath();
+                SetRunState(RUNSTATE.READY);
+
                 if (oSettings.isMazeText)
                     DisplayMazeText();
                 if (oSettings.isMazeSegments)
@@ -718,12 +769,21 @@ namespace MouseAI.UI
 
         #region Button
 
+        private void btnProgressCancel_Click(object sender, EventArgs e)
+        {
+            if (!isThreadDone)
+            {
+                progress.btnProgressCancel.Enabled = false;
+                isThreadCancel = true;
+            }
+        }
+
         private void btnRun_Click(object sender, EventArgs e)
         {
-            SetRunState(RUNSTATE.RUN);
+            //SetRunState(RUNSTATE.RUN);
 
-            if (searchThread == null)
-                RunProcess();
+            //if (searchThread == null)
+            //    RunProcess();
         }
 
         private void btnPause_Click(object sender, EventArgs e)
@@ -818,7 +878,7 @@ namespace MouseAI.UI
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            BuildPaths();
+            SolvePaths();
         }
 
         private void testToolStripMenuItem1_Click(object sender, EventArgs e)
