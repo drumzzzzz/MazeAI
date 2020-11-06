@@ -650,16 +650,16 @@ namespace MouseAI
                 
                 segmentObjects.Add(so);
                 segmentObjects.AddRange(SearchObjects(so.x, so.y).Distinct());
-                
-                if (so.isJunction)
-                {
-                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
-                }
 
                 if (so.x == cheese_x && so.y == cheese_y)
                 {
                     mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
                     break;
+                }
+
+                if (so.isJunction)
+                {
+                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
                 }
             }
 

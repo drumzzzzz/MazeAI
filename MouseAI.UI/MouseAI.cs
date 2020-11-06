@@ -25,12 +25,12 @@ namespace MouseAI.UI
         private Maze maze;
         private TrainSettings trainSettings;
         private Progress progress;
+        private MazeNew mazenew;
 
         private bool isFound;
         private bool isStep;
         private bool isDone;
         private bool isValid;
-        private bool isExit;
         private bool isThreadDone;
         private bool isThreadCancel;
 
@@ -41,10 +41,11 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const int MAZE_COUNT = 500;
         private const double DATA_SPLIT = 0.70;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
+        private const int PROCESS_DELAY = 1;
+        private const int SEARCH_DELAY = 1;
 
         private SKColor BlockColor;
         private SKColor SpaceColor;
@@ -60,11 +61,8 @@ namespace MouseAI.UI
         private SKBitmap[] Mouse_Bitmaps;
         private Point mouse_last;
 
-        private string log_dir;
-        private string models_dir;
-
-        private const int PROCESS_DELAY = 1;
-        private const int SEARCH_DELAY = 1;
+        private int maze_count;
+   
 
         public enum RUNSTATE
         {
@@ -125,7 +123,7 @@ namespace MouseAI.UI
         {
             if (oSettings.isAutoRun && !string.IsNullOrEmpty(oSettings.LastFileName))
             {
-                LoadMazes(oSettings.LastFileName);
+                LoadMazes(oSettings.LastFileName, false);
                 SetMazeTextVisible();
             }
         }
@@ -226,7 +224,7 @@ namespace MouseAI.UI
 
             mouse_last = new Point(-1,-1);
 
-            while (!isExit && !isFound)
+            while (!isFound)
             {
                 if (isDone)
                     isDone = false;
@@ -545,14 +543,30 @@ namespace MouseAI.UI
             if (string.IsNullOrEmpty(filename))
                 return;
 
-            maze.ClearMazeModels();
+            maze_count = -1;
+            mazenew = null;
+            mazenew = new MazeNew();
+            mazenew.Closing += Mazenew_Closing;
 
-            for (int i = 0; i < MAZE_COUNT; i++)
+            DialogResult dlr = mazenew.ShowDialog();
+
+            if (dlr != DialogResult.OK)
+                return;
+
+            if (maze_count <= 0)
+                return;
+
+            Console.WriteLine("Creating {0} Mazes", maze_count);
+
+            maze = null;
+            maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+
+            for (int i = 0; i < maze_count; i++)
             {
                 if (!CreateMaze(maze)) // Retry on character placement conflict
                     i--;
 
-                DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, MAZE_COUNT));
+                DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, maze_count));
             }
 
             if (maze.isMazeModels())
@@ -578,6 +592,11 @@ namespace MouseAI.UI
             }
         }
 
+        private void Mazenew_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            maze_count = (int)mazenew.nudMazes.Value;
+        }
+
         private static bool CreateMaze(Maze m)
         {
             try
@@ -597,7 +616,7 @@ namespace MouseAI.UI
             }
         }
 
-        private void LoadMazes(string filename)
+        private void LoadMazes(string filename, bool isExit)
         {
             try
             {
@@ -617,6 +636,9 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
+                if (!isExit)
+                    return;
+
                 DisplayError("Error Loading Project", e, true);
             }
 
@@ -830,7 +852,7 @@ namespace MouseAI.UI
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadMazes(null);
+            LoadMazes(null, true);
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
