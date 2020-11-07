@@ -35,7 +35,7 @@ namespace MouseAI
         private Config config;
 
         // Db
-        private readonly MazeDb mazeDb;
+        private static MazeDb mazeDb;
         private static DbTable_Mazes dbtblStats;
         private static DbTable_Projects dbtblProjects;
 
@@ -57,14 +57,17 @@ namespace MouseAI
         private const string MODELS_DIR = "models";
         private const string MODELS_EXT = "h5";
         private const string CONFIG_EXT = "xml";
+        private const string ARCHIVE_DIR = "archived";
+        private const string ARCHIVE_EXT = "zip";
         private const string DIR = @"\";
         public const int BLACK = 0x00;
         public const int WHITE = 0xff;
         public const int GREY = 0x80;
 
-        private readonly string models_dir;
-        private readonly string log_dir;
-        private readonly string maze_dir;
+        private static string models_dir;
+        private static string log_dir;
+        private static string maze_dir;
+        private static string archive_dir;
         private string FileName;
         private string ModelProjectGuid;
 
@@ -98,6 +101,7 @@ namespace MouseAI
             maze_dir = appdir + DIR + MAZE_DIR;
             log_dir = appdir + DIR + LOG_DIR;
             models_dir = appdir + DIR + MODELS_DIR;
+            archive_dir = appdir + DIR + ARCHIVE_DIR;
 
             if (!FileIO.CheckCreateDirectory(maze_dir))
                 throw new Exception("Could not create maze directory");
@@ -105,8 +109,9 @@ namespace MouseAI
                 throw new Exception("Could not create log directory");
             if (!FileIO.CheckCreateDirectory(models_dir))
                 throw new Exception("Could not create log directory");
+            if (!FileIO.CheckCreateDirectory(archive_dir))
+                throw new Exception("Could not create archive directory");
 
-            //if (mazeDb == null)
             mazeDb = new MazeDb();
         }
 
@@ -1086,7 +1091,7 @@ namespace MouseAI
             return starttimes;
         }
 
-        private List<string> GetProjectModels(string guid)
+        private static List<string> GetProjectModels(string guid)
         {
             IEnumerable<object> oList = mazeDb.ReadProjectGuids(guid);
 
@@ -1212,7 +1217,7 @@ namespace MouseAI
 
         #region Archiving
 
-        public void ArchiveProject(string projectname)
+        public static string ArchiveProject(string projectname)
         {
             try
             {
@@ -1229,16 +1234,16 @@ namespace MouseAI
                 }
 
                 RemoveMazeRecords(mms);
-                ArchiveProjectFiles(mms.Guid);
-
+                return ArchiveProjectFiles(projectname, mms.Guid);
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error Archiving Project:{0}", e.Message);
+                return string.Empty;
             }
         }
 
-        private void RemoveMazeRecords(MazeModels mms)
+        private static void RemoveMazeRecords(MazeModels mms)
         {
             List<string> guids = mms.GetGuids();
 
@@ -1248,7 +1253,7 @@ namespace MouseAI
             {
                 foreach (string guid in guids)
                 {
-                    //mazeDb.DeleteMazeRecords(guid);
+                    mazeDb.DeleteMazeRecords(guid);
                 }
                 rowcount = mazeDb.GetMazeCounts(guids);
             }
@@ -1263,17 +1268,16 @@ namespace MouseAI
             }
         }
 
-        private void ArchiveProjectFiles(string guid)
+        private static string ArchiveProjectFiles(string projectname, string guid)
         {
             List<string> projectmodels = GetProjectModels(guid);
 
             if (projectmodels.Count != 0)
             {
-                string log;
-                string config;
-                string model;
-
-                List<string> files = new List<string>();
+                List<string> files = new List<string>
+                {
+                    maze_dir + DIR + projectname
+                };
 
                 foreach (string pm in projectmodels)
                 {
@@ -1282,8 +1286,45 @@ namespace MouseAI
                     files.Add(GetFileName(models_dir, pm, MODELS_EXT));
                 }
 
-                Console.WriteLine("Archiving {0} Files ...", files.Count);
+                string archive_name = archive_dir + DIR + Utils.GetDateTime_Formatted() + "." + ARCHIVE_EXT;
+
+                Console.WriteLine("Archiving {0} Files to {1}", files.Count, archive_name);
+
+                if (!FileIO.CreateZipArchive(archive_name, files, out string result))
+                {
+                    throw new Exception(result);
+                }
+
+                sb.Clear();
+                sb.Append(result);
+                sb.Append(Environment.NewLine);
+                sb.Append(RemoveProjectFiles(files));
+                sb.Append(Environment.NewLine);
+                sb.Append(RemoveProjectRecord(guid));
+
+                return sb.ToString();
             }
+            return string.Empty;
+        }
+
+        private static string RemoveProjectFiles(List<string> projectfiles)
+        {
+            int removed_count = FileIO.DeleteFiles(projectfiles);
+            int count = projectfiles.Count;
+
+            return removed_count != count 
+                ? string.Format("Error Removing {0} of {1} Project Files", count - removed_count, count) 
+                : string.Format("Removed {0} Project Files", removed_count);
+        }
+
+        private static string RemoveProjectRecord(string guid)
+        {
+            mazeDb.DeleteProjectRecords(guid);
+            int removed_count = mazeDb.GetProjectCounts(guid);
+
+            return removed_count != 0
+                ? "Error Removing 1 Project Record"
+                : "Removed 1 Project Record";
         }
 
         private static string GetFileName(string path, string value, string ext)

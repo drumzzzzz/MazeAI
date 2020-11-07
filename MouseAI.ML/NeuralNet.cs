@@ -91,7 +91,7 @@ namespace MouseAI.ML
             if (x_train == null || y_train == null || x_test == null || y_test == null)
                 throw new Exception("Dataset was null!");
 
-            dtStart = DateTime.UtcNow;
+            dtStart = DateTime.Now;
             config = _config;
 
             if (K.ImageDataFormat() == "channels_first")
@@ -121,11 +121,11 @@ namespace MouseAI.ML
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
 
-            starttime = DateTime.UtcNow.ToString("dd_MM_yyyy_hh_mm_ss");
+            starttime = Utils.GetDateTime_Formatted();
             log_file = log_dir + @"\" + starttime + "." + log_ext;
 
             model = ProcessModel(x_train, y_train, x_test, y_test, num_classes, log_file, config);
-            dtEnd = DateTime.UtcNow;
+            dtEnd = DateTime.Now;
 
             // Score the model for performance
             score = model.Evaluate(x_test, y_test, verbose: 0);

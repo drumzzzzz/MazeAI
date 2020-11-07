@@ -56,6 +56,7 @@
             // 
             // btnArchive
             // 
+            this.btnArchive.Enabled = false;
             this.btnArchive.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnArchive.Location = new System.Drawing.Point(96, 314);
             this.btnArchive.Name = "btnArchive";
@@ -68,7 +69,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(424, 363);
+            this.ClientSize = new System.Drawing.Size(420, 359);
             this.ControlBox = false;
             this.Controls.Add(this.btnArchive);
             this.Controls.Add(this.btnCancel);

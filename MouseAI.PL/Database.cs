@@ -221,5 +221,32 @@ namespace MouseAI.PL
                 return -1;
             }
         }
+
+        public int RowCount(string table, string column, string value)
+        {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+            int rowcount = 0;
+            object result;
+
+            try
+            {
+                conn.Open();
+
+                SQLiteCommand cmd = new SQLiteCommand(conn);
+
+                cmd.CommandText = string.Format("SELECT COUNT(*) FROM {0} WHERE {1} = '{2}'", table, column, value);
+                result = cmd.ExecuteScalar();
+                rowcount += (result != null) ? Convert.ToInt32(result) : 0;
+     
+                CloseConnection(conn);
+                return rowcount;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                CloseConnection(conn);
+                return -1;
+            }
+        }
     }
 }

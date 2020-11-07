@@ -12,6 +12,7 @@ using System.Data.SQLite;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using System.IO.Compression;
 
 #endregion
 
@@ -296,6 +297,25 @@ namespace MouseAI.PL
             return FileCount;
         }
 
+        public static int DeleteFiles(List<string> files)
+        {
+            int count = 0;
+            try
+            {
+                foreach (string file in files.Where(File.Exists))
+                {
+                    File.Delete(file);
+                    count++;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error Deleting File:" + e.Message);
+            }
+
+            return count;
+        }
+
         public static int DeleteAllFiles(string source, string[] filenames)
         {
             FileCount = 0;
@@ -370,6 +390,47 @@ namespace MouseAI.PL
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region Archive Related
+
+        public static bool CreateZipArchive(string path, List<string> files, out string result)
+        {
+            result = string.Empty;
+
+            if (string.IsNullOrEmpty(path))
+                return false;
+
+            FileInfo fi;
+            string filename = new FileInfo(path).Name;
+
+            try
+            {
+                using (var stream = File.OpenWrite(path))
+                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
+                {
+                    foreach (string item in files)
+                    {
+                        fi = new FileInfo(item);
+                        archive.CreateEntryFromFile(fi.FullName, fi.Name);
+                    }
+                }
+
+                if (!File.Exists(path))
+                    throw new Exception(filename);
+
+                result = string.Format("Created Archive: {0}", new FileInfo(path).Name);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                result = string.Format("Error creating archive: {0}", e.Message);
+                Console.WriteLine(result);
+                return false;
+            }
         }
 
         #endregion

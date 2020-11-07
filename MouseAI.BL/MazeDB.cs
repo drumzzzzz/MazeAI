@@ -62,6 +62,16 @@ namespace MouseAI.BL
         {
             db.DeleteRows(DbTable_Mazes.TABLE, "Guid", guid);
         }
+
+        public void DeleteProjectRecords(string guid)
+        {
+            db.DeleteRows(DbTable_Projects.TABLE, "Guid", guid);
+        }
+
+        public int GetProjectCounts(string guid)
+        {
+            return db.RowCount(DbTable_Mazes.TABLE, "Guid", guid);
+        }
     }
 
     public class DbTable_Mazes
