@@ -11,7 +11,6 @@ namespace MouseAI.PL
     {
         private readonly string db_file;
         private const string DB_PATH = "URI=file:";
-        public string err { get; set; }
 
         public Database(string db_file)
         {
@@ -169,6 +168,57 @@ namespace MouseAI.PL
                 Console.WriteLine(e);
                 CloseConnection(conn);
                 return null;
+            }
+        }
+
+        public void DeleteRows(string table, string column, string value)
+        {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+
+            try
+            {
+                conn.Open();
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = string.Format("DELETE FROM {0} WHERE {1} = '{2}'", table, column, value)
+                };
+
+                cmd.ExecuteNonQuery();
+                CloseConnection(conn);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                CloseConnection(conn);
+            }
+        }
+
+        public int RowCount(string table, string column, List<string> values)
+        {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+            int rowcount = 0;
+            object result;
+
+            try
+            {
+                conn.Open();
+
+                SQLiteCommand cmd = new SQLiteCommand(conn);
+
+                foreach (string value in values)
+                {
+                    cmd.CommandText = string.Format("SELECT COUNT(*) FROM {0} WHERE {1} = '{2}'", table, column, value);
+                    result = cmd.ExecuteScalar();
+                    rowcount += (result != null) ? Convert.ToInt32(result) : 0;
+                }
+                CloseConnection(conn);
+                return rowcount;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                CloseConnection(conn);
+                return -1;
             }
         }
     }

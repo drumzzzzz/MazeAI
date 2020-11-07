@@ -93,11 +93,22 @@ namespace MouseAI.PL
 
         public static List<string> GetFiles(string path, string filters)
         {
-            List<string> fNames = new List<string>();
+            List<string> fpaths = new List<string>();
+            List<string> fnames = new List<string>();
+
             if (Directory.Exists(path))
-                fNames = filters.Split('|').SelectMany(filter => Directory.GetFiles(path, filter)).ToList();
-   
-            return fNames;
+                fpaths = filters.Split('|').SelectMany(filter => Directory.GetFiles(path, filter)).ToList();
+
+            int index;
+            foreach (string fname in fpaths)
+            {
+                index = fname.LastIndexOf(@"\", StringComparison.Ordinal);
+                if (index != -1)
+                {
+                    fnames.Add(fname.Substring(index + 1));
+                }
+            }
+            return fnames;
         }
 
         public static bool WriteCreateFile(string FileName, List<string> stringVals)
@@ -285,9 +296,34 @@ namespace MouseAI.PL
             return FileCount;
         }
 
+        public static int DeleteAllFiles(string source, string[] filenames)
+        {
+            FileCount = 0;
+            try
+            {
+                DirectoryInfo diSource = new DirectoryInfo(source);
+                DeleteFiles(diSource, filenames);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Delete Files Error:" + e.Message);
+            }
+
+            return FileCount;
+        }
+
         private static void DeleteFiles(DirectoryInfo source, string[] extensions)
         {
             foreach (FileInfo file in source.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())))
+            {
+                file.Delete();
+                FileCount++;
+            }
+        }
+
+        private static void DeleteAllFiles(DirectoryInfo source, string[] names)
+        {
+            foreach (FileInfo file in source.EnumerateFiles().Where(f => names.Contains(f.FullName.ToLower())))
             {
                 file.Delete();
                 FileCount++;

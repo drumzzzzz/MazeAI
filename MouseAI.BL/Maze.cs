@@ -66,6 +66,7 @@ namespace MouseAI
         private readonly string log_dir;
         private readonly string maze_dir;
         private string FileName;
+        private string ModelProjectGuid;
 
         private readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
@@ -286,7 +287,7 @@ namespace MouseAI
         {
             dbtblProjects = new DbTable_Projects
             {
-                Guid = GetGUID(),
+                Guid = GetModelProjectGuid(),
                 Accuracy = neuralNet.GetAccuracy(),
                 Epochs = neuralNet.GetEpochs(),
                 Start = neuralNet.GetStartTime(),
@@ -1012,9 +1013,14 @@ namespace MouseAI
             return mm.maze != null && mm.mazepath != null;
         }
 
-        public string GetGUID()
+        public string GetMazeModelGUID()
         {
             return mazeModel?.guid;
+        }
+
+        public string GetMazeModelsGUID()
+        {
+            return mazeModels?.Guid;
         }
 
         public bool SetTested(bool isTested)
@@ -1063,7 +1069,26 @@ namespace MouseAI
             if (string.IsNullOrEmpty(mazeModel.guid))
                 return null;
 
-            IEnumerable<object> oList = mazeDb.ReadProjects(mazeModel.guid);
+            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModel.guid);
+
+            if (oList == null)
+                return null;
+
+            DbTable_Projects dbTableProjects;
+            List<string> starttimes = new List<string>();
+
+            foreach (DbTable_Projects obj in oList)
+            {
+                dbTableProjects = obj;
+                starttimes.Add(dbTableProjects.Log);
+            }
+
+            return starttimes;
+        }
+
+        private List<string> GetProjectModels(string guid)
+        {
+            IEnumerable<object> oList = mazeDb.ReadProjectGuids(guid);
 
             if (oList == null)
                 return null;
@@ -1139,6 +1164,8 @@ namespace MouseAI
             if (mms == null)
                 throw new Exception("Error Loading File");
 
+            ModelProjectGuid = mms.Guid;
+
             foreach (MazeModel mm in mms.GetMazeModels())
             {
                 if (mazeDb.ReadMazes(mm.guid) == null)
@@ -1151,6 +1178,11 @@ namespace MouseAI
             FileName = filename;
         }
 
+        public List<string> GetProjects()
+        {
+            return FileIO.GetFiles(maze_dir,"*." + MAZE_EXT);
+        }
+
         public string GetSaveName()
         {
             return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
@@ -1161,9 +1193,9 @@ namespace MouseAI
             mazeModels.Guid = guid;
         }
 
-        public string GetMazeModelsGuid()
+        public string GetModelProjectGuid()
         {
-            return mazeModels.Guid;
+            return ModelProjectGuid;
         }
 
         public string GetLogDir()
@@ -1174,6 +1206,89 @@ namespace MouseAI
         public string GetModelsDir()
         {
             return models_dir;
+        }
+
+        #endregion
+
+        #region Archiving
+
+        public void ArchiveProject(string projectname)
+        {
+            try
+            {
+                MazeModels mms = (MazeModels)FileIO.DeSerializeXml(typeof(MazeModels), maze_dir + @"\" + projectname);
+
+                if (mms == null || string.IsNullOrEmpty(mms.Guid))
+                    throw new Exception("Failed to retrieve project id");
+
+                List<MazeModel> mazemodels = mms.GetMazeModels();
+
+                if (mazemodels == null || mazemodels.Count == 0)
+                {
+                    throw new Exception("No maze models found in project");
+                }
+
+                RemoveMazeRecords(mms);
+                ArchiveProjectFiles(mms.Guid);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error Archiving Project:{0}", e.Message);
+            }
+        }
+
+        private void RemoveMazeRecords(MazeModels mms)
+        {
+            List<string> guids = mms.GetGuids();
+
+            int rowcount = 0;
+
+            if (guids.Count != 0)
+            {
+                foreach (string guid in guids)
+                {
+                    //mazeDb.DeleteMazeRecords(guid);
+                }
+                rowcount = mazeDb.GetMazeCounts(guids);
+            }
+
+            if (rowcount == 0)
+            {
+                Console.WriteLine("Deleted {0} maze records", guids.Count);
+            }
+            else
+            {
+                Console.WriteLine("Error deleting {0} maze records: Returned {1}", guids.Count, rowcount);
+            }
+        }
+
+        private void ArchiveProjectFiles(string guid)
+        {
+            List<string> projectmodels = GetProjectModels(guid);
+
+            if (projectmodels.Count != 0)
+            {
+                string log;
+                string config;
+                string model;
+
+                List<string> files = new List<string>();
+
+                foreach (string pm in projectmodels)
+                {
+                    files.Add(GetFileName(log_dir, pm, LOG_EXT));
+                    files.Add(GetFileName(models_dir, pm, CONFIG_EXT));
+                    files.Add(GetFileName(models_dir, pm, MODELS_EXT));
+                }
+
+                Console.WriteLine("Archiving {0} Files ...", files.Count);
+            }
+        }
+
+        private static string GetFileName(string path, string value, string ext)
+        {
+            return string.Format("{0}{1}{2}.{3}", path, DIR, value, ext);
         }
 
         #endregion

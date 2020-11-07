@@ -27,7 +27,8 @@ namespace MouseAI.UI
         private Maze maze;
         private TrainSettings trainSettings;
         private Progress progress;
-        private MazeNew mazenew;
+        private MazeNew mazeNew;
+        private MazeManage mazeManage;
 
         private bool isFound;
         private bool isStep;
@@ -128,6 +129,8 @@ namespace MouseAI.UI
                 LoadMazes(oSettings.LastFileName, false);
                 SetMazeTextVisible();
             }
+
+            ManageMazes();
         }
 
         private void LoadSettings()
@@ -276,7 +279,7 @@ namespace MouseAI.UI
                         {
                             if (maze.ProcessMouseMove())
                             {
-                                Console.WriteLine("Path solved for {0}",maze.GetGUID());
+                                Console.WriteLine("Path solved for {0}",maze.GetMazeModelGUID());
                                 isFound = true;
                                 break;
                             }
@@ -459,7 +462,7 @@ namespace MouseAI.UI
 
         private void DrawPath()
         {
-            string guid = maze.GetGUID();
+            string guid = maze.GetMazeModelGUID();
             if (string.IsNullOrEmpty(guid))
             {
                 pbxPath.Image.Dispose();
@@ -586,11 +589,11 @@ namespace MouseAI.UI
                 return;
 
             maze_count = -1;
-            mazenew = null;
-            mazenew = new MazeNew();
-            mazenew.Closing += Mazenew_Closing;
+            mazeNew = null;
+            mazeNew = new MazeNew();
+            mazeNew.Closing += Mazenew_Closing;
 
-            DialogResult dlr = mazenew.ShowDialog();
+            DialogResult dlr = mazeNew.ShowDialog();
 
             if (dlr != DialogResult.OK)
                 return;
@@ -621,7 +624,7 @@ namespace MouseAI.UI
                 DisplayTsMessage("Mazes Generated and Saved");
                 AddMazeItems();
                 oSettings.LastFileName = maze.GetFileName();
-                oSettings.Guid = guid;
+                oSettings.Guid = maze.GetModelProjectGuid();
                 UpdateSettings();
                 DisplayTitleMessage(oSettings.LastFileName);
             }
@@ -635,7 +638,7 @@ namespace MouseAI.UI
 
         private void Mazenew_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            maze_count = (int)mazenew.nudMazes.Value;
+            maze_count = (int)mazeNew.nudMazes.Value;
         }
 
         private static bool CreateMaze(Maze m)
@@ -665,6 +668,7 @@ namespace MouseAI.UI
                 maze.UpdateMazePaths();
                 AddMazeItems();
                 oSettings.LastFileName = maze.GetFileName();
+                oSettings.Guid = maze.GetModelProjectGuid();
                 UpdateSettings();
             }
             catch (Exception e)
@@ -697,6 +701,50 @@ namespace MouseAI.UI
             {
                 DisplayTsMessage("Save Error");
                 DisplayError("Error Saving Mazes:", e, false);
+            }
+        }
+
+        private void ManageMazes()
+        {
+            List<string> project_files = maze.GetProjects();
+
+            if (project_files == null || project_files.Count == 0)
+            {
+                DisplayDialog("No project files found", "Manage Projects");
+                return;
+            }
+
+            mazeManage = null;
+            mazeManage = new MazeManage(project_files);
+            mazeManage.btnArchive.Click += btnArchive_Click;
+            mazeManage.btnCancel.Click += btnCancel_Click;
+            mazeManage.ShowDialog();
+        }
+
+        private void ArchiveProject(string projectname)
+        {
+            string message = string.Format(
+                    "Archive maze project {0}?\nThe projects files will be archived and removed.\n" +
+                    "Any associated database records removed.",
+                    projectname);
+            //if (MessageBox.Show(message, "Archive Project", MessageBoxButtons.OKCancel) != DialogResult.OK)
+            //   return;
+
+            maze.ArchiveProject(projectname);
+
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            mazeManage.Close();
+        }
+
+        private void btnArchive_Click(object sender, EventArgs e)
+        {
+            object selecteditem = mazeManage.lbxProjects.SelectedItem;
+            if (selecteditem != null && !string.IsNullOrEmpty(selecteditem.ToString()))
+            {
+                ArchiveProject(selecteditem.ToString());
             }
         }
 
@@ -783,7 +831,7 @@ namespace MouseAI.UI
                 if (oSettings.isMazeSegments)
                     DisplayMazeSegments();
 
-                DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetGUID()));
+                DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetMazeModelGUID()));
                 SetRunState(RUNSTATE.READY);
                 return true;
             }
@@ -886,6 +934,11 @@ namespace MouseAI.UI
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadMazes(null, true);
+        }
+
+        private void manageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ManageMazes();
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)

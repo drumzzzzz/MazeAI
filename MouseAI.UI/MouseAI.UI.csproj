@@ -111,6 +111,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleHelper.cs" />
+    <Compile Include="MazeManage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MazeManage.Designer.cs">
+      <DependentUpon>MazeManage.cs</DependentUpon>
+    </Compile>
     <Compile Include="MazeNew.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -160,6 +166,9 @@
     <Compile Include="TrainSettings.Designer.cs">
       <DependentUpon>TrainSettings.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="MazeManage.resx">
+      <DependentUpon>MazeManage.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MazeNew.resx">
       <DependentUpon>MazeNew.cs</DependentUpon>
     </EmbeddedResource>

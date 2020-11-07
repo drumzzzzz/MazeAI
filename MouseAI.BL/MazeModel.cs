@@ -86,6 +86,11 @@ namespace MouseAI.BL
             return mazeModels[index];
         }
 
+        public List<string> GetGuids()
+        {
+            return (from mm in mazeModels where !string.IsNullOrEmpty(mm.guid) select mm.guid).ToList();
+        }
+
         public List<MazeModel> GetMazeModels()
         {
             return mazeModels;

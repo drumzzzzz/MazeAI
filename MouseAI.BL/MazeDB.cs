@@ -48,9 +48,19 @@ namespace MouseAI.BL
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }
 
-        public List<object> ReadProjects(string guid)
+        public List<object> ReadProjectGuids(string guid)
         {
             return db.ReadRows(DbTable_Projects.TABLE, "Guid", guid, new DbTable_Projects());
+        }
+
+        public int GetMazeCounts(List<string> guids)
+        {
+            return db.RowCount(DbTable_Mazes.TABLE, "Guid", guids);
+        }
+
+        public void DeleteMazeRecords(string guid)
+        {
+            db.DeleteRows(DbTable_Mazes.TABLE, "Guid", guid);
         }
     }
 

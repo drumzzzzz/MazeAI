@@ -72,7 +72,7 @@ namespace MouseAI.UI
                 return;
 
             sb.Clear();
-            guid_current = maze.GetGUID();
+            guid_current = maze.GetMazeModelGUID();
 
             pathObjects = maze.GetPathObjects();
             mazeObjects = maze.GetMazeObjects();
@@ -149,10 +149,10 @@ namespace MouseAI.UI
 
         private bool isGuidValid()
         {
-            guid_current = maze.GetGUID();
+            guid_current = maze.GetMazeModelGUID();
 
             if (string.IsNullOrEmpty(guid_last))
-                guid_last = maze.GetGUID();
+                guid_last = maze.GetMazeModelGUID();
 
             return !string.IsNullOrEmpty(guid_last) && !string.IsNullOrEmpty(guid_current);
         }
