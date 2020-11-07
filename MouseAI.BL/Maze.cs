@@ -66,12 +66,14 @@ namespace MouseAI
         private readonly string log_dir;
         private readonly string maze_dir;
         private string FileName;
-        
-        #endregion
 
-        #region Initialization
+        private readonly string[] IGNORE_VALUES = {"Config", "Model", "Guid", "StartTime"};
 
-        public Maze(int _maze_width, int _maze_height)
+    #endregion
+
+    #region Initialization
+
+    public Maze(int _maze_width, int _maze_height)
         {
             maze_width = _maze_width;
             maze_height = _maze_height;
@@ -1092,6 +1094,21 @@ namespace MouseAI
         public string GetProjectModel()
         {
             return mazeModels.StartTime;
+        }
+
+        public string GetModelSummary(string starttime)
+        {
+            string filename = models_dir + DIR + starttime + "." + CONFIG_EXT;
+
+            try
+            {
+                return FileIO.ReadXml(filename, IGNORE_VALUES);
+            }
+            catch
+            {
+            }
+
+            return null;
         }
 
         #endregion

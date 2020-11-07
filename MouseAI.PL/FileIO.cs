@@ -9,6 +9,9 @@ using System.Reflection;
 using System.Linq;
 using System.Windows.Forms;
 using System.Data.SQLite;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 
 #endregion
 
@@ -313,6 +316,26 @@ namespace MouseAI.PL
             reader.Close();
             return obj;
         }
+
+        public static string ReadXml(string filepath, string[] Ignore)
+        {
+            if (File.Exists(filepath))
+            {
+                StringBuilder sb = new StringBuilder();
+                XDocument xdoc = XDocument.Load(filepath);
+                foreach (XElement element in xdoc.Descendants())
+                {
+                    if (!Ignore.Contains(element.Name.ToString()))
+                    {
+                        sb.Append(string.Format("{0}:{1}", element.Name, element.Value) + Environment.NewLine);
+                    }
+                }
+                return sb.ToString();
+            }
+
+            return null;
+        }
+
         #endregion
     }
 }

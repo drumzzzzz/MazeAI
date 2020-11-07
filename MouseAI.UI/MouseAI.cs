@@ -387,11 +387,29 @@ namespace MouseAI.UI
                 return;
             }
 
+            msMain.Enabled = false;
             mazeTest = new MazeTest(starttimes, maze.GetProjectModel());
-
             mazeTest.Show();
+            mazeTest.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
+            mazeTest.btnExit.Click += BtnExit_Click;
         }
-        
+
+        private void BtnExit_Click(object sender, EventArgs e)
+        {
+            mazeTest.Close();
+            msMain.Enabled = true;
+        }
+
+        private void lbxModels_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (mazeTest.lbxModels.SelectedItem != null)
+            {
+                string result = maze.GetModelSummary(mazeTest.lbxModels.SelectedItem.ToString());
+                if (!string.IsNullOrEmpty(result))
+                    mazeTest.tbxSummary.Text = result;
+            }
+        }
+
         #endregion
 
 
