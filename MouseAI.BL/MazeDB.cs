@@ -79,6 +79,4 @@ namespace MouseAI.BL
         public static readonly string TABLE = "projects";
         public static readonly string COLUMNS = "Guid, Accuracy, Epochs, Start, End, Log";
     }
-
-
 }

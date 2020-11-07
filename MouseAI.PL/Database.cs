@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SQLite;
 using System.Linq;
 using System.Reflection;
@@ -20,35 +21,55 @@ namespace MouseAI.PL
             this.db_file = DB_PATH + db_file;
         }
 
-        public bool Insert(string table,string columns, string values)
+        private static void CloseConnection(SQLiteConnection conn)
         {
             try
             {
-                SQLiteConnection conn = new SQLiteConnection(db_file);
+                if (conn.State != ConnectionState.Closed)
+                {
+                    conn.Cancel();
+                    conn.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        public bool Insert(string table,string columns, string values)
+        {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+            
+            try
+            {
                 conn.Open();
+
                 SQLiteCommand cmd = new SQLiteCommand(conn)
                 {
-                    CommandText = string.Format("INSERT INTO {0}({1}) VALUES({2})", table, columns, values)
+                    CommandText = string.Format("INSERT INTO {0}({1}) VALUES({2})", table, columns, values),
+                    CommandTimeout = 5
                 };
 
                 cmd.ExecuteNonQuery();
-
                 conn.Close();
                 return true;
 
             }
             catch (Exception e)
             {
-                err = e.Message;
+                Console.WriteLine(e);
+                CloseConnection(conn);
                 return false;
             }
         }
 
         public object ReadRow(string table, string column, string value, object obj)
         {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+
             try
             {
-                SQLiteConnection conn = new SQLiteConnection(db_file);
                 conn.Open();
                 SQLiteCommand cmd = new SQLiteCommand(conn)
                 {
@@ -81,21 +102,25 @@ namespace MouseAI.PL
                     if(!isFound)
                         throw new Exception("Error Reading Fields");
                 }
+                rdr.Close();
+                CloseConnection(conn);
 
                 return obj;
             }
             catch (Exception e)
             {
-                err = e.Message;
+                Console.WriteLine(e);
+                CloseConnection(conn);
                 return null;
             }
         }
 
         public List<object> ReadRows(string table, string column, string value, object obj)
         {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+
             try
             {
-                SQLiteConnection conn = new SQLiteConnection(db_file);
                 conn.Open();
                 SQLiteCommand cmd = new SQLiteCommand(conn)
                 {
@@ -134,12 +159,15 @@ namespace MouseAI.PL
                          throw new Exception("Error Reading Fields");
                     objList.Add(instance);
                 }
+                rdr.Close();
+                CloseConnection(conn);
 
                 return objList;
             }
             catch (Exception e)
             {
-                err = e.Message;
+                Console.WriteLine(e);
+                CloseConnection(conn);
                 return null;
             }
         }

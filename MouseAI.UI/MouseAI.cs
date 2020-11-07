@@ -412,7 +412,6 @@ namespace MouseAI.UI
 
         #endregion
 
-
         #region Graphics Rendering
 
         private void InitMazeGraphics()
@@ -599,39 +598,38 @@ namespace MouseAI.UI
             if (maze_count <= 0)
                 return;
 
-            Console.WriteLine("Creating {0} Mazes", maze_count);
-
             maze = null;
             maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
 
-            for (int i = 0; i < maze_count; i++)
+            Console.WriteLine("Creating {0} Mazes", maze_count);
+            try
             {
-                if (!CreateMaze(maze)) // Retry on character placement conflict
-                    i--;
+                for (int i = 0; i < maze_count; i++)
+                {
+                    if (!CreateMaze(maze)) // Retry on character placement conflict
+                        i--;
 
-                DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, maze_count));
-            }
+                    DisplayTsMessage(string.Format("Generating Maze {0} of {1}", i + 1, maze_count));
+                }
 
-            if (maze.isMazeModels())
-            {
+                if (!maze.isMazeModels())
+                    throw new Exception("Error creating maze models");
+
                 string guid = Guid.NewGuid().ToString();
                 maze.SetMazeModelsGuid(guid);
-                string result = maze.SaveMazeModels(filename);
-                if (!string.IsNullOrEmpty(result))
-                {
-                    DisplayError("Error Creating DB:" + result, false);
-                    DisplayTsMessage("Error");
-                    DisplayTitleMessage(string.Empty);
-                }
-                else
-                {
-                    DisplayTsMessage("Mazes Generated and Saved");
-                    AddMazeItems();
-                    oSettings.LastFileName = maze.GetFileName();
-                    oSettings.Guid = guid;
-                    UpdateSettings();
-                    DisplayTitleMessage(oSettings.LastFileName);
-                }
+                maze.SaveMazeModels(filename);
+                DisplayTsMessage("Mazes Generated and Saved");
+                AddMazeItems();
+                oSettings.LastFileName = maze.GetFileName();
+                oSettings.Guid = guid;
+                UpdateSettings();
+                DisplayTitleMessage(oSettings.LastFileName);
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error Creating DB:", e, false);
+                DisplayTsMessage("Error");
+                DisplayTitleMessage(string.Empty);
             }
         }
 
@@ -642,21 +640,13 @@ namespace MouseAI.UI
 
         private static bool CreateMaze(Maze m)
         {
-            try
-            {
-                m.Reset();
-                m.Generate();
-                m.Update();
-                if (!m.AddCharacters_Random())
-                    return false;
-                m.AddMazeModel();
-                return true;
-            }
-            catch (Exception e)
-            {
-                DisplayError("Error Creating Maze", e, false);
+            m.Reset();
+            m.Generate();
+            m.Update();
+            if (!m.AddCharacters_Random())
                 return false;
-            }
+            m.AddMazeModel();
+            return true;
         }
 
         private void LoadMazes(string filename, bool isExit)

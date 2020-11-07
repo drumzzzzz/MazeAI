@@ -35,7 +35,7 @@ namespace MouseAI
         private Config config;
 
         // Db
-        private static MazeDb mazeDb;
+        private readonly MazeDb mazeDb;
         private static DbTable_Mazes dbtblStats;
         private static DbTable_Projects dbtblProjects;
 
@@ -67,13 +67,13 @@ namespace MouseAI
         private readonly string maze_dir;
         private string FileName;
 
-        private readonly string[] IGNORE_VALUES = {"Config", "Model", "Guid", "StartTime"};
+        private readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
-    #endregion
+        #endregion
 
-    #region Initialization
+        #region Initialization
 
-    public Maze(int _maze_width, int _maze_height)
+        public Maze(int _maze_width, int _maze_height)
         {
             maze_width = _maze_width;
             maze_height = _maze_height;
@@ -105,17 +105,8 @@ namespace MouseAI
             if (!FileIO.CheckCreateDirectory(models_dir))
                 throw new Exception("Could not create log directory");
 
+            //if (mazeDb == null)
             mazeDb = new MazeDb();
-        }
-
-        public string GetLogDir()
-        {
-            return log_dir;
-        }
-
-        public string GetModelsDir()
-        {
-            return models_dir;
         }
 
         public void ClearMazeModels()
@@ -204,8 +195,6 @@ namespace MouseAI
             cheese_x = x;
             cheese_y = y;
 
-            // PathObjects.Add(oMouse);
-
             return true;
         }
 
@@ -279,7 +268,7 @@ namespace MouseAI
                 throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?", _mm.guid));
             }
 
-            if (mazeModels.Count() == 0|| mazeModels.GetSegmentCount() == 0)
+            if (mazeModels.Count() == 0 || mazeModels.GetSegmentCount() == 0)
             {
                 throw new Exception("Maze test data not found!");
             }
@@ -634,7 +623,7 @@ namespace MouseAI
             {
                 throw new Exception("Couldn't find the mouse!");
             }
-            
+
             MazeObjects pathObjects = new MazeObjects(PathObjects.Where(o => o.isPath && !o.isDeadEnd).OrderBy(d => d.dtLastVisit).ToList());
             MazeObjects segmentObjects = new MazeObjects();
             int index = 0;
@@ -647,7 +636,7 @@ namespace MouseAI
             while (true)
             {
                 so = pathObjects[index++];
-                
+
                 segmentObjects.Add(so);
                 segmentObjects.AddRange(SearchObjects(so.x, so.y).Distinct());
 
@@ -679,7 +668,7 @@ namespace MouseAI
         private static MazeObjects SearchObjects(int x, int y)
         {
             MazeObjects pathObjects = new MazeObjects();
-            
+
             // Scan West
             for (int x_idx = x - 1; x_idx > 0; x_idx--)
             {
@@ -933,7 +922,7 @@ namespace MouseAI
 
         private static int[,] GetXYPan(int x, int y)
         {
-            return new[,]{ { x-1, y }, { x+1, y }, { x, y-1 }, { x, y+1 }};
+            return new[,] { { x - 1, y }, { x + 1, y }, { x, y - 1 }, { x, y + 1 } };
         }
 
         private void CleanPathObjects()
@@ -1087,7 +1076,7 @@ namespace MouseAI
                 dbTableProjects = obj;
                 starttimes.Add(dbTableProjects.Log);
             }
-            
+
             return starttimes;
         }
 
@@ -1113,48 +1102,23 @@ namespace MouseAI
 
         #endregion
 
-    #region Saving and Loading
+        #region Saving and Loading
 
-    public string GetSaveName()
+        public void SaveMazeModels(string filename)
         {
-            return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
-        }
+            dbtblStats = new DbTable_Mazes();
 
-        public void SetMazeModelsGuid(string guid)
-        {
-            mazeModels.Guid = guid;
-        }
-
-        public string GetMazeModelsGuid()
-        {
-            return mazeModels.Guid;
-        }
-
-        public string SaveMazeModels(string filename)
-        {
-            try
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
             {
-                dbtblStats = new DbTable_Mazes();
+                dbtblStats.Guid = mm.guid;
+                dbtblStats.LastUsed = DateTime.UtcNow.ToString();
 
-                foreach (MazeModel mm in mazeModels.GetMazeModels())
-                {
-                    dbtblStats.Guid = mm.guid;
-                    dbtblStats.LastUsed = DateTime.UtcNow.ToString();
-
-                    if (!mazeDb.InsertMaze(dbtblStats))
-                        throw new Exception("Failed to create maze table");
-                }
-
-                FileIO.SerializeXml(mazeModels, filename);
-
-                FileName = filename;
-
-                return string.Empty;
+                if (!mazeDb.InsertMaze(dbtblStats))
+                    throw new Exception("Failed to create maze table");
             }
-            catch (Exception e)
-            {
-                return e.Message;
-            }
+
+            FileIO.SerializeXml(mazeModels, filename);
+            FileName = filename;
         }
 
         public void SaveUpdatedMazeModels(string filename)
@@ -1185,6 +1149,31 @@ namespace MouseAI
             mazeModels = mms;
 
             FileName = filename;
+        }
+
+        public string GetSaveName()
+        {
+            return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
+        }
+
+        public void SetMazeModelsGuid(string guid)
+        {
+            mazeModels.Guid = guid;
+        }
+
+        public string GetMazeModelsGuid()
+        {
+            return mazeModels.Guid;
+        }
+
+        public string GetLogDir()
+        {
+            return log_dir;
+        }
+
+        public string GetModelsDir()
+        {
+            return models_dir;
         }
 
         #endregion
@@ -1290,4 +1279,5 @@ namespace MouseAI
     }
 
     #endregion
+
 }
