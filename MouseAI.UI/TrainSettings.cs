@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Configuration;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
-using MouseAI.BL;
 using MouseAI.SH;
 
 namespace MouseAI.UI
@@ -16,7 +13,8 @@ namespace MouseAI.UI
         private const int NODES = 100;
         private const bool NORMALIZE = true;
         private const bool EARLYSTOP = true;
-        private const bool DROPOUT = true;
+        private const double DROPOUT = 0.01;
+        private const int AMOUNT = 0;
         private const int SEED = 0;
         private const double SPLIT = 0.70;
 
@@ -34,7 +32,8 @@ namespace MouseAI.UI
                     Nodes = NODES,
                     isNormalize = NORMALIZE,
                     isEarlyStop = EARLYSTOP,
-                    isDropOut = DROPOUT,
+                    DropOut = DROPOUT,
+                    Amount = AMOUNT,
                     Split = SPLIT,
                     Seed = SEED
                 };
@@ -59,9 +58,11 @@ namespace MouseAI.UI
             nudNodes.Value = config.Nodes;
             nudSeed.Value = config.Seed;
             nudSplit.Value = Convert.ToDecimal(config.Split);
+            nudDropOut.Value = Convert.ToDecimal(config.DropOut);
+            nudAmount.Value = config.Amount;
             chkNormalize.Checked = config.isNormalize;
             chkEarlyStop.Checked = config.isEarlyStop;
-            chkDropOut.Checked = config.isDropOut;
+
         }
 
         private void UpdateConfig()
@@ -72,9 +73,10 @@ namespace MouseAI.UI
             config.Nodes = (int) nudNodes.Value;
             config.Seed = (int) nudSeed.Value;
             config.Split = Convert.ToDouble(nudSplit.Value);
+            config.DropOut = Convert.ToDouble(nudDropOut.Value);
+            config.Amount = (int) nudAmount.Value;
             config.isNormalize = chkNormalize.Checked;
             config.isEarlyStop = chkEarlyStop.Checked;
-            config.isDropOut = chkDropOut.Checked;
         }
 
         private void btnTrain_Click(object sender, EventArgs e)

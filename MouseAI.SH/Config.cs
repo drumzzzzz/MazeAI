@@ -14,7 +14,8 @@ namespace MouseAI.SH
         public int Nodes { get; set; }
         public bool isNormalize { get; set; }
         public bool isEarlyStop { get; set; }
-        public bool isDropOut { get; set; }
+        public double DropOut { get; set; }
+        public int Amount { get; set; }
         public int Seed { get; set; }
         public double Split { get; set; }
         public string Guid { get; set; }

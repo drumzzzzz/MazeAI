@@ -40,23 +40,28 @@
             this.nudLayers = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
             this.nudNodes = new System.Windows.Forms.NumericUpDown();
-            this.chkDropOut = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.nudSeed = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
             this.nudSplit = new System.Windows.Forms.NumericUpDown();
+            this.label7 = new System.Windows.Forms.Label();
+            this.nudDropOut = new System.Windows.Forms.NumericUpDown();
+            this.label8 = new System.Windows.Forms.Label();
+            this.nudAmount = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.nudEpochs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBatch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLayers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudNodes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSplit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDropOut)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAmount)).BeginInit();
             this.SuspendLayout();
             // 
             // btnTrain
             // 
             this.btnTrain.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTrain.Location = new System.Drawing.Point(142, 205);
+            this.btnTrain.Location = new System.Drawing.Point(205, 174);
             this.btnTrain.Name = "btnTrain";
             this.btnTrain.Size = new System.Drawing.Size(75, 23);
             this.btnTrain.TabIndex = 0;
@@ -67,7 +72,7 @@
             // btnCancel
             // 
             this.btnCancel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(283, 205);
+            this.btnCancel.Location = new System.Drawing.Point(340, 174);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 1;
@@ -78,7 +83,7 @@
             // nudEpochs
             // 
             this.nudEpochs.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudEpochs.Location = new System.Drawing.Point(88, 46);
+            this.nudEpochs.Location = new System.Drawing.Point(76, 26);
             this.nudEpochs.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -102,7 +107,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(32, 49);
+            this.label1.Location = new System.Drawing.Point(20, 29);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(52, 16);
             this.label1.TabIndex = 3;
@@ -112,7 +117,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(40, 92);
+            this.label2.Location = new System.Drawing.Point(28, 72);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(42, 16);
             this.label2.TabIndex = 5;
@@ -121,7 +126,7 @@
             // nudBatch
             // 
             this.nudBatch.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudBatch.Location = new System.Drawing.Point(88, 89);
+            this.nudBatch.Location = new System.Drawing.Point(76, 69);
             this.nudBatch.Minimum = new decimal(new int[] {
             1,
             0,
@@ -141,7 +146,7 @@
             this.chkNormalize.AutoSize = true;
             this.chkNormalize.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkNormalize.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkNormalize.Location = new System.Drawing.Point(101, 147);
+            this.chkNormalize.Location = new System.Drawing.Point(191, 122);
             this.chkNormalize.Name = "chkNormalize";
             this.chkNormalize.Size = new System.Drawing.Size(85, 20);
             this.chkNormalize.TabIndex = 6;
@@ -153,7 +158,7 @@
             this.chkEarlyStop.AutoSize = true;
             this.chkEarlyStop.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkEarlyStop.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkEarlyStop.Location = new System.Drawing.Point(212, 147);
+            this.chkEarlyStop.Location = new System.Drawing.Point(340, 122);
             this.chkEarlyStop.Name = "chkEarlyStop";
             this.chkEarlyStop.Size = new System.Drawing.Size(88, 20);
             this.chkEarlyStop.TabIndex = 7;
@@ -164,7 +169,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(194, 48);
+            this.label3.Location = new System.Drawing.Point(182, 28);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(47, 16);
             this.label3.TabIndex = 9;
@@ -173,7 +178,7 @@
             // nudLayers
             // 
             this.nudLayers.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudLayers.Location = new System.Drawing.Point(241, 46);
+            this.nudLayers.Location = new System.Drawing.Point(229, 26);
             this.nudLayers.Maximum = new decimal(new int[] {
             10,
             0,
@@ -197,7 +202,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(194, 92);
+            this.label4.Location = new System.Drawing.Point(182, 72);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(45, 16);
             this.label4.TabIndex = 11;
@@ -206,7 +211,7 @@
             // nudNodes
             // 
             this.nudNodes.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudNodes.Location = new System.Drawing.Point(241, 90);
+            this.nudNodes.Location = new System.Drawing.Point(229, 70);
             this.nudNodes.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -226,23 +231,11 @@
             0,
             0});
             // 
-            // chkDropOut
-            // 
-            this.chkDropOut.AutoSize = true;
-            this.chkDropOut.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.chkDropOut.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkDropOut.Location = new System.Drawing.Point(321, 147);
-            this.chkDropOut.Name = "chkDropOut";
-            this.chkDropOut.Size = new System.Drawing.Size(79, 20);
-            this.chkDropOut.TabIndex = 12;
-            this.chkDropOut.Text = "Drop Out";
-            this.chkDropOut.UseVisualStyleBackColor = true;
-            // 
             // label5
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(353, 49);
+            this.label5.Location = new System.Drawing.Point(341, 29);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(34, 16);
             this.label5.TabIndex = 14;
@@ -251,7 +244,7 @@
             // nudSeed
             // 
             this.nudSeed.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudSeed.Location = new System.Drawing.Point(393, 89);
+            this.nudSeed.Location = new System.Drawing.Point(381, 69);
             this.nudSeed.Name = "nudSeed";
             this.nudSeed.Size = new System.Drawing.Size(71, 22);
             this.nudSeed.TabIndex = 13;
@@ -260,7 +253,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(349, 92);
+            this.label6.Location = new System.Drawing.Point(337, 72);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(38, 16);
             this.label6.TabIndex = 16;
@@ -275,7 +268,7 @@
             0,
             0,
             131072});
-            this.nudSplit.Location = new System.Drawing.Point(393, 47);
+            this.nudSplit.Location = new System.Drawing.Point(381, 27);
             this.nudSplit.Maximum = new decimal(new int[] {
             1,
             0,
@@ -295,17 +288,77 @@
             0,
             131072});
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(479, 72);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(53, 16);
+            this.label7.TabIndex = 20;
+            this.label7.Text = "Amount";
+            // 
+            // nudDropOut
+            // 
+            this.nudDropOut.DecimalPlaces = 2;
+            this.nudDropOut.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nudDropOut.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.nudDropOut.Location = new System.Drawing.Point(538, 28);
+            this.nudDropOut.Maximum = new decimal(new int[] {
+            99,
+            0,
+            0,
+            131072});
+            this.nudDropOut.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.nudDropOut.Name = "nudDropOut";
+            this.nudDropOut.Size = new System.Drawing.Size(71, 22);
+            this.nudDropOut.TabIndex = 19;
+            this.nudDropOut.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(472, 30);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(60, 16);
+            this.label8.TabIndex = 18;
+            this.label8.Text = "Drop Out";
+            // 
+            // nudAmount
+            // 
+            this.nudAmount.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nudAmount.Location = new System.Drawing.Point(538, 70);
+            this.nudAmount.Name = "nudAmount";
+            this.nudAmount.Size = new System.Drawing.Size(71, 22);
+            this.nudAmount.TabIndex = 17;
+            // 
             // TrainSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(532, 274);
+            this.ClientSize = new System.Drawing.Size(637, 227);
             this.ControlBox = false;
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.nudDropOut);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.nudAmount);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.nudSplit);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.nudSeed);
-            this.Controls.Add(this.chkDropOut);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.nudNodes);
             this.Controls.Add(this.label3);
@@ -329,6 +382,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudNodes)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSplit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDropOut)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAmount)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -346,11 +401,14 @@
         private System.Windows.Forms.NumericUpDown nudLayers;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown nudNodes;
-        private System.Windows.Forms.CheckBox chkDropOut;
         public System.Windows.Forms.Button btnTrain;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown nudSeed;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown nudSplit;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown nudDropOut;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.NumericUpDown nudAmount;
     }
 }

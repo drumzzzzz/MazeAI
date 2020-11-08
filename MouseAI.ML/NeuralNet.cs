@@ -146,17 +146,20 @@ namespace MouseAI.ML
         {
             // Build model
             Sequential model = new Sequential();
-            model.Add(new Dropout(0.25));
+             
+            double dropout_increment = GetDropOutRate(config);
+
             model.Add(new Flatten());
 
-            for (int i = 0; i < config.Layers;i++)
+            for (int i = config.Layers; i > -1;i--)
             {
+                if (config.Amount != 0 && i < config.Amount)
+                {
+                    model.Add(new Dropout(config.DropOut - (dropout_increment * i)));
+                }
                 model.Add(new Dense(config.Nodes, activation: "relu"));
             }
-
-            if (config.isDropOut)
-                model.Add(new Dropout(0.5));
-
+            
             model.Add(new Dense(num_classes, activation: "softmax"));
 
             // Compile with loss, metrics and optimizer
@@ -181,6 +184,19 @@ namespace MouseAI.ML
             }
 
             return model;
+        }
+
+        private static double GetDropOutRate(Config config)
+        {
+            if (config.Amount <= 0)
+            {
+                config.Amount = 0;
+                return 0;
+            }
+            if (config.Amount > config.Layers)
+                    config.Amount = config.Layers;
+
+            return config.DropOut / config.Amount;
         }
         
         private static Sequential ProcessCnnModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test, 
