@@ -241,6 +241,10 @@
       <Project>{8a915bdc-1d48-44f0-9dd8-dcb8117a4670}</Project>
       <Name>MouseAI.BL</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MouseAI.ML\MouseAI.ML.csproj">
+      <Project>{3a8ab4f8-deaa-4a8d-91ed-3ef53e4094e9}</Project>
+      <Name>MouseAI.ML</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MouseAI.SH\MouseAI.SH.csproj">
       <Project>{459615c5-2fb3-45cd-9dc2-a145db0d2dae}</Project>
       <Name>MouseAI.SH</Name>

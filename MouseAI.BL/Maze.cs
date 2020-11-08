@@ -260,7 +260,7 @@ namespace MouseAI
 
         #region Neural Net
 
-        public void Train(double split, string guid)
+        public void Train(string guid)
         {
             if (config == null)
                 throw new Exception("Invalid Config!");
@@ -282,7 +282,6 @@ namespace MouseAI
             config.Guid = guid;
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
-            neuralNet = null;
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
@@ -305,6 +304,12 @@ namespace MouseAI
 
             neuralNet.SaveFiles();
             mazeModels.StartTime = config.StartTime;
+        }
+
+        public void CleanNetwork()
+        {
+            neuralNet?.Clean();
+            neuralNet = null;
         }
 
         public Config GetConfig()

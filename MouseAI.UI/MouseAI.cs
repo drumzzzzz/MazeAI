@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using MouseAI.ML;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using MouseAI.SH;
@@ -21,6 +22,7 @@ namespace MouseAI.UI
 
         private Settings settings;
         private Thread searchThread;
+        private Thread trainThread;
         private readonly MazeText mazeText;
         private MazeTest mazeTest;
         private readonly MazeSegments mazeSegments;
@@ -327,7 +329,7 @@ namespace MouseAI.UI
 
         private void RunTrain()
         {
-            if (string.IsNullOrEmpty(settings.Guid))
+            if (trainThread != null || string.IsNullOrEmpty(settings.Guid))
                 return;
 
             trainSettings = new TrainSettings(maze.GetConfig());
@@ -337,7 +339,7 @@ namespace MouseAI.UI
             if (dlr != DialogResult.OK)
                 return;
 
-            Thread trainThread = new Thread(AITrain);
+            trainThread = new Thread(AITrain);
             trainThread.Start();
 
             InitProcessing("Training Neural Network ...", true);
@@ -353,11 +355,7 @@ namespace MouseAI.UI
                 Application.DoEvents();
                 Thread.Sleep(100);
             }
-
-            if (isThreadCancel && trainThread.ThreadState != ThreadState.Stopped)
-            {
-                trainThread.Abort();
-            }
+            trainThread = null;
 
             FinalizeProcessing();
         }
@@ -367,7 +365,7 @@ namespace MouseAI.UI
             try
             {
                 Console.Clear();
-                maze.Train(DATA_SPLIT, settings.Guid);
+                maze.Train(settings.Guid);
                 isThreadDone = true;
 
                 if (DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
@@ -377,6 +375,7 @@ namespace MouseAI.UI
                     maze.SaveUpdatedMazeModels(settings.LastFileName);
                     DisplayDialog("Files Saved", "Save Models");
                 }
+                maze.CleanNetwork();
             }
             catch (Exception e)
             {

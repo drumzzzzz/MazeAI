@@ -68,10 +68,15 @@ namespace MouseAI.ML
                 string AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 PythonEngine.PythonPath = paths += AppDir + ";";
             }
+            K.DisableEager();
+            K.ClearSession();
+            K.ResetUids();
+            
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, Random r)
         {
+            //Keras.Keras.Instance.Dispose();
             dataSets = new DataSets(width, height, imageDatas, split, r);
             BuildDataSets();
         }
@@ -133,6 +138,11 @@ namespace MouseAI.ML
             model.Summary();
             Console.WriteLine("Test End: {0}  Duration: {1}:{2}.{3}", dtEnd, ts.Hours,ts.Minutes, ts.Seconds);
             Console.WriteLine("Loss: {0} Accuracy: {1}", score[0], score[1]);
+        }
+
+        public void Clean()
+        {
+            //model?.Dispose();
         }
 
         #endregion
