@@ -23,6 +23,7 @@ namespace MouseAI.UI
         private Settings settings;
         private Thread searchThread;
         private Thread trainThread;
+        private Thread testThread;
         private readonly MazeText mazeText;
         private MazeTest mazeTest;
         private readonly MazeSegments mazeSegments;
@@ -325,7 +326,7 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Training
+        #region Neural Network
 
         private void RunTrain()
         {
@@ -402,7 +403,7 @@ namespace MouseAI.UI
 
             List<string> starttimes = maze.GetProjectModels();
 
-            if (starttimes == null)
+            if (starttimes == null || starttimes.Count == 0)
             {
                 DisplayDialog("No models found for project", "Test Error");
                 return;
@@ -413,6 +414,50 @@ namespace MouseAI.UI
             mazeTest.Show();
             mazeTest.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
             mazeTest.btnExit.Click += BtnExit_Click;
+            mazeTest.btnLoad.Click += btnLoad_Click;
+        }
+
+        private void LoadModel(string starttime)
+        {
+            if (testThread != null)
+                return;
+
+            maze.SetModelName(starttime);
+            testThread = new Thread(AITest);
+            testThread.Start();
+
+            InitProcessing("Testing Neural Network ...", true);
+
+            while (testThread.ThreadState != ThreadState.Stopped && !isThreadCancel)
+            {
+                Application.DoEvents();
+                Thread.Sleep(100);
+            }
+            testThread = null;
+
+            FinalizeProcessing();
+        }
+
+        private void AITest()
+        {
+            try
+            {
+                maze.LoadModel();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        private void btnLoad_Click(object sender, EventArgs e)
+        {
+            if (mazeTest.lbxModels.SelectedItem != null)
+            {
+                mazeTest.Enabled = false;
+                LoadModel(mazeTest.lbxModels.SelectedItem.ToString());
+            }
+            mazeTest.Enabled = true;
         }
 
         private void BtnExit_Click(object sender, EventArgs e)
@@ -427,7 +472,14 @@ namespace MouseAI.UI
             {
                 string result = maze.GetModelSummary(mazeTest.lbxModels.SelectedItem.ToString());
                 if (!string.IsNullOrEmpty(result))
+                {
                     mazeTest.tbxSummary.Text = result;
+                    mazeTest.btnLoad.Enabled = true;
+                }
+            }
+            else
+            {
+                mazeTest.btnLoad.Enabled = false;
             }
         }
 

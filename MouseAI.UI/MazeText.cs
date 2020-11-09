@@ -168,7 +168,6 @@ namespace MouseAI.UI
             {
                 return !mo.isDeadEnd ? NNPATH : PATHOBJ;
             }
-
             return NULL;
         }
 
@@ -195,13 +194,10 @@ namespace MouseAI.UI
                         
                         return index < SEGMENTS.Length ? SEGMENTS[index] : ERROR;
                     }
-
                     return NULL;
                 }
-
                 index++;
             }
-
             return NULL;
         }
 

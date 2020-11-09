@@ -70,6 +70,7 @@ namespace MouseAI
         private static string archive_dir;
         private string FileName;
         private string ModelProjectGuid;
+        private string modelName;
 
         private readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
@@ -287,6 +288,16 @@ namespace MouseAI
             neuralNet.Process(config, mazeModels.Count());
         }
 
+        public void LoadModel()
+        {
+            if (string.IsNullOrEmpty(modelName))
+                throw new Exception("Invalid Model Name!");
+
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
+            neuralNet.LoadModel(modelName);
+
+        }
+
         public void SaveResults()
         {
             dbtblProjects = new DbTable_Projects
@@ -306,9 +317,13 @@ namespace MouseAI
             mazeModels.StartTime = config.StartTime;
         }
 
+        public void SetModelName(string _modelName)
+        {
+            modelName = _modelName;
+        }
+
         public void CleanNetwork()
         {
-            neuralNet?.Clean();
             neuralNet = null;
         }
 
@@ -1069,10 +1084,10 @@ namespace MouseAI
 
         public List<string> GetProjectModels()
         {
-            if (string.IsNullOrEmpty(mazeModel.guid))
+            if (string.IsNullOrEmpty(mazeModels.Guid))
                 return null;
 
-            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModel.guid);
+            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
 
             if (oList == null)
                 return null;

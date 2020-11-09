@@ -20,7 +20,10 @@ namespace MouseAI.UI
                 lbxModels.Items.Add(s);
 
             if (!string.IsNullOrEmpty(starttime))
+            {
                 lbxModels.SelectedItem = starttime;
+                btnLoad.Enabled = true;
+            }
         }
     }
 }

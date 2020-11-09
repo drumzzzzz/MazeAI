@@ -36,6 +36,7 @@
             this.lbxModels = new System.Windows.Forms.ListBox();
             this.btnExit = new System.Windows.Forms.Button();
             this.tbxSummary = new System.Windows.Forms.TextBox();
+            this.btnLoad = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnReset
@@ -99,7 +100,7 @@
             this.lbxModels.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbxModels.FormattingEnabled = true;
             this.lbxModels.ItemHeight = 16;
-            this.lbxModels.Location = new System.Drawing.Point(160, 57);
+            this.lbxModels.Location = new System.Drawing.Point(161, 80);
             this.lbxModels.Name = "lbxModels";
             this.lbxModels.ScrollAlwaysVisible = true;
             this.lbxModels.Size = new System.Drawing.Size(184, 244);
@@ -118,7 +119,7 @@
             // tbxSummary
             // 
             this.tbxSummary.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxSummary.Location = new System.Drawing.Point(370, 57);
+            this.tbxSummary.Location = new System.Drawing.Point(379, 80);
             this.tbxSummary.Multiline = true;
             this.tbxSummary.Name = "tbxSummary";
             this.tbxSummary.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -127,12 +128,25 @@
             this.tbxSummary.TabIndex = 20;
             this.tbxSummary.WordWrap = false;
             // 
+            // btnLoad
+            // 
+            this.btnLoad.Enabled = false;
+            this.btnLoad.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLoad.Location = new System.Drawing.Point(161, 41);
+            this.btnLoad.Margin = new System.Windows.Forms.Padding(0);
+            this.btnLoad.Name = "btnLoad";
+            this.btnLoad.Size = new System.Drawing.Size(66, 23);
+            this.btnLoad.TabIndex = 21;
+            this.btnLoad.Text = "LOAD";
+            this.btnLoad.UseVisualStyleBackColor = true;
+            // 
             // MazeTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(556, 360);
+            this.ClientSize = new System.Drawing.Size(552, 356);
             this.ControlBox = false;
+            this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.tbxSummary);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.lbxModels);
@@ -162,5 +176,6 @@
         public System.Windows.Forms.ListBox lbxModels;
         public System.Windows.Forms.TextBox tbxSummary;
         public System.Windows.Forms.Button btnExit;
+        public System.Windows.Forms.Button btnLoad;
     }
 }

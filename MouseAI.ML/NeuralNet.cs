@@ -17,6 +17,7 @@ using System.Security.Permissions;
 using Keras.Callbacks;
 using MouseAI.SH;
 using MouseAI.PL;
+using static Keras.Models.Sequential;
 
 #endregion
 
@@ -71,12 +72,10 @@ namespace MouseAI.ML
             K.DisableEager();
             K.ClearSession();
             K.ResetUids();
-            
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, Random r)
         {
-            //Keras.Keras.Instance.Dispose();
             dataSets = new DataSets(width, height, imageDatas, split, r);
             BuildDataSets();
         }
@@ -138,11 +137,6 @@ namespace MouseAI.ML
             model.Summary();
             Console.WriteLine("Test End: {0}  Duration: {1}:{2}.{3}", dtEnd, ts.Hours,ts.Minutes, ts.Seconds);
             Console.WriteLine("Loss: {0} Accuracy: {1}", score[0], score[1]);
-        }
-
-        public void Clean()
-        {
-            //model?.Dispose();
         }
 
         #endregion
@@ -240,6 +234,23 @@ namespace MouseAI.ML
 
         #region File Saving and Loading
 
+        public void LoadModel(string stime)
+        {
+            K.DisableEager();
+            K.ClearSession();
+            K.ResetUids();
+
+            string filename = model_dir + @"\" + stime + ".";
+            Config cfg = (Config)FileIO.DeSerializeXml(typeof(Config), filename + config_ext);
+
+            if (cfg == null || string.IsNullOrEmpty(cfg.Model))
+                throw new Exception("Invalid config file");
+
+            BaseModel loaded_model = BaseModel.ModelFromJson(cfg.Model);
+            loaded_model.LoadWeight(filename + model_ext);
+            loaded_model.Summary();
+        }
+
         public void SaveFiles()
         {
             if (model == null || string.IsNullOrEmpty(starttime) || string.IsNullOrEmpty(config.Guid))
@@ -249,7 +260,7 @@ namespace MouseAI.ML
             config.Model = model.ToJson();
             string filename = model_dir + @"\" + starttime + ".";
             FileIO.SerializeXml(config, filename + config_ext);
-            model.Save(filename + model_ext);
+            model.SaveWeight(filename + model_ext);
         }
 
         public string GetLogName()

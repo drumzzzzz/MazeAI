@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -49,7 +50,10 @@ namespace MouseAI.UI
 
             List<byte[]> segments = maze.GetSegments();
             if (segments == null || segments.Count == 0 || segments.Count > ROWS * COLUMNS)
+            {
+                Console.WriteLine("Error displaying maze segments");
                 return;
+            }
 
             MemoryStream ms;
             int index = 0;
