@@ -639,13 +639,16 @@ namespace MouseAI
             MazeObjects segmentObjects = new MazeObjects();
             int index = 0;
             bool isFirstJunction = false;
-            int count1, count2;
+            bool isAddSegments;
+            bool isBreak = false;
+            int count1;
 
             mazeObjectSegments = null;
             mazeObjectSegments = new MazeObjectSegments();
 
             while (true)
             {
+                isAddSegments = false;
                 so = pathObjects[index++];
 
                 segmentObjects.Add(so);
@@ -653,23 +656,24 @@ namespace MouseAI
 
                 if (so.x == cheese_x && so.y == cheese_y)
                 {
-                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
-                    break;
+                    isBreak = true;
                 }
-
-                if (!so.isJunction && isFirstJunction == false)
+                else if (!so.isJunction && !isFirstJunction)
                 {
                     count1 = mazeObjectSegments.Count;
-                    count2 = segmentObjects.Distinct().ToList().Count;
-                    if (count1 == 0 || mazeObjectSegments[count1 - 1].Count != count2)
-                    {
-                        mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
-                    }
+                    isAddSegments = (count1 == 0 || mazeObjectSegments[count1 - 1].Count !=
+                                     segmentObjects.Distinct().ToList().Count);
                 }
                 else if (so.isJunction)
                 {
+                    isAddSegments = isFirstJunction = true;
+                }
+
+                if (isAddSegments || isBreak)
+                {
                     mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
-                    isFirstJunction = true;
+                    if (isBreak)
+                        break;
                 }
             }
             ValidateSegments(mazeObjectSegments);
@@ -753,6 +757,8 @@ namespace MouseAI
             Bitmap bmp = new Bitmap(maze_width, maze_height);
             Graphics g;
             MazeObjects mos;
+            MemoryStream memoryStream;
+            mazeModel.segments.Clear();
 
             for (int idx = 0; idx < mazeObjectSegments.Count; idx++)
             {
@@ -766,11 +772,10 @@ namespace MouseAI
                     (bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
                 }
 
-                using (var memoryStream = new MemoryStream())
-                {
-                    bmp.Save(memoryStream, ImageFormat.Bmp);
-                    mazeModel.segments.Add(memoryStream.ToArray());
-                }
+                memoryStream = new MemoryStream();
+                bmp.Save(memoryStream, ImageFormat.Bmp);
+                mazeModel.segments.Add(memoryStream.ToArray());
+                memoryStream.Close();
             }
         }
 

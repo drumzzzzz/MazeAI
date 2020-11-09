@@ -9,10 +9,10 @@ namespace MouseAI.UI
     public partial class MazeSegments : Form
     {
         private readonly Maze maze;
-        private const int COLUMNS = 3;
-        private const int ROWS = 7;
+        private const int COLUMNS = 10;
+        private const int ROWS = 10;
         private const int MARGIN = 5;
-        private const int SCALE = 3;
+        private const int SCALE = 2;
 
         public MazeSegments(int width, int height, Maze maze)
         {
