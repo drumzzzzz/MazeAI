@@ -13,8 +13,12 @@ using Python.Runtime;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Permissions;
+using System.Threading;
+using System.Threading.Tasks;
 using Keras.Callbacks;
+using Keras.PreProcessing.Image;
 using MouseAI.SH;
 using MouseAI.PL;
 using static Keras.Models.Sequential;
@@ -48,6 +52,7 @@ namespace MouseAI.ML
         private DateTime dtStart;
         private DateTime dtEnd;
         private double[] score;
+        private BaseModel model_loaded;
 
         #endregion
 
@@ -80,6 +85,11 @@ namespace MouseAI.ML
             BuildDataSets();
         }
 
+        public void InitDataSets(ImageDatas imageDatas)
+        {
+            dataSets = new DataSets(width, height, imageDatas);
+        }
+
         public void BuildDataSets()
         {
             ((x_train, y_train), (x_test, y_test)) = dataSets.BuildDataSets();
@@ -88,7 +98,7 @@ namespace MouseAI.ML
 
         #endregion
 
-        #region Processing
+        #region Training
 
         public void Process(Config _config, int num_classes)
         {
@@ -141,10 +151,121 @@ namespace MouseAI.ML
 
         #endregion
 
+        #region Predicition
+
+        public void Predict()
+        {
+            if (model_loaded == null)
+                throw new Exception("Invalid Model!");
+            if (dataSets == null || !dataSets.isImageDatas())
+                throw new Exception("Invalid Dataset!");
+
+            ImageDatas ids = dataSets.GetImageDatas();
+            // ImageData id = ids[0];
+
+            int index = 0;
+
+            foreach (ImageData id in ids)
+            {
+                Console.WriteLine("Predicting {0} of {1}", index++, ids.Count);
+                ProcessPrediction(model_loaded, id);
+            }
+
+            Console.WriteLine("Exiting Predictions");
+        }
+
+        private static void ProcessPrediction(BaseModel mdl, ImageData id)
+        {
+            Console.WriteLine("Preprocessing {0}", id.Label);
+
+            int[,] data = DataSets.GetDataSet(id.Data);
+
+            NDarray x = data;
+
+            NDarray y = mdl.Predict(x, verbose: 2);
+            y = y.argmax();
+            int index = y.asscalar<int>();
+            Console.WriteLine("Result {0}:{1}", id.Label, index);
+        }
+
+        //public void Predict()
+        //{
+        //    if (model_loaded == null)
+        //        throw new Exception("Invalid Model!");
+        //    if (dataSets == null || !dataSets.isImageDatas())
+        //        throw new Exception("Invalid Dataset!");
+        //    NDarray x;
+        //    NDarray y;
+        //    (x, y) = dataSets.BuildDataSet();
+        //    Console.WriteLine("Predicting {0}", x.shape);
+
+        //    NDarray y_results = new NDarray(model_loaded.Predict(x, verbose: 2));
+        //    x.Dispose();
+
+        //    int size = y_results.len;
+
+        //    foreach (PyObject p in y_results.data)
+        //    {
+        //        Console.WriteLine(p);
+        //    }
+
+        //    //for (int i=0;i<size;i++)
+        //    //{
+        //    //    Console.WriteLine(y_results[i].shape);
+
+        //    //    //if (y_results[i] != null)
+        //    //    //{
+        //    //    //    index = y_results[i].argmax().asscalar<int>();
+        //    //    //    Console.WriteLine("Result {0}", index);
+        //    //    //}
+        //    //}
+        //    //y = y.argmax();
+        //    //index = y.asscalar<int>();
+        //    //Console.WriteLine("Result {0}:{1}", id.Label, index);
+
+        //    Console.WriteLine("Exiting Predicitions");
+        //}
+
+        //public async Task Predict()
+        //{
+        //    if (model_loaded == null)
+        //        throw new Exception("Invalid Model!");
+        //    if (dataSets == null || !dataSets.isImageDatas())
+        //        throw new Exception("Invalid Dataset!");
+
+        //    ImageDatas ids = dataSets.GetImageDatas();
+        //    int index;
+        //    int timeout = 1000;
+
+        //    foreach (ImageData id in ids)
+        //    {
+        //        //x = ImageUtil.ImageToArray(id.Data, data_format:"byte");
+        //        //x = x.reshape(1, x.shape[0], x.shape[1], x.shape[2]);
+        //        Console.WriteLine("Preprocessing {0}", id.Label);
+
+        //        //Task task = DataSets.GetDataSet(id.Data);
+
+        //        //if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
+        //        //{
+        //        //    Console.WriteLine("Preprocessing Timeout: {0}", id.Label);
+        //        //    continue;
+        //        //}
+
+        //        NDarray x = dataSets.GetData();
+        //        Console.WriteLine("Predicting {0}:{1}", id.Label, x.shape);
+
+        //        NDarray y = model_loaded.Predict(x, verbose:2);
+        //        y = y.argmax();
+        //        index = y.asscalar<int>();
+        //        Console.WriteLine("Result {0}:{1}", id.Label, index);
+        //    }
+        //    Console.WriteLine("Exiting Predicitions");
+        //}
+
+        #endregion
+
         #region Models
 
-        //private static Sequential ProcessModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
-        //    int epochs, int num_classes, int batch_size, bool isEarlyStop, string logname)
         private static Sequential ProcessModel(NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
             int num_classes, string logname, Config config)
         {
@@ -246,9 +367,9 @@ namespace MouseAI.ML
             if (cfg == null || string.IsNullOrEmpty(cfg.Model))
                 throw new Exception("Invalid config file");
 
-            BaseModel loaded_model = BaseModel.ModelFromJson(cfg.Model);
-            loaded_model.LoadWeight(filename + model_ext);
-            loaded_model.Summary();
+            model_loaded = BaseModel.ModelFromJson(cfg.Model);
+            model_loaded.LoadWeight(filename + model_ext);
+            model_loaded.Summary();
         }
 
         public void SaveFiles()

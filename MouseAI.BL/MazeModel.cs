@@ -123,6 +123,32 @@ namespace MouseAI.BL
             return imageDatas;
         }
 
+        public ImageDatas GetImageSegments()
+        {
+            List<string> Guids = new List<string>();
+            foreach (MazeModel mm in mazeModels)
+            {
+                if (string.IsNullOrEmpty(mm.guid))
+                    throw new Exception("Invalid Guid found in MazeModel!");
+
+                Guids.Add(mm.guid);
+            }
+
+            ImageDatas imageDatas = new ImageDatas(Guid, Guids);
+
+            MazeModel m;
+            for (int i = 0; i < mazeModels.Count; i++)
+            {
+                m = mazeModels[i];
+                if (m.maze == null || m.maze.Length == 0 || m.segments == null || m.segments.Count == 0)
+                    throw new Exception(string.Format("Invalid Image Data Found at Index {0}", i));
+
+                imageDatas.AddRange(m.segments.Select(t => new ImageData(t, m.guid)));
+            }
+
+            return imageDatas;
+        }
+
         public MazeModel CheckPaths()
         {
             foreach (MazeModel mm in mazeModels)

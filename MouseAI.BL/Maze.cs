@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
@@ -285,6 +286,13 @@ namespace MouseAI
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
+        }
+
+        public void Predict()
+        {
+            ImageDatas imageSegments = mazeModels.GetImageSegments();
+            neuralNet.InitDataSets(imageSegments);
+            neuralNet.Predict();
         }
 
         public void LoadModel(string modelName)

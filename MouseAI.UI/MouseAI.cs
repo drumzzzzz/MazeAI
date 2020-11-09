@@ -72,8 +72,8 @@ namespace MouseAI.UI
         // Model Test
         private bool isModelTest;
         private bool isModelLoad;
-        private bool isModelValidate;
-        private bool isModelValidating;
+        private bool isModelPredict;
+        private bool isModelPredicting;
 
         public enum RUNSTATE
         {
@@ -137,6 +137,8 @@ namespace MouseAI.UI
                 LoadMazes(settings.LastFileName, false);
                 SetMazeTextVisible();
             }
+
+            RunTest();
         }
 
         private void CloseProject()
@@ -461,8 +463,8 @@ namespace MouseAI.UI
         private void TestModel()
         {
             isModelTest = true;
-            isModelValidate = false;
-            isModelValidating = false;
+            isModelPredict = false;
+            isModelPredicting = false;
             isModelLoad = false;
 
             modelTest = new ModelTest();
@@ -475,21 +477,8 @@ namespace MouseAI.UI
 
             modelTest.Show();
 
-            while (isModelTest)
-            {
-                if (isModelValidate || isModelValidating)
-                {
-                    ProcessValidate();
-
-
-                }
-
-                Application.DoEvents();
-                Thread.Sleep(100);
-            }
-
-            testThread = null;
-            modelTest.Close();
+            //testThread = null;
+            //modelTest.Close();
 
             if (isModelLoad)
             {
@@ -501,22 +490,37 @@ namespace MouseAI.UI
             Focus();
         }
 
-        private void ProcessValidate()
+        private void ProcessPrediction()
         {
-            if (!isModelValidating)
+            if (!isModelPredicting)
             {
-                isModelValidating = true;
-                testThread = new Thread(AITest);
+                isModelPredicting = true;
+                testThread = new Thread(AIPredict);
                 testThread.Start();
-                return;
             }
 
-            if (!isModelValidate)
+            else if (!isModelPredict)
             {
-                modelTest.btnValidate.Enabled = true;
-                isModelValidating = false;
+                modelTest.btnPredict.Enabled = true;
+                isModelPredicting = false;
                 testThread = null;
             }
+        }
+
+        private void AIPredict()
+        {
+            Console.WriteLine("Predictions Started ...");
+            try
+            {
+                maze.Predict();
+            }
+            catch (Exception e)
+            {
+                DisplayError("Prediction Error:", e, false);
+                Console.WriteLine(e);
+            }
+            Console.WriteLine("Predicitions Ended ...");
+            isModelPredict = false;
         }
 
         private void btnTestModel(object sender, EventArgs e)
@@ -536,30 +540,16 @@ namespace MouseAI.UI
                 isModelLoad = true;
                 isModelTest = false;
             }
-            else if (btn.Name == "btnValidate")
+            else if (btn.Name == "btnPredict")
             {
-                modelTest.btnValidate.Enabled = false;
+                modelTest.btnPredict.Enabled = false;
                 isModelLoad = false;
                 isModelTest = true;
-                isModelValidate = true;
+                isModelPredict = true;
+                maze.Predict();
             }
 
-            Console.WriteLine("Button click:{0}", btn.Name);
-        }
-
-        private void AITest()
-        {
-            Console.WriteLine("Validation Started ...");
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            Console.WriteLine("Validation Ended ...");
-            isModelValidate = false;
+            //Console.WriteLine("Button click:{0}", btn.Name);
         }
 
         private void btnLoad_Click(object sender, EventArgs e)

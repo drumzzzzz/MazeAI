@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Numpy;
 
 namespace MouseAI.ML
@@ -50,6 +51,7 @@ namespace MouseAI.ML
         
         private readonly ImageDatas imageDatas;
         private readonly double split;
+        private int[,] x_data;
 
         private List<int> GetRandomList(int min, int max)
         {
@@ -84,6 +86,17 @@ namespace MouseAI.ML
             this.split = split;
         }
 
+        public DataSets(int Width, int Height, ImageDatas imageDatas)
+        {
+            ImageSize = (Width * Height);
+            this.imageDatas = imageDatas;
+        }
+
+        public bool isImageDatas()
+        {
+            return (imageDatas != null && imageDatas.Count != 0);
+        }
+
         public ((NDarray, NDarray), (NDarray, NDarray)) BuildDataSets()
         {
             List<string> Labels = imageDatas.GetLabels();
@@ -102,6 +115,24 @@ namespace MouseAI.ML
             (NDarray, NDarray) tuple1 = GetDataSets(train, train_labels);
             (NDarray, NDarray) tuple2 = GetDataSets(test, test_labels);
             return (tuple1, tuple2);
+        }
+
+        public (NDarray, NDarray) BuildDataSet()
+        {
+            List<string> Labels = imageDatas.GetLabels();
+
+            if (Labels == null || Labels.Count == 0)
+                throw new Exception("Invalid Dataset Labels!");
+
+            List<byte[]> x_data = new List<byte[]>();
+            List<int> y_labels = new List<int>();
+
+            if (BuildSet(x_data, y_labels, Labels) != imageDatas.Count)
+                throw new Exception(string.Format("Error creating data sets: Expected:{0}", imageDatas.Count));
+
+            (NDarray, NDarray) tuple = GetDataSets(x_data, y_labels);
+
+            return (tuple);
         }
 
         private int BuildSets(ICollection<byte[]> train, ICollection<int> train_labels, ICollection<byte[]> test, ICollection<int> test_labels, IEnumerable<string> Labels)
@@ -160,6 +191,37 @@ namespace MouseAI.ML
             return set_count;
         }
 
+        private int BuildSet(ICollection<byte[]> x_data, ICollection<int> y_labels, IEnumerable<string> Labels)
+        {
+            List<ImageData> id;
+            int label_count = 0;
+            int set_count = 0;
+            int count;
+
+            Console.WriteLine("Creating data set ...");
+
+            foreach (string label in Labels)
+            {
+                id = imageDatas.Where(o => o.Label == label).ToList();
+                if (id.Count == 0)
+                {
+                    throw new Exception(string.Format("Image Data label for {0} not found!", label));
+                }
+
+                count = id.Count;
+
+                for (int i = 0; i < count; i++)
+                {
+                    x_data.Add(id[i].Data);
+                    y_labels.Add(label_count);
+                    id[i].Reference = x_data.Count - 1;
+                    set_count++;
+                }
+                label_count++;
+            }
+            return set_count;
+        }
+
         private static (NDarray, NDarray) GetDataSets(IReadOnlyList<byte[]> data, IReadOnlyList<int> labels)
         {
             int count = data.Count;
@@ -179,6 +241,51 @@ namespace MouseAI.ML
                 y_labels[i] = labels[i];
             }
             return (x_data, y_labels);
+        }
+
+        public ImageDatas GetImageDatas()
+        {
+            return imageDatas;
+        }
+
+        public static int[,] GetDataSet(byte[] bytes)
+        {
+            Console.WriteLine("Preprocessing Image ...");
+            int count = bytes.Length;
+            int[,] x_data = new int[count, ImageSize];
+
+            for (int i = 0; i < count; i++)
+            {
+                for (int byteIdx = 0; byteIdx < ImageSize; byteIdx++)
+                {
+                    x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
+                }
+            }
+
+            return x_data;
+        }
+
+        //public static async Task GetDataSet(byte[] bytes)
+        //{
+        //    await Task.Run(() =>
+        //    {
+        //        Console.WriteLine("Preprocessing Image ...");
+        //        int count = bytes.Length;
+        //        int[,] x_data = new int[count, ImageSize];
+
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            for (int byteIdx = 0; byteIdx < ImageSize; byteIdx++)
+        //            {
+        //                x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
+        //            }
+        //        }
+        //    });
+        //}
+
+        public int[,] GetData()
+        {
+            return x_data;
         }
 
         private static int GetByteOffset(int index)

@@ -30,7 +30,7 @@
         {
             this.btnBack = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
-            this.btnValidate = new System.Windows.Forms.Button();
+            this.btnPredict = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnBack
@@ -53,23 +53,23 @@
             this.btnExit.Text = "EXIT";
             this.btnExit.UseVisualStyleBackColor = true;
             // 
-            // btnValidate
+            // btnPredict
             // 
-            this.btnValidate.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnValidate.Location = new System.Drawing.Point(34, 12);
-            this.btnValidate.Name = "btnValidate";
-            this.btnValidate.Size = new System.Drawing.Size(84, 26);
-            this.btnValidate.TabIndex = 20;
-            this.btnValidate.Text = "VALIDATE";
-            this.btnValidate.UseVisualStyleBackColor = true;
+            this.btnPredict.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPredict.Location = new System.Drawing.Point(40, 112);
+            this.btnPredict.Name = "btnPredict";
+            this.btnPredict.Size = new System.Drawing.Size(84, 26);
+            this.btnPredict.TabIndex = 20;
+            this.btnPredict.Text = "PREDICT";
+            this.btnPredict.UseVisualStyleBackColor = true;
             // 
             // ModelTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(686, 298);
+            this.ClientSize = new System.Drawing.Size(682, 294);
             this.ControlBox = false;
-            this.Controls.Add(this.btnValidate);
+            this.Controls.Add(this.btnPredict);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnBack);
             this.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -89,6 +89,6 @@
         #endregion
         public System.Windows.Forms.Button btnBack;
         public System.Windows.Forms.Button btnExit;
-        public System.Windows.Forms.Button btnValidate;
+        public System.Windows.Forms.Button btnPredict;
     }
 }
