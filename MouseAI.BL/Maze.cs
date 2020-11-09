@@ -329,141 +329,6 @@ namespace MouseAI
 
         #endregion
 
-        #region Scanning
-
-        private int ScanDirection(int x, int y)
-        {
-            if (!isScanValid(x, y))
-                return 1;
-
-            if (CheckScannedObject(x, y) == OBJECT_STATE.CHEESE)
-            {
-                isCheesePath = true;
-                return 0;
-            }
-
-            return MazeObjects[x, y].isDeadEnd ? 1 : -1;
-        }
-
-        private void ScanObjects(int x, int y)
-        {
-            if (isCheesePath)
-                return;
-
-            int result;
-
-            // Scan West
-            for (int x_idx = x - 1; x_idx > 0; x_idx--)
-            {
-                result = ScanDirection(x_idx, y);
-                if (result == 1)
-                    break;
-                if (result == 0)
-                    return;
-
-                scanObjects[0].Add(MazeObjects[x_idx, y]);
-            }
-
-            // Scan East
-            for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
-            {
-                result = ScanDirection(x_idx, y);
-                if (result == 1)
-                    break;
-                if (result == 0)
-                    return;
-
-                scanObjects[1].Add(MazeObjects[x_idx, y]);
-            }
-
-            // Scan North
-            for (int y_idx = y - 1; y_idx > 0; y_idx--)
-            {
-                result = ScanDirection(x, y_idx);
-                if (result == 1)
-                    break;
-                if (result == 0)
-                    return;
-
-                scanObjects[2].Add(MazeObjects[x, y_idx]);
-            }
-
-            // Scan South
-            for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
-            {
-                result = ScanDirection(x, y_idx);
-                if (result == 1)
-                    break;
-                if (result == 0)
-                    return;
-
-                scanObjects[3].Add(MazeObjects[x, y_idx]);
-            }
-
-            for (int i = 0; i < scanObjects.Length; i++)
-            {
-                CheckEndPoints(scanObjects[i]);
-                scanObjects[i].Clear();
-            }
-        }
-
-        private static OBJECT_STATE CheckScannedObject(int x, int y)
-        {
-            return MazeObjects[x, y].object_state == OBJECT_STATE.CHEESE ? OBJECT_STATE.CHEESE : OBJECT_STATE.NONE;
-        }
-
-        private static bool isScanValid(int x, int y)
-        {
-            return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE);
-        }
-
-        private static int GetScanValid(int x, int y)
-        {
-            return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE) ? 1 : 0;
-        }
-
-        private static void CheckEndPoints(IList<MazeObject> mos)
-        {
-            if (mos.Count == 0)
-                return;
-
-            // If there are objects and the last point is a dead end
-            if (GetPerimiter(mos.Last()) == 1)
-            {
-                SetEndpoint(mos.Last());
-                mos.RemoveAt(mos.Count - 1);
-
-                for (int i = mos.Count - 1; i > -1; i--)
-                {
-                    if (GetPerimiter(mos[i]) == 2)
-                        SetEndpoint(mos[i]);
-                    else
-                        break;
-                }
-            }
-        }
-
-        private static void SetEndpoint(MazeObject mo)
-        {
-            mo.isDeadEnd = true;
-        }
-
-        private static int GetPerimiter(MazeObject mo)
-        {
-            int count = 0;
-            int[,] panArray = GetXYPan(mo.x, mo.y);
-
-            // Scan all directions from a given point
-            for (int i = 0; i < panArray.Length / 2; i++)
-            {
-                count += GetScanValid(panArray[i, 0], panArray[i, 1]);
-            }
-
-            return count;
-        }
-
-        #endregion
-
         #region Movement
 
         public bool ProcessMouseMove()
@@ -472,7 +337,8 @@ namespace MouseAI
             int y = oMouse.y;
 
             // Check if mouse can see the cheese
-            ScanObjects(x, y);
+            if (!isCheesePath)
+                ScanObjects(x, y);
 
             List<MazeObject> mazeobjects = CheckNode(x, y);
 
@@ -494,6 +360,13 @@ namespace MouseAI
                 return false;
             }
 
+            ProcessMove(mazeobjects, mouse);
+
+            return false;
+        }
+
+        private void ProcessMove(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
+        {
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
                                                             o.object_state != OBJECT_STATE.MOUSE);
             if (mo != null)
@@ -504,9 +377,7 @@ namespace MouseAI
                     CleanPathObjects();
                 }
 
-                // oMouse.direction = GetMouseDirection(oMouse.x, oMouse.y, mo.x, mo.y);
                 oMouse.direction = DIRECTION.SOUTH;
-
                 oMouse.x = mo.x;
                 oMouse.y = mo.y;
                 mo.object_state = OBJECT_STATE.MOUSE;
@@ -544,8 +415,6 @@ namespace MouseAI
                 mouse.isVisited = true;
                 mouse.object_state = OBJECT_STATE.VISITED;
             }
-
-            return false;
         }
 
         private bool ProcessCheeseMove(MazeObject mouse, List<MazeObject> mazeobjects)
@@ -567,24 +436,16 @@ namespace MouseAI
             if (curr_x == cheese_x) // Move North or south
             {
                 new_x = curr_x;
-                if (curr_y > cheese_y)
-                    new_y = curr_y - 1;
-                else
-                    new_y = curr_y + 1;
+                new_y = (curr_y > cheese_y) ? curr_y - 1 : curr_y + 1;
             }
             else if (curr_y == cheese_y) // Move West or East
             {
                 new_y = curr_y;
-                if (curr_x > cheese_x)
-                    new_x = curr_x - 1;
-                else
-                    new_x = curr_x + 1;
+                new_x = (curr_x > cheese_x) ? curr_x - 1 : curr_x + 1;
             }
 
             if (new_x == -1 || new_y == -1)
-            {
                 throw new Exception("Invalid Path Direction!");
-            }
 
             if (!SetPathMove(curr_x, curr_y, new_x, new_y))
                 throw new Exception("Invalid Path Move!");
@@ -605,21 +466,149 @@ namespace MouseAI
 
             for (int x_idx = x - 1; x_idx < x + 2; x_idx += 2)
             {
-                if (IsInBounds(x_idx, y) && GetObjectDataType(x_idx, y) == OBJECT_TYPE.SPACE)
-                {
+                if (isNode(x_idx, y))
                     mazeobjects.Add(MazeObjects[x_idx, y]);
-                }
             }
 
             for (int y_idx = y - 1; y_idx < y + 2; y_idx += 2)
             {
-                if (IsInBounds(x, y_idx) && GetObjectDataType(x, y_idx) == OBJECT_TYPE.SPACE)
-                {
+                if(isNode(x, y_idx))
                     mazeobjects.Add(MazeObjects[x, y_idx]);
-                }
             }
 
             return mazeobjects;
+        }
+
+        private static bool isNode(int x, int y)
+        {
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+        }
+
+        #endregion
+
+        #region Scanning
+
+        private void ScanObjects(int x, int y)
+        {
+            int result;
+
+            // Scan West
+            for (int x_idx = x - 1; x_idx > 0; x_idx--)
+            {
+                if (ScanDirection(x_idx, y, out result))
+                    return;
+                if (result == 1)
+                    break;
+                scanObjects[0].Add(MazeObjects[x_idx, y]);
+            }
+
+            // Scan East
+            for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
+            {
+                if (ScanDirection(x_idx, y, out result))
+                    return;
+                if (result == 1)
+                    break;
+                scanObjects[1].Add(MazeObjects[x_idx, y]);
+            }
+
+            // Scan North
+            for (int y_idx = y - 1; y_idx > 0; y_idx--)
+            {
+                if (ScanDirection(x, y_idx, out result))
+                    return;
+                if (result == 1)
+                    break;
+                scanObjects[2].Add(MazeObjects[x, y_idx]);
+            }
+
+            // Scan South
+            for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
+            {
+                if (ScanDirection(x, y_idx, out result))
+                    return;
+                if (result == 1)
+                    break;
+                scanObjects[3].Add(MazeObjects[x, y_idx]);
+            }
+
+            for (int i = 0; i < scanObjects.Length; i++)
+            {
+                CheckEndPoints(scanObjects[i]);
+                scanObjects[i].Clear();
+            }
+        }
+
+        private bool ScanDirection(int x, int y, out int result)
+        {
+            if (!isScanValid(x, y))
+            {
+                result = 1;
+                return false;
+            }
+            if (CheckScannedObject(x, y) == OBJECT_STATE.CHEESE)
+            {
+                isCheesePath = true;
+                result = 0;
+                return true;
+            }
+            result = MazeObjects[x, y].isDeadEnd ? 1 : -1;
+            return false;
+        }
+
+        private static void CheckEndPoints(IList<MazeObject> mos)
+        {
+            if (mos.Count == 0)
+                return;
+
+            // If there are objects and the last point is a dead end
+            if (GetPerimiter(mos.Last()) == 1)
+            {
+                SetEndpoint(mos.Last());
+                mos.RemoveAt(mos.Count - 1);
+
+                for (int i = mos.Count - 1; i > -1; i--)
+                {
+                    if (GetPerimiter(mos[i]) == 2)
+                        SetEndpoint(mos[i]);
+                    else
+                        break;
+                }
+            }
+        }
+
+        private static int GetPerimiter(MazeObject mo)
+        {
+            int count = 0;
+            int[,] panArray = GetXYPan(mo.x, mo.y);
+
+            // Scan all directions from a given point
+            for (int i = 0; i < panArray.Length / 2; i++)
+            {
+                count += GetScanValid(panArray[i, 0], panArray[i, 1]);
+            }
+
+            return count;
+        }
+
+        private static OBJECT_STATE CheckScannedObject(int x, int y)
+        {
+            return MazeObjects[x, y].object_state == OBJECT_STATE.CHEESE ? OBJECT_STATE.CHEESE : OBJECT_STATE.NONE;
+        }
+
+        private static bool isScanValid(int x, int y)
+        {
+            return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE);
+        }
+
+        private static int GetScanValid(int x, int y)
+        {
+            return (IsInBounds(x, y) && MazeObjects[x, y].object_type == OBJECT_TYPE.SPACE) ? 1 : 0;
+        }
+
+        private static void SetEndpoint(MazeObject mo)
+        {
+            mo.isDeadEnd = true;
         }
 
         #endregion
@@ -643,7 +632,6 @@ namespace MouseAI
             bool isBreak = false;
             int count1;
 
-            mazeObjectSegments = null;
             mazeObjectSegments = new MazeObjectSegments();
 
             while (true)
@@ -1382,9 +1370,9 @@ namespace MouseAI
             return (mazeModels == null) ? 0 : mazeModels.Count();
         }
 
-        private static byte[,] ConvertArray(byte[][] ibytes)
+        private static byte[,] ConvertArray(IReadOnlyList<byte[]> ibytes)
         {
-            int length = ibytes.Length;
+            int length = ibytes.Count;
             int width = ibytes[0].Length;
 
             byte[,] obytes = new byte[width, length];
