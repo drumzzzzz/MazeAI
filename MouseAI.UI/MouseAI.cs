@@ -25,8 +25,9 @@ namespace MouseAI.UI
         private Thread trainThread;
         private Thread testThread;
         private readonly MazeText mazeText;
-        private MazeTest mazeTest;
-        private readonly MazeSegments mazeSegments;
+        private ModelLoad modelLoad;
+        private ModelTest modelTest;
+        private readonly MazeSegments mazeSegments; 
         private Maze maze;
         private TrainSettings trainSettings;
         private Progress progress;
@@ -39,7 +40,6 @@ namespace MouseAI.UI
         private bool isValid;
         private bool isThreadDone;
         private bool isThreadCancel;
-
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
         private const int MAZE_SCALE_WIDTH_PX = 28;
@@ -68,7 +68,12 @@ namespace MouseAI.UI
         private Point mouse_last;
 
         private int maze_count;
-   
+
+        // Model Test
+        private bool isModelTest;
+        private bool isModelLoad;
+        private bool isModelValidate;
+        private bool isModelValidating;
 
         public enum RUNSTATE
         {
@@ -201,6 +206,27 @@ namespace MouseAI.UI
             progress.Focus();
         }
 
+        private void DisplayProgress(string message)
+        {
+            Console.Clear();
+            Enabled = false;
+
+            progress = new Progress(message, false)
+            {
+                TopMost = true
+            };
+
+            progress.Show();
+            progress.Focus();
+        }
+
+        private void CloseProgress()
+        {
+            progress?.Close();
+            Enabled = true;
+            Focus();
+        }
+
         private void FinalizeProcessing()
         {
             progress?.Close();
@@ -326,7 +352,7 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Neural Network
+        #region Neural Network Training
 
         private void RunTrain()
         {
@@ -394,7 +420,7 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Test
+        #region Neural Network Testing
 
         private void RunTest()
         {
@@ -409,77 +435,168 @@ namespace MouseAI.UI
                 return;
             }
 
-            msMain.Enabled = false;
-            mazeTest = new MazeTest(starttimes, maze.GetProjectModel());
-            mazeTest.Show();
-            mazeTest.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
-            mazeTest.btnExit.Click += BtnExit_Click;
-            mazeTest.btnLoad.Click += btnLoad_Click;
+            Enabled = false;
+            modelLoad = new ModelLoad(starttimes, maze.GetProjectModel());
+            modelLoad.Show();
+            modelLoad.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
+            modelLoad.btnCancel.Click += BtnExit_Click;
+            modelLoad.btnLoadModel.Click += btnLoad_Click;
         }
 
-        private void LoadModel(string starttime)
+        private bool LoadModel(string starttime)
         {
-            if (testThread != null)
-                return;
-
-            maze.SetModelName(starttime);
-            testThread = new Thread(AITest);
-            testThread.Start();
-
-            InitProcessing("Testing Neural Network ...", true);
-
-            while (testThread.ThreadState != ThreadState.Stopped && !isThreadCancel)
+            try
             {
+                maze.LoadModel(starttime);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                DisplayError(string.Format("Error loading model '{0}'", starttime), e, false);
+                return false;
+            }
+        }
+
+        private void TestModel()
+        {
+            isModelTest = true;
+            isModelValidate = false;
+            isModelValidating = false;
+            isModelLoad = false;
+
+            modelTest = new ModelTest();
+
+            foreach (Control ctl in modelTest.Controls)
+            {
+                if (ctl is Button)
+                    (ctl as Button).Click += btnTestModel;
+            }
+
+            modelTest.Show();
+
+            while (isModelTest)
+            {
+                if (isModelValidate || isModelValidating)
+                {
+                    ProcessValidate();
+
+
+                }
+
                 Application.DoEvents();
                 Thread.Sleep(100);
             }
-            testThread = null;
 
-            FinalizeProcessing();
+            testThread = null;
+            modelTest.Close();
+
+            if (isModelLoad)
+            {
+                RunTest();
+                return;
+            }
+
+            Enabled = true;
+            Focus();
+        }
+
+        private void ProcessValidate()
+        {
+            if (!isModelValidating)
+            {
+                isModelValidating = true;
+                testThread = new Thread(AITest);
+                testThread.Start();
+                return;
+            }
+
+            if (!isModelValidate)
+            {
+                modelTest.btnValidate.Enabled = true;
+                isModelValidating = false;
+                testThread = null;
+            }
+        }
+
+        private void btnTestModel(object sender, EventArgs e)
+        {
+            Button btn = (Button)sender;
+
+            if (btn == null)
+                return;
+
+            if (btn.Name == "btnExit")
+            {
+                isModelLoad = false;
+                isModelTest = false;
+            }
+            else if (btn.Name == "btnBack")
+            {
+                isModelLoad = true;
+                isModelTest = false;
+            }
+            else if (btn.Name == "btnValidate")
+            {
+                modelTest.btnValidate.Enabled = false;
+                isModelLoad = false;
+                isModelTest = true;
+                isModelValidate = true;
+            }
+
+            Console.WriteLine("Button click:{0}", btn.Name);
         }
 
         private void AITest()
         {
+            Console.WriteLine("Validation Started ...");
             try
             {
-                maze.LoadModel();
+
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+            Console.WriteLine("Validation Ended ...");
+            isModelValidate = false;
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-            if (mazeTest.lbxModels.SelectedItem != null)
+            if (modelLoad.lbxModels.SelectedItem != null)
             {
-                mazeTest.Enabled = false;
-                LoadModel(mazeTest.lbxModels.SelectedItem.ToString());
+                modelLoad.Enabled = false;
+                if (LoadModel(modelLoad.lbxModels.SelectedItem.ToString()))
+                {
+                    modelLoad.Close();
+                    TestModel();
+                    return;
+                }
             }
-            mazeTest.Enabled = true;
+            modelLoad.Enabled = true;
         }
 
         private void BtnExit_Click(object sender, EventArgs e)
         {
-            mazeTest.Close();
-            msMain.Enabled = true;
+            modelLoad.Close();
+            Enabled = true;
         }
 
         private void lbxModels_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (mazeTest.lbxModels.SelectedItem != null)
+            if (modelLoad.lbxModels.SelectedItem != null)
             {
-                string result = maze.GetModelSummary(mazeTest.lbxModels.SelectedItem.ToString());
+                string result = maze.GetModelSummary(modelLoad.lbxModels.SelectedItem.ToString());
                 if (!string.IsNullOrEmpty(result))
                 {
-                    mazeTest.tbxSummary.Text = result;
-                    mazeTest.btnLoad.Enabled = true;
+                    modelLoad.tbxSummary.Text = result;
+                    modelLoad.btnLoadModel.Enabled = true;
                 }
             }
             else
             {
-                mazeTest.btnLoad.Enabled = false;
+                modelLoad.btnLoadModel.Enabled = false;
             }
         }
 

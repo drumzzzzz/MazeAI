@@ -70,7 +70,6 @@ namespace MouseAI
         private static string archive_dir;
         private string FileName;
         private string ModelProjectGuid;
-        private string modelName;
 
         private readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
@@ -288,14 +287,13 @@ namespace MouseAI
             neuralNet.Process(config, mazeModels.Count());
         }
 
-        public void LoadModel()
+        public void LoadModel(string modelName)
         {
             if (string.IsNullOrEmpty(modelName))
                 throw new Exception("Invalid Model Name!");
 
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
             neuralNet.LoadModel(modelName);
-
         }
 
         public void SaveResults()
@@ -315,11 +313,6 @@ namespace MouseAI
 
             neuralNet.SaveFiles();
             mazeModels.StartTime = config.StartTime;
-        }
-
-        public void SetModelName(string _modelName)
-        {
-            modelName = _modelName;
         }
 
         public void CleanNetwork()

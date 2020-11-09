@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace MouseAI.UI
 {
-    public partial class MazeTest : Form
+    public partial class ModelLoad : Form
     {
-        public MazeTest(IEnumerable<string> starttimes, string starttime)
+        public ModelLoad(IEnumerable<string> starttimes, string starttime)
         {
             InitializeComponent();
 
@@ -22,7 +22,7 @@ namespace MouseAI.UI
             if (!string.IsNullOrEmpty(starttime))
             {
                 lbxModels.SelectedItem = starttime;
-                btnLoad.Enabled = true;
+                btnLoadModel.Enabled = true;
             }
         }
     }
