@@ -1,6 +1,7 @@
 ﻿#region Using Statements
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Keras;
 using Keras.Layers;
@@ -161,106 +162,33 @@ namespace MouseAI.ML
                 throw new Exception("Invalid Dataset!");
 
             ImageDatas ids = dataSets.GetImageDatas();
-            // ImageData id = ids[0];
+            int index;
 
-            int index = 0;
+            NDarray x_data;
+            NDarray y_labels;
 
-            foreach (ImageData id in ids)
+            (x_data, y_labels) = dataSets.BuildDataSet();
+
+            List<string> labels = ids.GetLabels();
+            Console.WriteLine("Predicting {0} Images", ids.Count);
+            NDarray y = model_loaded.Predict(x_data);
+
+            int correct = 0;
+            int incorrect = 0;
+
+            for(int i=0;i<y.len;i++)
             {
-                Console.WriteLine("Predicting {0} of {1}", index++, ids.Count);
-                ProcessPrediction(model_loaded, id);
+                NDarray result = y[i];
+                result = result.argmax();
+                index = result.asscalar<int>();
+
+                if (ids[i].Label == labels[index])
+                    correct++;
+                else
+                    incorrect++;
             }
-
-            Console.WriteLine("Exiting Predictions");
+            Console.WriteLine("Correct:{0} Incorrect:{1} Tested:{2}", correct, incorrect, incorrect + correct);
         }
-
-        private static void ProcessPrediction(BaseModel mdl, ImageData id)
-        {
-            Console.WriteLine("Preprocessing {0}", id.Label);
-
-            int[,] data = DataSets.GetDataSet(id.Data);
-
-            NDarray x = data;
-
-            NDarray y = mdl.Predict(x, verbose: 2);
-            y = y.argmax();
-            int index = y.asscalar<int>();
-            Console.WriteLine("Result {0}:{1}", id.Label, index);
-        }
-
-        //public void Predict()
-        //{
-        //    if (model_loaded == null)
-        //        throw new Exception("Invalid Model!");
-        //    if (dataSets == null || !dataSets.isImageDatas())
-        //        throw new Exception("Invalid Dataset!");
-        //    NDarray x;
-        //    NDarray y;
-        //    (x, y) = dataSets.BuildDataSet();
-        //    Console.WriteLine("Predicting {0}", x.shape);
-
-        //    NDarray y_results = new NDarray(model_loaded.Predict(x, verbose: 2));
-        //    x.Dispose();
-
-        //    int size = y_results.len;
-
-        //    foreach (PyObject p in y_results.data)
-        //    {
-        //        Console.WriteLine(p);
-        //    }
-
-        //    //for (int i=0;i<size;i++)
-        //    //{
-        //    //    Console.WriteLine(y_results[i].shape);
-
-        //    //    //if (y_results[i] != null)
-        //    //    //{
-        //    //    //    index = y_results[i].argmax().asscalar<int>();
-        //    //    //    Console.WriteLine("Result {0}", index);
-        //    //    //}
-        //    //}
-        //    //y = y.argmax();
-        //    //index = y.asscalar<int>();
-        //    //Console.WriteLine("Result {0}:{1}", id.Label, index);
-
-        //    Console.WriteLine("Exiting Predicitions");
-        //}
-
-        //public async Task Predict()
-        //{
-        //    if (model_loaded == null)
-        //        throw new Exception("Invalid Model!");
-        //    if (dataSets == null || !dataSets.isImageDatas())
-        //        throw new Exception("Invalid Dataset!");
-
-        //    ImageDatas ids = dataSets.GetImageDatas();
-        //    int index;
-        //    int timeout = 1000;
-
-        //    foreach (ImageData id in ids)
-        //    {
-        //        //x = ImageUtil.ImageToArray(id.Data, data_format:"byte");
-        //        //x = x.reshape(1, x.shape[0], x.shape[1], x.shape[2]);
-        //        Console.WriteLine("Preprocessing {0}", id.Label);
-
-        //        //Task task = DataSets.GetDataSet(id.Data);
-
-        //        //if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
-        //        //{
-        //        //    Console.WriteLine("Preprocessing Timeout: {0}", id.Label);
-        //        //    continue;
-        //        //}
-
-        //        NDarray x = dataSets.GetData();
-        //        Console.WriteLine("Predicting {0}:{1}", id.Label, x.shape);
-
-        //        NDarray y = model_loaded.Predict(x, verbose:2);
-        //        y = y.argmax();
-        //        index = y.asscalar<int>();
-        //        Console.WriteLine("Result {0}:{1}", id.Label, index);
-        //    }
-        //    Console.WriteLine("Exiting Predicitions");
-        //}
 
         #endregion
 

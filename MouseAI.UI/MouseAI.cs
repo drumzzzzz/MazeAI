@@ -476,35 +476,6 @@ namespace MouseAI.UI
             }
 
             modelTest.Show();
-
-            //testThread = null;
-            //modelTest.Close();
-
-            if (isModelLoad)
-            {
-                RunTest();
-                return;
-            }
-
-            Enabled = true;
-            Focus();
-        }
-
-        private void ProcessPrediction()
-        {
-            if (!isModelPredicting)
-            {
-                isModelPredicting = true;
-                testThread = new Thread(AIPredict);
-                testThread.Start();
-            }
-
-            else if (!isModelPredict)
-            {
-                modelTest.btnPredict.Enabled = true;
-                isModelPredicting = false;
-                testThread = null;
-            }
         }
 
         private void AIPredict()
@@ -520,7 +491,6 @@ namespace MouseAI.UI
                 Console.WriteLine(e);
             }
             Console.WriteLine("Predicitions Ended ...");
-            isModelPredict = false;
         }
 
         private void btnTestModel(object sender, EventArgs e)
@@ -532,21 +502,20 @@ namespace MouseAI.UI
 
             if (btn.Name == "btnExit")
             {
-                isModelLoad = false;
-                isModelTest = false;
+                modelTest.Close();
+                Enabled = true;
+                Focus();
             }
             else if (btn.Name == "btnBack")
             {
-                isModelLoad = true;
-                isModelTest = false;
+                modelTest.Close();
+                RunTest();
             }
             else if (btn.Name == "btnPredict")
             {
-                modelTest.btnPredict.Enabled = false;
-                isModelLoad = false;
-                isModelTest = true;
-                isModelPredict = true;
-                maze.Predict();
+                modelTest.Enabled = false;
+                AIPredict();
+                modelTest.Enabled = true;
             }
 
             //Console.WriteLine("Button click:{0}", btn.Name);
