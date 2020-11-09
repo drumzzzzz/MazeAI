@@ -23,7 +23,6 @@ namespace MouseAI.UI
         private Settings settings;
         private Thread searchThread;
         private Thread trainThread;
-        private Thread testThread;
         private readonly MazeText mazeText;
         private ModelLoad modelLoad;
         private ModelTest modelTest;
@@ -68,12 +67,6 @@ namespace MouseAI.UI
         private Point mouse_last;
 
         private int maze_count;
-
-        // Model Test
-        private bool isModelTest;
-        private bool isModelLoad;
-        private bool isModelPredict;
-        private bool isModelPredicting;
 
         public enum RUNSTATE
         {
@@ -462,12 +455,7 @@ namespace MouseAI.UI
 
         private void TestModel()
         {
-            isModelTest = true;
-            isModelPredict = false;
-            isModelPredicting = false;
-            isModelLoad = false;
-
-            modelTest = new ModelTest();
+            modelTest = new ModelTest(MAZE_WIDTH, MAZE_HEIGHT);
 
             foreach (Control ctl in modelTest.Controls)
             {
@@ -483,7 +471,14 @@ namespace MouseAI.UI
             Console.WriteLine("Predictions Started ...");
             try
             {
-                maze.Predict();
+                modelTest.txtResults.Text = string.Empty;
+
+                ImageDatas ids =  maze.Predict();
+                if (ids == null)
+                    throw new Exception("Prediction result error!");
+
+                modelTest.txtResults.Text = ids.GetResults();
+                modelTest.SetImages(ids);
             }
             catch (Exception e)
             {

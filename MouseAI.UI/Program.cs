@@ -12,7 +12,7 @@ namespace MouseAI.UI
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        // [STAThread]
+        [STAThread]
         static void Main()
         {
             DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND);

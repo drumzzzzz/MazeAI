@@ -14,15 +14,9 @@ using Python.Runtime;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Security.Permissions;
-using System.Threading;
-using System.Threading.Tasks;
 using Keras.Callbacks;
-using Keras.PreProcessing.Image;
 using MouseAI.SH;
 using MouseAI.PL;
-using static Keras.Models.Sequential;
 
 #endregion
 
@@ -152,9 +146,9 @@ namespace MouseAI.ML
 
         #endregion
 
-        #region Predicition
+        #region Prediction
 
-        public void Predict()
+        public ImageDatas Predict()
         {
             if (model_loaded == null)
                 throw new Exception("Invalid Model!");
@@ -162,32 +156,31 @@ namespace MouseAI.ML
                 throw new Exception("Invalid Dataset!");
 
             ImageDatas ids = dataSets.GetImageDatas();
-            int index;
-
-            NDarray x_data;
-            NDarray y_labels;
-
-            (x_data, y_labels) = dataSets.BuildDataSet();
-
+            ImageDatas idf = new ImageDatas();
+            NDarray x_data = dataSets.BuildDataSet();
             List<string> labels = ids.GetLabels();
+
             Console.WriteLine("Predicting {0} Images", ids.Count);
-            NDarray y = model_loaded.Predict(x_data);
+            NDarray y = model_loaded.Predict(x_data, verbose:2);
 
-            int correct = 0;
-            int incorrect = 0;
+            int index;
+            NDarray result; 
 
-            for(int i=0;i<y.len;i++)
+            for (int i=0;i<y.len;i++)
             {
-                NDarray result = y[i];
+                result = y[i];
                 result = result.argmax();
                 index = result.asscalar<int>();
 
-                if (ids[i].Label == labels[index])
-                    correct++;
-                else
-                    incorrect++;
+                if (ids[i].Label != labels[index])
+                {
+                    idf.Add(ids[i]);
+                }
             }
-            Console.WriteLine("Correct:{0} Incorrect:{1} Tested:{2}", correct, incorrect, incorrect + correct);
+
+            double accuracy = Math.Round(((y.len - idf.Count) * 100) / (double) y.len, 2);
+            idf.SetResults(string.Format("Predicted:{0} Correct: {1} Incorrect:{2} Accuracy:{3}", y.len, y.len - idf.Count, idf.Count, accuracy));
+            return idf;
         }
 
         #endregion

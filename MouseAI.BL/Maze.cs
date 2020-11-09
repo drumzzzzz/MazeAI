@@ -288,11 +288,11 @@ namespace MouseAI
             neuralNet.Process(config, mazeModels.Count());
         }
 
-        public void Predict()
+        public ImageDatas Predict()
         {
             ImageDatas imageSegments = mazeModels.GetImageSegments();
             neuralNet.InitDataSets(imageSegments);
-            neuralNet.Predict();
+            return neuralNet.Predict();
         }
 
         public void LoadModel(string modelName)
