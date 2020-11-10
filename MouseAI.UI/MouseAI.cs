@@ -130,7 +130,7 @@ namespace MouseAI.UI
                 LoadMazes(settings.LastFileName, false);
                 SetMazeTextVisible();
             }
-            RunTest();
+            //RunTest();
         }
 
         private void CloseProject()

@@ -272,11 +272,23 @@ namespace MouseAI.ML
             Sequential model = new Sequential();
             model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
             model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
-            model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
-            model.Add(new Dropout(0.25));
+            model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple())); 
+            // model.Add(new Dropout(0.25));
             model.Add(new Flatten());
-            model.Add(new Dense(config.Nodes, activation: "relu"));
-            model.Add(new Dropout(0.5));
+
+            double dropout_increment = GetDropOutRate(config);
+            double droput_value;
+            for (int i = config.Layers; i > -1; i--)
+            {
+                model.Add(new Dense(config.Nodes, activation: "relu"));
+                if (config.Amount != 0 && i < config.Amount)
+                {
+                    droput_value = config.DropOut - (dropout_increment * i);
+                    model.Add(new Dropout(droput_value));
+                    Console.WriteLine("Added dropout {0}", droput_value);
+                }
+            }
+
             model.Add(new Dense(num_classes, activation: "softmax"));
 
             CSVLogger csv_logger = new CSVLogger(logname);
