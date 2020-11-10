@@ -13,9 +13,9 @@ namespace MouseAI.UI
         private const int NODES = 100;
         private const bool CNN = false;
         private const bool NORMALIZE = true;
-        private const bool EARLYSTOP = true;
+        private const bool EARLYSTOP = false;
         private const double DROPOUT = 0.05;
-        private const int AMOUNT = 0;
+        private const int AMOUNT = 1;
         private const int SEED = 0;
         private const double SPLIT = 0.70;
 

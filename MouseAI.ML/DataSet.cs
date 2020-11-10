@@ -126,8 +126,8 @@ namespace MouseAI.ML
 
             BuildSets(train, train_labels, test, test_labels, Labels);
 
-            //if (BuildSets(train, train_labels, test, test_labels, Labels) != imageDatas.Count)
-            //    throw  new Exception(string.Format("Error creating data sets: Expected:{0}", imageDatas.Count));
+            if (BuildSets(train, train_labels, test, test_labels, Labels) != imageDatas.Count)
+                throw new Exception(string.Format("Error creating data sets: Expected:{0}", imageDatas.Count));
 
             (NDarray, NDarray) tuple1 = GetDataSets(train, train_labels);
             (NDarray, NDarray) tuple2 = GetDataSets(test, test_labels);
@@ -174,18 +174,7 @@ namespace MouseAI.ML
                 indexes.Insert(0, 0);
                 train_count = (int)((count) * split);
 
-                //for (int i = 0; i < train_count; i++)
-                //{
-                //    index = indexes[i];
-                //    train.Add(id[index].Data);
-                //    train_labels.Add(label_count);
-                //    id[index].isTrain = true;
-                //    id[index].Reference = train.Count - 1;
-                //    sum++;
-                //    set_count++;
-                //}
-
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < train_count; i++)
                 {
                     index = indexes[i];
                     train.Add(id[index].Data);
@@ -209,8 +198,8 @@ namespace MouseAI.ML
                     set_count++;
                 }
 
-                //if (sum != count)
-                //    throw new Exception("Invalid Data Selection!");
+                if (sum != count)
+                    throw new Exception("Invalid Data Selection!");
 
                 label_count++;
             }

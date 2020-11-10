@@ -272,8 +272,7 @@ namespace MouseAI.ML
             Sequential model = new Sequential();
             model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
             model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
-            model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple())); 
-            // model.Add(new Dropout(0.25));
+            model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
             model.Add(new Flatten());
 
             double dropout_increment = GetDropOutRate(config);
