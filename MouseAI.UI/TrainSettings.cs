@@ -11,6 +11,7 @@ namespace MouseAI.UI
         private const int BATCH = 10;
         private const int LAYERS = 1;
         private const int NODES = 100;
+        private const bool CNN = false;
         private const bool NORMALIZE = true;
         private const bool EARLYSTOP = true;
         private const double DROPOUT = 0.01;
@@ -30,6 +31,7 @@ namespace MouseAI.UI
                     Batch = BATCH,
                     Layers = LAYERS,
                     Nodes = NODES,
+                    isCNN = CNN,
                     isNormalize = NORMALIZE,
                     isEarlyStop = EARLYSTOP,
                     DropOut = DROPOUT,
@@ -60,6 +62,7 @@ namespace MouseAI.UI
             nudSplit.Value = Convert.ToDecimal(config.Split);
             nudDropOut.Value = Convert.ToDecimal(config.DropOut);
             nudAmount.Value = config.Amount;
+            chkCNN.Checked = config.isCNN;
             chkNormalize.Checked = config.isNormalize;
             chkEarlyStop.Checked = config.isEarlyStop;
 
@@ -75,6 +78,7 @@ namespace MouseAI.UI
             config.Split = Convert.ToDouble(nudSplit.Value);
             config.DropOut = Convert.ToDouble(nudDropOut.Value);
             config.Amount = (int) nudAmount.Value;
+            config.isCNN = chkCNN.Checked;
             config.isNormalize = chkNormalize.Checked;
             config.isEarlyStop = chkEarlyStop.Checked;
         }

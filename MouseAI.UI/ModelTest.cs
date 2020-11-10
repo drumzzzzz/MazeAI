@@ -84,7 +84,7 @@ namespace MouseAI.UI
                         pbx.Image = (Bitmap)Image.FromStream(ms);
                         pbx.Visible = true;
                         pbx.SizeMode = PictureBoxSizeMode.StretchImage;
-                        pbx.Text = ids[index].Label;
+                        pbx.Text = string.Format("{0} [{1}] ",ids[index].Index, ids[index].Label);
                         index++;
                     }
                 }

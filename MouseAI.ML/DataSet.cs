@@ -12,6 +12,7 @@ namespace MouseAI.ML
         public string Label { get; }
         public int Reference { get; set; }
         public bool isTrain { get; set; }
+        public int Index { get; set; }
 
         public ImageData(byte[] Data, string Label)
         {

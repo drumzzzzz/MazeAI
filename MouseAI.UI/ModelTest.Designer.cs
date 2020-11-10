@@ -44,7 +44,7 @@
             this.pnlImages.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlImages.Location = new System.Drawing.Point(0, 128);
             this.pnlImages.Name = "pnlImages";
-            this.pnlImages.Size = new System.Drawing.Size(532, 452);
+            this.pnlImages.Size = new System.Drawing.Size(532, 447);
             this.pnlImages.TabIndex = 23;
             // 
             // btnPredict
@@ -117,7 +117,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(534, 580);
+            this.ClientSize = new System.Drawing.Size(549, 591);
             this.ControlBox = false;
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtInfo);

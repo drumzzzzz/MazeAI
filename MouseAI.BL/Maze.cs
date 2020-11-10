@@ -65,7 +65,7 @@ namespace MouseAI
         public const int WHITE = 0xff;
         public const int GREY = 0x80;
 
-        private static string models_dir;
+        private static string model_dir;
         private static string log_dir;
         private static string maze_dir;
         private static string archive_dir;
@@ -101,14 +101,14 @@ namespace MouseAI
             string appdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             maze_dir = appdir + DIR + MAZE_DIR;
             log_dir = appdir + DIR + LOG_DIR;
-            models_dir = appdir + DIR + MODELS_DIR;
+            model_dir = appdir + DIR + MODELS_DIR;
             archive_dir = appdir + DIR + ARCHIVE_DIR;
 
             if (!FileIO.CheckCreateDirectory(maze_dir))
                 throw new Exception("Could not create maze directory");
             if (!FileIO.CheckCreateDirectory(log_dir))
                 throw new Exception("Could not create log directory");
-            if (!FileIO.CheckCreateDirectory(models_dir))
+            if (!FileIO.CheckCreateDirectory(model_dir))
                 throw new Exception("Could not create log directory");
             if (!FileIO.CheckCreateDirectory(archive_dir))
                 throw new Exception("Could not create archive directory");
@@ -283,16 +283,25 @@ namespace MouseAI
             config.Guid = guid;
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
-            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT);
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
         }
 
-        public ImageDatas Predict()
+        public ImageDatas Predict(string starttime)
         {
+            if (string.IsNullOrEmpty(starttime))
+                throw new Exception("Invalid Prediction Model");
+
+            Config cfg = (Config)FileIO.DeSerializeXml(typeof(Config), 
+                Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT));
+
+            if (cfg == null || string.IsNullOrEmpty(cfg.Model))
+                throw new Exception("Could not open config file");
+
             ImageDatas imageSegments = mazeModels.GetImageSegments();
             neuralNet.InitDataSets(imageSegments);
-            return neuralNet.Predict();
+            return neuralNet.Predict(cfg.isCNN);
         }
 
         public void LoadModel(string modelName)
@@ -300,7 +309,7 @@ namespace MouseAI
             if (string.IsNullOrEmpty(modelName))
                 throw new Exception("Invalid Model Name!");
 
-            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, models_dir, MODELS_EXT, CONFIG_EXT);
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT);
             neuralNet.LoadModel(modelName);
         }
 
@@ -1131,7 +1140,7 @@ namespace MouseAI
 
         public string GetModelSummary(string starttime)
         {
-            string filename = models_dir + DIR + starttime + "." + CONFIG_EXT;
+            string filename = model_dir + DIR + starttime + "." + CONFIG_EXT;
 
             try
             {
@@ -1224,7 +1233,7 @@ namespace MouseAI
 
         public string GetModelsDir()
         {
-            return models_dir;
+            return model_dir;
         }
 
         #endregion
@@ -1296,8 +1305,8 @@ namespace MouseAI
                 foreach (string pm in projectmodels)
                 {
                     files.Add(GetFileName(log_dir, pm, LOG_EXT));
-                    files.Add(GetFileName(models_dir, pm, CONFIG_EXT));
-                    files.Add(GetFileName(models_dir, pm, MODELS_EXT));
+                    files.Add(GetFileName(model_dir, pm, CONFIG_EXT));
+                    files.Add(GetFileName(model_dir, pm, MODELS_EXT));
                 }
 
                 string archive_name = archive_dir + DIR + Utils.GetDateTime_Formatted() + "." + ARCHIVE_EXT;

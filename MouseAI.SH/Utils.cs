@@ -10,5 +10,10 @@ namespace MouseAI.SH
         {
             return DateTime.Now.ToString("dd_MM_yyyy_hh_mm_ss");
         }
+
+        public static string GetFileWithExtension(string path, string filename, string extension)
+        {
+            return string.Format(@"{0}\{1}.{2}", path, filename, extension);
+        }
     }
 }

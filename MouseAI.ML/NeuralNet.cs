@@ -95,6 +95,26 @@ namespace MouseAI.ML
 
         #region Training
 
+        private Shape GetShape()
+        {
+            Shape shape;
+
+            if (K.ImageDataFormat() == "channels_first")
+            {
+                x_train = x_train.reshape(x_train.shape[0], 1, height, width);
+                x_test = x_test.reshape(x_test.shape[0], 1, height, width);
+                shape = (1, height, width);
+            }
+            else
+            {
+                x_train = x_train.reshape(x_train.shape[0], height, width, 1);
+                x_test = x_test.reshape(x_test.shape[0], height, width, 1);
+                shape = (height, width, 1);
+            }
+
+            return shape;
+        }
+
         public void Process(Config _config, int num_classes)
         {
             if (x_train == null || y_train == null || x_test == null || y_test == null)
@@ -103,15 +123,11 @@ namespace MouseAI.ML
             dtStart = DateTime.Now;
             config = _config;
 
-            if (K.ImageDataFormat() == "channels_first")
+            Shape input_shape = null;
+
+            if (config.isCNN)
             {
-                x_train = x_train.reshape(x_train.shape[0], 1, height, width);
-                x_test = x_test.reshape(x_test.shape[0], 1, height, width);
-            }
-            else
-            {
-                x_train = x_train.reshape(x_train.shape[0], height, width, 1);
-                x_test = x_test.reshape(x_test.shape[0], height, width, 1);
+                input_shape = GetShape();
             }
 
             if (config.isNormalize)
@@ -123,6 +139,7 @@ namespace MouseAI.ML
             }
 
             Console.WriteLine("Test Started {0}", dtStart);
+            Console.WriteLine("Network Type: {0} Neural Network", (!config.isCNN) ? "Simple" : "Convolution");
             Console.WriteLine("Width: {0} Height: {1} Size:{2}", width, height, width * height);
             Console.WriteLine("x_train shape: {0} x_train samples: {1} x_test shape: {2} x_test samples: {3}", 
                                 x_train.shape, x_train.shape[0], x_test.shape, x_test.shape[0]);
@@ -133,7 +150,11 @@ namespace MouseAI.ML
             starttime = Utils.GetDateTime_Formatted();
             log_file = log_dir + @"\" + starttime + "." + log_ext;
 
-            model = ProcessModel(x_train, y_train, x_test, y_test, num_classes, log_file, config);
+            if (!config.isCNN)
+                model = ProcessSnnModel(x_train, y_train, x_test, y_test, num_classes, log_file, config);
+            else
+                model = ProcessCnnModel(input_shape, x_train, y_train, x_test, y_test, num_classes, log_file, config);
+
             dtEnd = DateTime.Now;
 
             // Score the model for performance
@@ -148,7 +169,7 @@ namespace MouseAI.ML
 
         #region Prediction
 
-        public ImageDatas Predict()
+        public ImageDatas Predict(bool isCNN)
         {
             if (model_loaded == null)
                 throw new Exception("Invalid Model!");
@@ -160,13 +181,20 @@ namespace MouseAI.ML
             NDarray x_data = dataSets.BuildDataSet();
             List<string> labels = ids.GetLabels();
 
+            if (isCNN)
+            {
+                x_data = (K.ImageDataFormat() == "channels_first")
+                    ? x_data.reshape(x_data.shape[0], 1, height, width)
+                    : x_data.reshape(x_data.shape[0], height, width, 1);
+            }
+
             Console.WriteLine("Predicting {0} Images", ids.Count);
-            NDarray y = model_loaded.Predict(x_data, verbose:2);
+            NDarray y = model_loaded.Predict(x_data, verbose: 2);
 
             int index;
-            NDarray result; 
+            NDarray result;
 
-            for (int i=0;i<y.len;i++)
+            for (int i = 0; i < y.len; i++)
             {
                 result = y[i];
                 result = result.argmax();
@@ -174,11 +202,13 @@ namespace MouseAI.ML
 
                 if (ids[i].Label != labels[index])
                 {
+                    ids[i].Index = labels.IndexOf(ids[i].Label) + 1;
                     idf.Add(ids[i]);
                 }
             }
 
-            double accuracy = Math.Round(((y.len - idf.Count) * 100) / (double) y.len, 2);
+            double accuracy = Math.Round(((y.len - idf.Count) * 100) / (double)y.len, 2);
+
             idf.SetResults(string.Format("Predicted:{0} Correct: {1} Incorrect:{2} Accuracy:{3}", y.len, y.len - idf.Count, idf.Count, accuracy));
             return idf;
         }
@@ -187,23 +217,26 @@ namespace MouseAI.ML
 
         #region Models
 
-        private static Sequential ProcessModel(NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
+        private static Sequential ProcessSnnModel(NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
             int num_classes, string logname, Config config)
         {
             // Build model
             Sequential model = new Sequential();
              
             double dropout_increment = GetDropOutRate(config);
+            double droput_value;
 
             model.Add(new Flatten());
 
             for (int i = config.Layers; i > -1;i--)
             {
+                model.Add(new Dense(config.Nodes, activation: "relu"));
                 if (config.Amount != 0 && i < config.Amount)
                 {
-                    model.Add(new Dropout(config.DropOut - (dropout_increment * i)));
+                    droput_value = config.DropOut - (dropout_increment * i);
+                    model.Add(new Dropout(droput_value));
+                    Console.WriteLine("Added dropout {0}", droput_value);
                 }
-                model.Add(new Dense(config.Nodes, activation: "relu"));
             }
             
             model.Add(new Dense(num_classes, activation: "softmax"));
@@ -215,7 +248,7 @@ namespace MouseAI.ML
 
             if (config.isEarlyStop)
             {
-                Callback[] callbacks = { csv_logger, new EarlyStopping(monitor: "val_loss", 0, 0, 1, mode: "min", 1) };
+                Callback[] callbacks = { csv_logger, new EarlyStopping(monitor: "val_accuracy", 0, 50, 1, mode: "max", 1) };
                 
                 // Train the model
                 model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
@@ -232,6 +265,33 @@ namespace MouseAI.ML
             return model;
         }
 
+        private static Sequential ProcessCnnModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
+            int num_classes, string logname, Config config)
+        {
+            // Build CNN model
+            Sequential model = new Sequential();
+            model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
+            model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
+            model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
+            model.Add(new Dropout(0.25));
+            model.Add(new Flatten());
+            model.Add(new Dense(config.Nodes, activation: "relu"));
+            model.Add(new Dropout(0.5));
+            model.Add(new Dense(num_classes, activation: "softmax"));
+
+            CSVLogger csv_logger = new CSVLogger(logname);
+            Callback[] callbacks = { csv_logger };
+
+            // Compile with loss, metrics and optimizer
+            model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
+
+            // Train the model
+            model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
+                validation_data: new[] { x_test, y_test }, callbacks: callbacks);
+
+            return model;
+        }
+
         private static double GetDropOutRate(Config config)
         {
             if (config.Amount <= 0)
@@ -243,33 +303,6 @@ namespace MouseAI.ML
                     config.Amount = config.Layers;
 
             return config.DropOut / config.Amount;
-        }
-        
-        private static Sequential ProcessCnnModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test, 
-                                        int epochs, int num_classes, int batch_size)
-        {
-            // Build CNN model
-            Sequential model = new Sequential();
-            model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(),
-                activation: "relu",
-                input_shape: input_shape));
-
-            model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
-            model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
-            model.Add(new Dropout(0.25));
-            model.Add(new Flatten());
-            model.Add(new Dense(128, activation: "relu"));
-            model.Add(new Dropout(0.5));
-            model.Add(new Dense(num_classes, activation: "softmax"));
-
-            // Compile with loss, metrics and optimizer
-            model.Compile(loss: "categorical_crossentropy", optimizer: new Adadelta(), metrics: new[] { "accuracy" });
-
-            // Train the model
-            model.Fit(x_train, y_train, batch_size: batch_size, epochs: epochs, verbose: 1,
-                validation_data: new[] { x_test, y_test });
-
-            return model;
         }
 
         #endregion

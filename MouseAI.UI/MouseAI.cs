@@ -130,7 +130,6 @@ namespace MouseAI.UI
                 LoadMazes(settings.LastFileName, false);
                 SetMazeTextVisible();
             }
-
             RunTest();
         }
 
@@ -473,7 +472,7 @@ namespace MouseAI.UI
             {
                 modelTest.txtResults.Text = string.Empty;
 
-                ImageDatas ids =  maze.Predict();
+                ImageDatas ids =  maze.Predict(GetSelectedModel());
                 if (ids == null)
                     throw new Exception("Prediction result error!");
 
@@ -539,19 +538,28 @@ namespace MouseAI.UI
 
         private void lbxModels_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (modelLoad.lbxModels.SelectedItem != null)
+            if (isSelectedModel())
             {
-                string result = maze.GetModelSummary(modelLoad.lbxModels.SelectedItem.ToString());
+                string result = maze.GetModelSummary(GetSelectedModel());
                 if (!string.IsNullOrEmpty(result))
                 {
                     modelLoad.tbxSummary.Text = result;
                     modelLoad.btnLoadModel.Enabled = true;
+                    return;
                 }
             }
-            else
-            {
-                modelLoad.btnLoadModel.Enabled = false;
-            }
+
+            modelLoad.btnLoadModel.Enabled = false;
+        }
+
+        private bool isSelectedModel()
+        {
+            return (modelLoad.lbxModels.SelectedItem != null);
+        }
+
+        private string GetSelectedModel()
+        {
+            return modelLoad.lbxModels.SelectedItem.ToString();
         }
 
         #endregion

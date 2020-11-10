@@ -48,6 +48,7 @@
             this.nudDropOut = new System.Windows.Forms.NumericUpDown();
             this.label8 = new System.Windows.Forms.Label();
             this.nudAmount = new System.Windows.Forms.NumericUpDown();
+            this.chkCNN = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudEpochs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBatch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLayers)).BeginInit();
@@ -146,7 +147,7 @@
             this.chkNormalize.AutoSize = true;
             this.chkNormalize.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkNormalize.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkNormalize.Location = new System.Drawing.Point(191, 122);
+            this.chkNormalize.Location = new System.Drawing.Point(205, 122);
             this.chkNormalize.Name = "chkNormalize";
             this.chkNormalize.Size = new System.Drawing.Size(85, 20);
             this.chkNormalize.TabIndex = 6;
@@ -345,12 +346,25 @@
             this.nudAmount.Size = new System.Drawing.Size(71, 22);
             this.nudAmount.TabIndex = 17;
             // 
+            // chkCNN
+            // 
+            this.chkCNN.AutoSize = true;
+            this.chkCNN.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.chkCNN.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkCNN.Location = new System.Drawing.Point(93, 122);
+            this.chkCNN.Name = "chkCNN";
+            this.chkCNN.Size = new System.Drawing.Size(54, 20);
+            this.chkCNN.TabIndex = 21;
+            this.chkCNN.Text = "CNN";
+            this.chkCNN.UseVisualStyleBackColor = true;
+            // 
             // TrainSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(637, 227);
             this.ControlBox = false;
+            this.Controls.Add(this.chkCNN);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.nudDropOut);
             this.Controls.Add(this.label8);
@@ -410,5 +424,6 @@
         private System.Windows.Forms.NumericUpDown nudDropOut;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown nudAmount;
+        private System.Windows.Forms.CheckBox chkCNN;
     }
 }

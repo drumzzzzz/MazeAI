@@ -12,6 +12,7 @@ namespace MouseAI.SH
         public int Batch { get; set; }
         public int Layers { get; set; }
         public int Nodes { get; set; }
+        public bool isCNN { get; set; }
         public bool isNormalize { get; set; }
         public bool isEarlyStop { get; set; }
         public double DropOut { get; set; }
