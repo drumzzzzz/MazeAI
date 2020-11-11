@@ -293,14 +293,8 @@ namespace MouseAI
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT, PLOT_EXT);
-            neuralNet.Shutdown();
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
-        }
-
-        public void Shutdown()
-        {
-            neuralNet.Shutdown();
         }
 
         public ImageDatas Predict(string starttime)
@@ -337,11 +331,14 @@ namespace MouseAI
                 Epochs = neuralNet.GetEpochs(),
                 Start = neuralNet.GetStartTime(),
                 End = neuralNet.GetEndTime(),
-                Log = neuralNet.GetLogName()
+                Log = neuralNet.GetLogName(),
+                isLast = "0"
             };
 
             if (!mazeDb.InsertProject(dbtblProjects))
                 throw new Exception("Failed to insert db record");
+
+            mazeDb.UpdateModelLast(mazeModels.Guid, dbtblProjects.Log);
 
             neuralNet.SaveFiles();
             mazeModels.StartTime = config.StartTime;

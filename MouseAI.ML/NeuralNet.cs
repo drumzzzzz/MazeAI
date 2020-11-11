@@ -72,25 +72,9 @@ namespace MouseAI.ML
                 PythonEngine.PythonPath = paths += AppDir + ";";
             }
 
-            //K.DisableEager();
-            //try
-            //{
-            //    //if (!PythonEngine.IsInitialized)
-            //    //PythonEngine.Initialize();
-            //    //else
-            //    K.ClearSession();
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine(e);
-            //}
-            
-            //K.ResetUids();
-        }
-
-        public void Shutdown()
-        {
-            // PythonEngine.Shutdown();
+            K.DisableEager();
+            K.ClearSession();
+            K.ResetUids();
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, Random r)
@@ -167,7 +151,8 @@ namespace MouseAI.ML
             y_test = Util.ToCategorical(y_test, num_classes);
 
             starttime = Utils.GetDateTime_Formatted();
-            log_file = log_dir + @"\" + starttime + "." + log_ext;
+            //log_file = log_dir + @"\" + starttime + "." + log_ext;
+            log_file = Utils.GetFileWithExtension(log_dir, starttime, log_ext);
 
             if (!config.isCNN)
                 model = ProcessSnnModel(x_train, y_train, x_test, y_test, num_classes, log_file, config);
@@ -225,7 +210,6 @@ namespace MouseAI.ML
                     idf.Add(ids[i]);
                 }
             }
-
             double accuracy = Math.Round(((y.len - idf.Count) * 100) / (double)y.len, 2);
 
             idf.SetResults(string.Format("Predicted:{0} Correct: {1} Incorrect:{2} Accuracy:{3}", y.len, y.len - idf.Count, idf.Count, accuracy));
@@ -235,6 +219,15 @@ namespace MouseAI.ML
         #endregion
 
         #region Models
+
+        private static Callback[] GetCallbacks(bool isEarlyStop, string logname)
+        {
+            CSVLogger csv_logger = new CSVLogger(logname);
+
+            return isEarlyStop 
+                ? new Callback[] { csv_logger, new EarlyStopping(monitor: "val_accuracy", 0, 50, 1, mode: "max", 1)} 
+                : new Callback[] { csv_logger };
+        }
 
         private static Sequential ProcessSnnModel(NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
             int num_classes, string logname, Config config)
@@ -263,25 +256,12 @@ namespace MouseAI.ML
             // Compile with loss, metrics and optimizer
             model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
 
-            CSVLogger csv_logger = new CSVLogger(logname);
+            Callback[] callbacks = GetCallbacks(config.isEarlyStop, logname);
 
-
-            if (config.isEarlyStop)
-            {
-                Callback[] callbacks = { csv_logger, new EarlyStopping(monitor: "val_accuracy", 0, 50, 1, mode: "max", 1) };
-                
-                // Train the model
-                model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
+            // Train the model
+            model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
                     validation_data: new[] {x_test, y_test}, callbacks: callbacks);
-            }
-            else
-            {
-                Callback[] callbacks = { csv_logger };
-                // Train the model
-                model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
-                    validation_data: new[] { x_test, y_test }, callbacks: callbacks);
-            }
-
+            
             return model;
         }
 
@@ -297,6 +277,9 @@ namespace MouseAI.ML
 
             double dropout_increment = GetDropOutRate(config);
             double droput_value;
+
+            Callback[] callbacks = GetCallbacks(config.isEarlyStop, logname);
+
             for (int i = config.Layers; i > -1; i--)
             {
                 model.Add(new Dense(config.Nodes, activation: "relu"));
@@ -309,9 +292,6 @@ namespace MouseAI.ML
             }
 
             model.Add(new Dense(num_classes, activation: "softmax"));
-
-            CSVLogger csv_logger = new CSVLogger(logname);
-            Callback[] callbacks = { csv_logger };
 
             // Compile with loss, metrics and optimizer
             model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
@@ -346,7 +326,8 @@ namespace MouseAI.ML
             K.ClearSession();
             K.ResetUids();
 
-            string filename = model_dir + @"\" + stime + ".";
+            //string filename = model_dir + @"\" + stime + ".";
+            string filename = Utils.GetFileWithoutExtension(model_dir, stime);
             Config cfg = (Config)FileIO.DeSerializeXml(typeof(Config), filename + config_ext);
 
             if (cfg == null || string.IsNullOrEmpty(cfg.Model))
@@ -364,7 +345,9 @@ namespace MouseAI.ML
 
             config.StartTime = starttime;
             config.Model = model.ToJson();
-            string filename = model_dir + @"\" + starttime + ".";
+
+            //string filename = model_dir + @"\" + starttime + ".";
+            string filename = Utils.GetFileWithoutExtension(model_dir, starttime);
             FileIO.SerializeXml(config, filename + config_ext);
             model.SaveWeight(filename + model_ext);
         }

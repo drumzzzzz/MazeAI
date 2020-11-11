@@ -15,5 +15,10 @@ namespace MouseAI.SH
         {
             return string.Format(@"{0}\{1}.{2}", path, filename, extension);
         }
+
+        public static string GetFileWithoutExtension(string path, string filename)
+        {
+            return string.Format(@"{0}\{1}.", path, filename);
+        }
     }
 }

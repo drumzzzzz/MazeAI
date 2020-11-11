@@ -43,8 +43,8 @@ namespace MouseAI.BL
 
         public bool InsertProject(DbTable_Projects tbl)
         {
-            string values = string.Format("'{0}','{1}',{2},'{3}','{4}', '{5}'", 
-                tbl.Guid, tbl.Accuracy, tbl.Epochs, tbl.Start, tbl.End, tbl.Log);
+            string values = string.Format("'{0}','{1}',{2},'{3}','{4}', '{5}', {6}", 
+                tbl.Guid, tbl.Accuracy, tbl.Epochs, tbl.Start, tbl.End, tbl.Log, tbl.isLast);
 
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }

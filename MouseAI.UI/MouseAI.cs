@@ -74,9 +74,9 @@ namespace MouseAI.UI
             InitializeComponent();
             //Console.BackgroundColor = ConsoleColor.Blue;
             //Console.ForegroundColor = ConsoleColor.White;
-            Console.WindowHeight = 30;
-            Console.WindowWidth = 100;
-            //ConsoleHelper.SetCurrentFont("Consolas", 25);
+            Console.WindowHeight = 40;
+            Console.WindowWidth = 140;
+            ConsoleHelper.SetCurrentFont("Consolas", 18);
 
             try
             {
@@ -374,8 +374,8 @@ namespace MouseAI.UI
 
             FinalizeProcessing();
 
-            Application.Restart();
-            Close();
+            //Application.Restart();
+            //Close();
         }
 
         private void AITrain()
