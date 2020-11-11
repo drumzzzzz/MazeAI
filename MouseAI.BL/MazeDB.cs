@@ -48,6 +48,19 @@ namespace MouseAI.BL
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }
 
+        public bool UpdateModelLast(string guid, string starttime)
+        {
+            string[] columns1 = {"Guid"};
+            string[] values1 = {guid};
+            if (!db.Update(DbTable_Projects.TABLE, columns1, values1, "isLast", "0"))
+                return false;
+            
+            string[] columns2 = {"Guid", "Log"};
+            string[] values2 = {guid, starttime};
+
+            return db.Update(DbTable_Projects.TABLE, columns2, values2, "isLast", "1");
+        }
+
         public List<object> ReadProjectGuids(string guid)
         {
             return db.ReadRows(DbTable_Projects.TABLE, "Guid", guid, new DbTable_Projects());
@@ -95,8 +108,9 @@ namespace MouseAI.BL
         public string Start { get; set; }
         public string End { get; set; }
         public string Log { get; set; }
+        public int isLast { get; set; }
 
         public static readonly string TABLE = "projects";
-        public static readonly string COLUMNS = "Guid, Accuracy, Epochs, Start, End, Log";
+        public static readonly string COLUMNS = "Guid, Accuracy, Epochs, Start, End, Log, isLast";
     }
 }

@@ -22,7 +22,6 @@ namespace MouseAI
         public bool isDebugConsole { get; set; }
         public bool isMazeText { get; set; }
         public bool isMazeSegments { get; set; }
-        public int DebugLevel { get; set; }
 
         public static bool isSettings()
         {

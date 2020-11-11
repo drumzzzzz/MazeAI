@@ -439,6 +439,7 @@ namespace MouseAI.UI
             try
             {
                 maze.LoadModel(starttime);
+                maze.SetProjectLast(maze.GetModelProjectGuid(), starttime);
                 return true;
             }
             catch (Exception e)

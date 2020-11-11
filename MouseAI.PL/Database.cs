@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace MouseAI.PL
 {
@@ -49,6 +50,60 @@ namespace MouseAI.PL
                     CommandText = string.Format("INSERT INTO {0}({1}) VALUES({2})", table, columns, values),
                     CommandTimeout = 5
                 };
+
+                cmd.ExecuteNonQuery();
+                conn.Close();
+                return true;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                CloseConnection(conn);
+                return false;
+            }
+        }
+
+        public bool Update(string table, string[] columns, string[] values,string target_column, string target_value)
+        {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+
+            try
+            {
+                if (columns == null || columns.Length == 0 || values == null || values.Length == 0 || columns.Length != values.Length)
+                {
+                    throw new Exception("Invalid update parameters");
+                }
+
+                if (string.IsNullOrEmpty(target_value) || string.IsNullOrEmpty(target_column))
+                {
+                    throw new Exception("Invalid update targets");
+                }
+
+                if (columns.Where((t, idx) => string.IsNullOrEmpty(t) || string.IsNullOrEmpty(values[idx])).Any())
+                {
+                    throw new Exception("Invalid update comparison parameters");
+                }
+
+                conn.Open();
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append(string.Format("UPDATE {0} SET {1} = '{2}' WHERE ", table, target_column, target_value));
+
+                for (int idx = 0; idx < columns.Length; idx++)
+                {
+                    if (idx > 0)
+                        sb.Append(" AND ");
+                    sb.Append(string.Format("{0} = '{1}'", columns[idx], values[idx]));
+                }
+
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = sb.ToString(),
+                    CommandTimeout = 5
+                };
+
+                Console.WriteLine("Update: {0}", sb);
 
                 cmd.ExecuteNonQuery();
                 conn.Close();

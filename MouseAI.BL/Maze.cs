@@ -1333,6 +1333,11 @@ namespace MouseAI
             return ModelProjectGuid;
         }
 
+        public void SetProjectLast(string guid, string starttime)
+        {
+            mazeDb.UpdateModelLast(guid, starttime);
+        }
+
         public string GetLogDir()
         {
             return log_dir;
