@@ -432,6 +432,21 @@ namespace MouseAI.UI
             modelLoad.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
             modelLoad.btnCancel.Click += BtnExit_Click;
             modelLoad.btnLoadModel.Click += btnLoad_Click;
+            modelLoad.Shown += ModelLoad_Shown;
+        }
+
+        private void ModelLoad_Shown(object sender, EventArgs e)
+        {
+            string modelast = maze.GetProjectLast(maze.GetModelProjectGuid());
+
+            if (modelLoad.lbxModels.Items.Count != 0 && modelLoad.lbxModels.Items.Contains(modelast))
+            {
+                modelLoad.lbxModels.SelectedItem = modelast;
+            }
+            else
+            {
+                modelLoad.lbxModels.SelectedItem = modelLoad.lbxModels.Items[0];
+            }
         }
 
         private bool LoadModel(string starttime)
@@ -529,7 +544,7 @@ namespace MouseAI.UI
         private void BtnExit_Click(object sender, EventArgs e)
         {
             modelLoad.Close();
-            Enabled = true;
+            msMain.Enabled = true;
         }
 
         private void lbxModels_SelectedIndexChanged(object sender, EventArgs e)
@@ -1194,7 +1209,6 @@ namespace MouseAI.UI
             else
                 Text = string.Format("{0} ({1})", TITLE, value);
         }
-
 
         #endregion
 

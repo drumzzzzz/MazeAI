@@ -95,7 +95,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(680, 334);
+            this.ClientSize = new System.Drawing.Size(676, 330);
             this.ControlBox = false;
             this.Controls.Add(this.pbxPlot);
             this.Controls.Add(this.btnLoadModel);

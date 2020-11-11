@@ -103,12 +103,9 @@ namespace MouseAI.PL
                     CommandTimeout = 5
                 };
 
-                Console.WriteLine("Update: {0}", sb);
-
                 cmd.ExecuteNonQuery();
                 conn.Close();
                 return true;
-
             }
             catch (Exception e)
             {
@@ -133,7 +130,6 @@ namespace MouseAI.PL
                 SQLiteDataReader rdr = cmd.ExecuteReader();
                 Type ObjType = obj.GetType();
                 bool isFound;
-                // string name;
 
                 rdr.Read();
                 if (!rdr.HasRows || rdr.FieldCount <= 0)
@@ -144,7 +140,6 @@ namespace MouseAI.PL
                     isFound = false;
                     for (int i = 0; i < rdr.FieldCount; i++)
                     {
-                        // name = string.Format("<{0}>", rdr.GetName(i));
                         if (item.Name.Contains(string.Format("<{0}>",rdr.GetName(i))) && rdr.GetFieldType(i) == item.FieldType)
                         {
                             var v = rdr.GetValue(i);
@@ -225,6 +220,84 @@ namespace MouseAI.PL
                 return null;
             }
         }
+
+        public List<object> ReadRows(string table, string[] columns, string[] values, object obj)
+        {
+            SQLiteConnection conn = new SQLiteConnection(db_file);
+
+            try
+            {
+                if (columns == null || columns.Length == 0 || values == null || values.Length == 0 || columns.Length != values.Length)
+                {
+                    throw new Exception("Invalid row parameters");
+                }
+
+                if (columns.Where((t, idx) => string.IsNullOrEmpty(t) || string.IsNullOrEmpty(values[idx])).Any())
+                {
+                    throw new Exception("Invalid row comparison parameters");
+                }
+
+                conn.Open();
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append(string.Format("SELECT * FROM {0} WHERE ", table));
+
+                for (int idx = 0; idx < columns.Length; idx++)
+                {
+                    if (idx > 0)
+                        sb.Append(" AND ");
+                    sb.Append(string.Format("{0} = '{1}'", columns[idx], values[idx]));
+                }
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = sb.ToString()
+                };
+
+                SQLiteDataReader rdr = cmd.ExecuteReader();
+                Type ObjType = obj.GetType();
+                bool isFound = false;
+
+                List<object> objList = new List<object>();
+
+                while (rdr.Read())
+                {
+                    if (!rdr.HasRows || rdr.FieldCount <= 0)
+                        throw new Exception("No Row Returned");
+
+                    object instance = Activator.CreateInstance(ObjType);
+
+                    foreach (FieldInfo item in ObjType.GetRuntimeFields().Where(x => x.IsStatic == false))
+                    {
+                        for (int i = 0; i < rdr.FieldCount; i++)
+                        {
+                            if (item.Name.Contains(string.Format("<{0}>", rdr.GetName(i))) &&
+                                rdr.GetFieldType(i) == item.FieldType)
+                            {
+                                var v = rdr.GetValue(i);
+                                item.SetValue(instance, v);
+                                isFound = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!isFound)
+                        throw new Exception("Error Reading Fields");
+                    objList.Add(instance);
+                }
+                rdr.Close();
+                CloseConnection(conn);
+
+                return objList;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                CloseConnection(conn);
+                return null;
+            }
+        }
+
 
         public void DeleteRows(string table, string column, string value)
         {

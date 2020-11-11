@@ -1338,6 +1338,22 @@ namespace MouseAI
             mazeDb.UpdateModelLast(guid, starttime);
         }
 
+        public string GetProjectLast(string guid)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return string.Empty;
+
+            try
+            {
+                return mazeDb.ReadModelLast(guid);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error reading last project model", e);
+                return string.Empty;
+            }
+        }
+
         public string GetLogDir()
         {
             return log_dir;

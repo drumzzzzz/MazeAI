@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using MouseAI.PL;
 
@@ -61,6 +62,19 @@ namespace MouseAI.BL
             return db.Update(DbTable_Projects.TABLE, columns2, values2, "isLast", "1");
         }
 
+        public string ReadModelLast(string guid)
+        {
+            string[] columns = {"Guid", "isLast"};
+            string[] values = {guid, "1"};
+
+            DbTable_Projects dbTable = 
+                (DbTable_Projects)db.ReadRows(DbTable_Projects.TABLE, columns, values, new DbTable_Projects()).FirstOrDefault();
+
+            return (dbTable != null && dbTable.isLast == "1" && !string.IsNullOrEmpty(dbTable.Log))
+                ? dbTable.Log
+                : string.Empty;
+        }
+
         public List<object> ReadProjectGuids(string guid)
         {
             return db.ReadRows(DbTable_Projects.TABLE, "Guid", guid, new DbTable_Projects());
@@ -108,7 +122,7 @@ namespace MouseAI.BL
         public string Start { get; set; }
         public string End { get; set; }
         public string Log { get; set; }
-        public int isLast { get; set; }
+        public string isLast { get; set; }
 
         public static readonly string TABLE = "projects";
         public static readonly string COLUMNS = "Guid, Accuracy, Epochs, Start, End, Log, isLast";
