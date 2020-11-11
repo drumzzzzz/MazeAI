@@ -125,33 +125,45 @@ namespace MouseAI.UI
 
         private void MazeAI_Shown(object sender, EventArgs e)
         {
-            if (settings.isAutoRun && !string.IsNullOrEmpty(settings.LastFileName))
+            if (settings.isAutoRun && !string.IsNullOrEmpty(settings.LastFileName) && LoadMazes(settings.LastFileName, false))
             {
-                LoadMazes(settings.LastFileName, false);
+                SetMenuItems(true);
                 SetMazeTextVisible();
             }
-            //RunTest();
+            else
+            {
+                SetMenuItems(false);
+            }
         }
 
-        private void CloseProject()
+        private bool CloseProject()
         {
             if (canvas == null)
-                return;
+                return true;
 
-            settings.LastFileName = string.Empty;
-            settings.Guid = string.Empty;
-            UpdateSettings();
+            try
+            {
+                settings.LastFileName = string.Empty;
+                settings.Guid = string.Empty;
+                UpdateSettings();
 
-            settings = Settings.Load();
-            if (settings == null)
-                DisplayError(Settings.Error, true);
+                settings = Settings.Load();
+                if (settings == null)
+                    DisplayError(Settings.Error, true);
 
-            lvwMazes.Items.Clear();
-            maze = null;
-            maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+                lvwMazes.Items.Clear();
+                maze = null;
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
 
-            ClearMaze();
-            DrawPath();
+                ClearMaze();
+                DrawPath();
+                return true;
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error closing project", e, false);
+                return false;
+            }
         }
 
         private void LoadSettings()
@@ -167,7 +179,7 @@ namespace MouseAI.UI
             if (settings == null)
                 DisplayError(Settings.Error, true);
 
-            SetMenuItems();
+            SetOptionsItems();
         }
 
         private void UpdateSettings()
@@ -390,7 +402,6 @@ namespace MouseAI.UI
 
             Application.Restart();
             Close();
-            // Environment.Exit(0);
         }
 
         private void AITrain()
@@ -441,7 +452,7 @@ namespace MouseAI.UI
                 return;
             }
 
-            Enabled = false;
+            msMain.Enabled = false;
             modelLoad = new ModelLoad(starttimes, maze.GetProjectModel());
             modelLoad.Show();
             modelLoad.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
@@ -509,7 +520,7 @@ namespace MouseAI.UI
             if (btn.Name == "btnExit")
             {
                 modelTest.Close();
-                Enabled = true;
+                msMain.Enabled = true;
                 Focus();
             }
             else if (btn.Name == "btnBack")
@@ -523,8 +534,6 @@ namespace MouseAI.UI
                 AIPredict();
                 modelTest.Enabled = true;
             }
-
-            //Console.WriteLine("Button click:{0}", btn.Name);
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -757,12 +766,12 @@ namespace MouseAI.UI
 
         #region File Related
 
-        private void NewMazes()
+        private bool NewMazes()
         {
             string filename = maze.GetSaveName();
 
             if (string.IsNullOrEmpty(filename))
-                return;
+                return false;
 
             maze_count = -1;
             mazeNew = null;
@@ -772,10 +781,10 @@ namespace MouseAI.UI
             DialogResult dlr = mazeNew.ShowDialog();
 
             if (dlr != DialogResult.OK)
-                return;
+                return false;
 
             if (maze_count <= 0)
-                return;
+                return false;
 
             maze = null;
             maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
@@ -797,18 +806,23 @@ namespace MouseAI.UI
                 string guid = Guid.NewGuid().ToString();
                 maze.SetMazeModelsGuid(guid);
                 maze.SaveMazeModels(filename);
-                DisplayTsMessage("Mazes Generated and Saved");
-                AddMazeItems();
+                DisplayTsMessage("Saving Generated Maze ...");
                 settings.LastFileName = maze.GetFileName();
                 settings.Guid = maze.GetModelProjectGuid();
+                maze.UpdateMazeModelPaths();
+                maze.SaveUpdatedMazeModels(settings.LastFileName);
+                DisplayTsMessage("Saved Mazes.");
                 UpdateSettings();
                 DisplayTitleMessage(settings.LastFileName);
+                AddMazeItems();
+                return true;
             }
             catch (Exception e)
             {
                 DisplayError("Error Creating DB:", e, false);
                 DisplayTsMessage("Error");
                 DisplayTitleMessage(string.Empty);
+                return false;
             }
         }
 
@@ -828,7 +842,7 @@ namespace MouseAI.UI
             return true;
         }
 
-        private void LoadMazes(string filename, bool isExit)
+        private bool LoadMazes(string filename, bool isExit)
         {
             try
             {
@@ -846,37 +860,17 @@ namespace MouseAI.UI
                 settings.LastFileName = maze.GetFileName();
                 settings.Guid = maze.GetModelProjectGuid();
                 UpdateSettings();
+                DisplayTitleMessage(settings.LastFileName);
+                DisplayTsMessage("Mazes Loaded");
+                return true;
             }
             catch (Exception e)
             {
                 if (!isExit)
-                    return;
+                    return false;
 
                 DisplayError("Error Loading Project", e, true);
-            }
-
-            DisplayTitleMessage(settings.LastFileName);
-            DisplayTsMessage("Mazes Loaded");
-        }
-
-        private void SaveMazes()
-        {
-            if (!maze.isMazeModels() ||  string.IsNullOrEmpty(settings.LastFileName))
-                return;
-
-            DisplayTsMessage("Saving Mazes ...");
-
-            try
-            {
-                maze.UpdateMazeModelPaths();
-                maze.SaveUpdatedMazeModels(settings.LastFileName);
-
-                DisplayTsMessage("Saved.");
-            }
-            catch (Exception e)
-            {
-                DisplayTsMessage("Save Error");
-                DisplayError("Error Saving Mazes:", e, false);
+                return false;
             }
         }
 
@@ -914,25 +908,6 @@ namespace MouseAI.UI
             string result = Maze.ArchiveProject(projectname);
 
             MessageBox.Show(result);
-        }
-
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            mazeManage.Close();
-        }
-
-        private void btnArchive_Click(object sender, EventArgs e)
-        {
-            object selecteditem = mazeManage.lbxProjects.SelectedItem;
-            if (selecteditem != null && !string.IsNullOrEmpty(selecteditem.ToString()))
-            {
-                mazeManage.btnArchive.Enabled = false;
-                mazeManage.btnCancel.Enabled = false;
-                ArchiveProject(selecteditem.ToString());
-                mazeManage.btnArchive.Enabled = false;
-                mazeManage.btnCancel.Enabled = true;
-                DisplayProjectFiles();
-            }
         }
 
         #endregion
@@ -1034,6 +1009,20 @@ namespace MouseAI.UI
 
         #region Maze Text and Segments
 
+        private void SetToolsVisible(bool isOpened)
+        {
+            if (isOpened)
+            {
+                SetMazeTextVisible();
+                SetMazeSegmentsVisible();
+            }
+            else
+            {
+                mazeText.Visible = false;
+                mazeSegments.Visible = false;
+            }
+        }
+
         private void SetMazeTextVisible()
         {
             mazeText.Visible = (settings.isMazeText);
@@ -1058,6 +1047,25 @@ namespace MouseAI.UI
         #endregion
 
         #region Button
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            mazeManage.Close();
+        }
+
+        private void btnArchive_Click(object sender, EventArgs e)
+        {
+            object selecteditem = mazeManage.lbxProjects.SelectedItem;
+            if (selecteditem != null && !string.IsNullOrEmpty(selecteditem.ToString()))
+            {
+                mazeManage.btnArchive.Enabled = false;
+                mazeManage.btnCancel.Enabled = false;
+                ArchiveProject(selecteditem.ToString());
+                mazeManage.btnArchive.Enabled = false;
+                mazeManage.btnCancel.Enabled = true;
+                DisplayProjectFiles();
+            }
+        }
 
         private void btnProgressCancel_Click(object sender, EventArgs e)
         {
@@ -1101,36 +1109,54 @@ namespace MouseAI.UI
 
         #region Menustrip
 
-        private void SetMenuItems()
+        private void SetMenuItems(bool isOpened)
         {
-            debugToolStripMenuItem.Checked = settings.isDebugConsole;
-            autorunToolStripMenuItem.Checked = settings.isAutoRun;
-            loadLastToolStripMenuItem.Checked = settings.isLoadLast;
-        }
+            manageToolStripMenuItem.Enabled = !isOpened;
+            closeToolStripMenuItem.Enabled = isOpened;
+            pathsToolStripMenuItem.Enabled = isOpened;
+            trainToolStripMenuItem.Enabled = isOpened;
+            testToolStripMenuItem.Enabled = isOpened;
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SaveMazes();
+            SetToolsVisible(isOpened);
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            NewMazes();
+            if (NewMazes())
+            {
+                SetMenuItems(true);
+            }
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadMazes(null, true);
+            if (LoadMazes(null, true))
+            {
+                SetMenuItems(true);
+            }
         }
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CloseProject();
+            if (CloseProject())
+            {
+                SetMenuItems(false);
+            }
         }
 
         private void manageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ManageMazes();
+            if (!maze.isMazeModels())
+                ManageMazes();
+        }
+
+        private void SetOptionsItems()
+        {
+            debugToolStripMenuItem.Checked = settings.isDebugConsole;
+            autorunToolStripMenuItem.Checked = settings.isAutoRun;
+            loadLastToolStripMenuItem.Checked = settings.isLoadLast;
+            mazeTextToolStripMenuItem.Checked = settings.isMazeText;
+            mazeSegmentsToolStripMenuItem.Checked = settings.isMazeSegments;
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1159,6 +1185,10 @@ namespace MouseAI.UI
             mazeTextToolStripMenuItem.Checked = !mazeTextToolStripMenuItem.Checked;
             settings.isMazeText = mazeTextToolStripMenuItem.Checked;
             UpdateSettings();
+
+            if (!maze.isMazeModels())
+                return;
+
             SetMazeTextVisible();
         }
 
@@ -1167,9 +1197,12 @@ namespace MouseAI.UI
             mazeSegmentsToolStripMenuItem.Checked = !mazeSegmentsToolStripMenuItem.Checked;
             settings.isMazeSegments = mazeSegmentsToolStripMenuItem.Checked;
             UpdateSettings();
+
+            if (!maze.isMazeModels())
+                return;
+            
             SetMazeSegmentsVisible();
         }
-
 
         private void trainToolStripMenuItem_Click(object sender, EventArgs e)
         {

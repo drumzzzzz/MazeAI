@@ -73,19 +73,19 @@ namespace MouseAI.ML
             }
 
             //K.DisableEager();
-            try
-            {
-                //if (!PythonEngine.IsInitialized)
-                //PythonEngine.Initialize();
-                //else
-                K.ClearSession();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            //try
+            //{
+            //    //if (!PythonEngine.IsInitialized)
+            //    //PythonEngine.Initialize();
+            //    //else
+            //    K.ClearSession();
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //}
             
-            K.ResetUids();
+            //K.ResetUids();
         }
 
         public void Shutdown()
