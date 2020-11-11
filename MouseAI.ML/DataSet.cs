@@ -123,8 +123,6 @@ namespace MouseAI.ML
             List<byte[]> test = new List<byte[]>();
             List<int> test_labels = new List<int>();
 
-            BuildSets(train, train_labels, test, test_labels, Labels);
-
             if (BuildSets(train, train_labels, test, test_labels, Labels) != imageDatas.Count)
                 throw new Exception(string.Format("Error creating data sets: Expected:{0}", imageDatas.Count));
 

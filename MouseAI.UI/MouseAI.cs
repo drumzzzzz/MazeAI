@@ -376,9 +376,21 @@ namespace MouseAI.UI
                 Application.DoEvents();
                 Thread.Sleep(100);
             }
+
+            if (trainThread.ThreadState != ThreadState.Stopped)
+            {
+                trainThread.Interrupt();
+                if(!trainThread.Join(10000))
+                    trainThread.Abort();
+            }
+
             trainThread = null;
 
             FinalizeProcessing();
+
+            Application.Restart();
+            Close();
+            // Environment.Exit(0);
         }
 
         private void AITrain()

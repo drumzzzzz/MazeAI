@@ -10,7 +10,7 @@ namespace MouseAI.UI
             InitializeComponent();
 
             btnProgressCancel.Visible = isCancelVisible;
-            lblProgress.Text = name;
+            Name = name;
         }
 
         public void SetCancel(bool isCancel)

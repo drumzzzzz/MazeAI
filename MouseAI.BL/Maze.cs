@@ -293,8 +293,14 @@ namespace MouseAI
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT, PLOT_EXT);
+            neuralNet.Shutdown();
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
+        }
+
+        public void Shutdown()
+        {
+            neuralNet.Shutdown();
         }
 
         public ImageDatas Predict(string starttime)

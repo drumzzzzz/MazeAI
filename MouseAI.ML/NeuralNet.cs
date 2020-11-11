@@ -71,9 +71,26 @@ namespace MouseAI.ML
                 string AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 PythonEngine.PythonPath = paths += AppDir + ";";
             }
-            K.DisableEager();
-            K.ClearSession();
+
+            //K.DisableEager();
+            try
+            {
+                //if (!PythonEngine.IsInitialized)
+                //PythonEngine.Initialize();
+                //else
+                K.ClearSession();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
             K.ResetUids();
+        }
+
+        public void Shutdown()
+        {
+            // PythonEngine.Shutdown();
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, Random r)
@@ -248,6 +265,7 @@ namespace MouseAI.ML
 
             CSVLogger csv_logger = new CSVLogger(logname);
 
+
             if (config.isEarlyStop)
             {
                 Callback[] callbacks = { csv_logger, new EarlyStopping(monitor: "val_accuracy", 0, 50, 1, mode: "max", 1) };
@@ -301,7 +319,7 @@ namespace MouseAI.ML
             // Train the model
             model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,
                 validation_data: new[] { x_test, y_test }, callbacks: callbacks);
-
+  
             return model;
         }
 
