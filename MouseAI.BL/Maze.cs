@@ -13,6 +13,7 @@ using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
 using MouseAI.SH;
+using ScottPlot;
 
 #endregion
 
@@ -60,6 +61,14 @@ namespace MouseAI
         private const string CONFIG_EXT = "xml";
         private const string ARCHIVE_DIR = "archived";
         private const string ARCHIVE_EXT = "zip";
+        private const string PLOT_EXT = "png";
+        private const char LOG_DELIMIT = ',';
+        private static readonly string[] LOG_COLUMN_VALUES = {"epoch", "accuracy", "loss", "val_accuracy", "val_loss"};
+        private static readonly int[] PLOT_COLUMNS_Y = { 1, 3 };
+        private static readonly Color[] PLOT_COLORS_Y = {Color.Empty, Color.Green, Color.Empty, Color.Empty, Color.Blue};
+        private const int PLOT_COLUMN_X = 0;
+        private const int PLOT_WIDTH = 300;
+        private const int PLOT_HEIGHT = 300;
         private const string DIR = @"\";
         public const int BLACK = 0x00;
         public const int WHITE = 0xff;
@@ -72,7 +81,7 @@ namespace MouseAI
         private string FileName;
         private string ModelProjectGuid;
 
-        private readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
+        private static readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
         #endregion
 
@@ -283,7 +292,7 @@ namespace MouseAI
             config.Guid = guid;
             ImageDatas imageDatas = mazeModels.GetImageDatas();
 
-            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT);
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT, PLOT_EXT);
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
         }
@@ -309,7 +318,7 @@ namespace MouseAI
             if (string.IsNullOrEmpty(modelName))
                 throw new Exception("Invalid Model Name!");
 
-            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT);
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT, PLOT_EXT);
             neuralNet.LoadModel(modelName);
         }
 
@@ -330,6 +339,7 @@ namespace MouseAI
 
             neuralNet.SaveFiles();
             mazeModels.StartTime = config.StartTime;
+            SavePlot(config.StartTime);
         }
 
         public void CleanNetwork()
@@ -350,6 +360,90 @@ namespace MouseAI
         public string GetLogName()
         {
             return neuralNet.GetLogName();
+        }
+
+        #endregion
+
+        #region Plotting
+
+        public static void SavePlot(string plotname)
+        {
+            string plotfile = LOG_DIR + @"\" + plotname + "." + LOG_EXT;
+            List<string> plotvalues = FileIO.ReadFileAsList(plotfile);
+
+            if (!CheckColumns(plotvalues))
+                throw new Exception("Error reading log file");
+
+            Dictionary<int, double[]> values = ProcessLines(plotvalues);
+
+            if (values.Count < PLOT_COLUMNS_Y.Length + 1)
+                throw new Exception("Error reading plot columns");
+
+            var plt = new ScottPlot.Plot(PLOT_WIDTH, PLOT_HEIGHT);
+
+            double[] x = values[PLOT_COLUMN_X];
+
+            foreach (var entry in values.Where(entry => PLOT_COLUMNS_Y.Contains(entry.Key)))
+            {
+                plt.PlotScatter(x, entry.Value, label: LOG_COLUMN_VALUES[entry.Key], color:PLOT_COLORS_Y[entry.Key], markerSize: 0);
+            }
+        
+            plt.Legend(fontSize:8);
+            plt.SaveFig(LOG_DIR + @"\" + plotname + "." + PLOT_EXT);
+        }
+
+        private static Dictionary<int, double[]> ProcessLines(IReadOnlyList<string> plotvalues)
+        {
+            Dictionary<int, double[]> dvalues = new Dictionary<int, double[]>();
+
+            int data_size = plotvalues.Count - 1;
+
+            dvalues.Add(PLOT_COLUMN_X, new double[data_size]);
+ 
+
+            foreach (int column in PLOT_COLUMNS_Y)
+            {
+                dvalues.Add(column, new double[data_size]);
+            }
+
+            for (int idx = 1; idx < plotvalues.Count; idx++)
+            {
+                ProcessValues(plotvalues[idx], dvalues, idx - 1);
+            }
+
+            return dvalues;
+        }
+
+        private static void ProcessValues(string line, IReadOnlyDictionary<int, double[]> dvalues, int index)
+        {
+            if (string.IsNullOrEmpty(line))
+                throw new Exception("Invalid log data");
+
+            string[] line_values = line.Split(LOG_DELIMIT);
+
+            if (line_values.Length != LOG_COLUMN_VALUES.Length)
+                throw new Exception("Invalid log data length");
+
+            for (int idx = 0; idx < LOG_COLUMN_VALUES.Length; idx++)
+            {
+                if (PLOT_COLUMN_X == idx)
+                    dvalues[idx].SetValue(Convert.ToDouble(line_values[idx]), index);
+                else if (PLOT_COLUMNS_Y.Contains(idx))
+                    dvalues[idx].SetValue(Convert.ToDouble(line_values[idx]), index);
+            }
+        }
+
+        private static bool CheckColumns(IReadOnlyList<string> plotvalues)
+        {
+            if (plotvalues.Count < 2)
+                return false;
+
+            string[] columns = plotvalues[0].Split(LOG_DELIMIT);
+
+            if (columns.Length != LOG_COLUMN_VALUES.Length)
+                return false;
+
+            return !LOG_COLUMN_VALUES.Where((t, idx) => !columns[idx].Trim().Equals(t, StringComparison.InvariantCultureIgnoreCase)).Any();
         }
 
         #endregion
@@ -1138,7 +1232,7 @@ namespace MouseAI
             return mazeModels.StartTime;
         }
 
-        public string GetModelSummary(string starttime)
+        public static string GetModelSummary(string starttime)
         {
             string filename = model_dir + DIR + starttime + "." + CONFIG_EXT;
 
@@ -1151,6 +1245,13 @@ namespace MouseAI
             }
 
             return null;
+        }
+
+        public static string GetModelPlot(string starttime)
+        {
+            string filename = log_dir + DIR + starttime + "." + PLOT_EXT;
+
+            return (FileIO.CheckFileName(filename)) ? filename : string.Empty;
         }
 
         #endregion

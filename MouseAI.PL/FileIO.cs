@@ -193,6 +193,20 @@ namespace MouseAI.PL
             return strValues;
         }
 
+        public static List<string> ReadFileAsList(string filepath) // Loads, reads and returns a file text contents as list
+        {
+            StreamReader reader = new StreamReader(filepath);
+            List<string> strValues = new List<string>();
+            
+            while (!reader.EndOfStream)
+            {
+                strValues.Add(reader.ReadLine());
+            }
+
+            reader.Close();
+            return strValues;
+        }
+
         public static bool CreateFile(string fileName)
         {
             if (!File.Exists(fileName))

@@ -540,11 +540,16 @@ namespace MouseAI.UI
         {
             if (isSelectedModel())
             {
-                string result = maze.GetModelSummary(GetSelectedModel());
-                if (!string.IsNullOrEmpty(result))
+                string starttime = GetSelectedModel();
+                string summary = Maze.GetModelSummary(starttime);
+                
+                if (!string.IsNullOrEmpty(summary))
                 {
-                    modelLoad.tbxSummary.Text = result;
+                    modelLoad.tbxSummary.Text = summary;
                     modelLoad.btnLoadModel.Enabled = true;
+
+                    string plot = Maze.GetModelPlot(starttime);
+                    modelLoad.pbxPlot.Image = (!string.IsNullOrEmpty(plot)) ? Image.FromFile(plot) : null;
                     return;
                 }
             }

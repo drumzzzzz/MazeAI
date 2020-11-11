@@ -33,6 +33,7 @@ namespace MouseAI.ML
         private readonly string log_dir;
         private readonly string log_ext;
         private readonly string config_ext;
+        private readonly string plot_ext;
         private string starttime;
         private string log_file;
         private Config config;
@@ -53,7 +54,7 @@ namespace MouseAI.ML
 
         #region Initialization
 
-        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext, string config_ext)
+        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext, string config_ext, string plot_ext)
         {
             this.width = width;
             this.height = height;
@@ -62,6 +63,7 @@ namespace MouseAI.ML
             this.model_dir = model_dir;
             this.model_ext = model_ext;
             this.config_ext = config_ext;
+            this.plot_ext = plot_ext;
 
             string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
             if (!string.IsNullOrEmpty(paths))
@@ -385,5 +387,6 @@ namespace MouseAI.ML
         }
 
         #endregion
+
     }
 }
