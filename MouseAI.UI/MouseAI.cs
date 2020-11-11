@@ -176,6 +176,7 @@ namespace MouseAI.UI
             Enabled = false;
             isThreadCancel = false;
             isThreadDone = false;
+
             progress = new Progress(message, isCancel)
             {
                 TopMost = true
@@ -322,32 +323,6 @@ namespace MouseAI.UI
             trainThread.Start();
 
             InitProcessing("Training Neural Network ...", true);
-
-            while (trainThread.ThreadState != ThreadState.Stopped && !isThreadCancel)
-            {
-                if (isThreadDone && progress.isCancel())
-                {
-                    progress.SetCancel(false);
-                    progress.Visible = false;
-                }
-
-                Application.DoEvents();
-                Thread.Sleep(100);
-            }
-
-            if (trainThread.ThreadState != ThreadState.Stopped)
-            {
-                trainThread.Interrupt();
-                if (!trainThread.Join(10000))
-                    trainThread.Abort();
-            }
-
-            trainThread = null;
-
-            FinalizeProcessing();
-
-            //Application.Restart();
-            //Close();
         }
 
         private void AITrain()
@@ -373,6 +348,22 @@ namespace MouseAI.UI
                 if (e.HResult != -2146233040)
                     DisplayError("Training Error", e, false);
             }
+
+            if (InvokeRequired)
+            {
+                Invoke(new MethodInvoker(TrainDone));
+            }
+            else
+            {
+                TrainDone();
+            }
+        }
+
+        private void TrainDone()
+        {
+            FinalizeProcessing();
+
+            trainThread = null;
         }
 
         private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -1023,7 +1014,24 @@ namespace MouseAI.UI
             if (!isThreadDone)
             {
                 progress.btnProgressCancel.Enabled = false;
-                isThreadCancel = true;
+
+                if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
+                {
+                    try
+                    {
+                        trainThread.Interrupt();
+                        if (!trainThread.Join(2000))
+                            trainThread.Abort();
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
+
+                    trainThread = null;
+
+                    FinalizeProcessing();
+                }
             }
         }
 
