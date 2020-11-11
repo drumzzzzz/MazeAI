@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using MouseAI.ML;
 using SkiaSharp;
@@ -20,20 +21,17 @@ namespace MouseAI.UI
         #region Declarations
 
         private Settings settings;
-        private Thread searchThread;
         private Thread trainThread;
         private readonly MazeText mazeText;
         private ModelLoad modelLoad;
         private ModelTest modelTest;
-        private readonly MazeSegments mazeSegments; 
+        private readonly MazeSegments mazeSegments;
         private Maze maze;
         private TrainSettings trainSettings;
         private Progress progress;
         private MazeNew mazeNew;
         private MazeManage mazeManage;
 
-        private bool isFound;
-        private bool isDone;
         private bool isValid;
         private bool isThreadDone;
         private bool isThreadCancel;
@@ -46,7 +44,6 @@ namespace MouseAI.UI
         private const int MAZE_MARGIN_PX = 25;
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
-        private const int PROCESS_DELAY = 1;
         private const int SEARCH_DELAY = 1;
 
         private SKColor BlockColor;
@@ -86,7 +83,7 @@ namespace MouseAI.UI
             {
                 DisplayError("Maze Initialization Error", e, true);
             }
-            
+
             mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT, maze)
             {
                 Visible = false
@@ -223,7 +220,7 @@ namespace MouseAI.UI
 
         #region Path Solving
 
-        private void SolvePaths()
+        private async void SolvePaths()
         {
             if (!maze.isMazeModels())
                 return;
@@ -240,8 +237,7 @@ namespace MouseAI.UI
                 {
                     if (SelectItem(i) && SelectMaze(i))
                     {
-                        if (searchThread == null)
-                            RunSearch();
+                        await RunSearch();
                     }
                     if (isThreadCancel)
                         break;
@@ -263,26 +259,16 @@ namespace MouseAI.UI
             FinalizeProcessing();
         }
 
-        private void RunSearch()
+        private async Task RunSearch()
         {
             maze.Reset();
-            searchThread = new Thread(AISearch);
-            searchThread.Start();
-
-            mouse_last = new Point(-1,-1);
-
-            while (!isFound)
-            {
-                if (isDone)
-                    isDone = false;
-
-                Application.DoEvents();
-                Thread.Sleep(PROCESS_DELAY);
-            }
+            mouse_last = new Point(-1, -1);
+            
+            await Task.Run(AISearch);
 
             DrawMaze();
 
-            if (isFound && isValid)
+            if (isValid)
             {
                 maze.CalculatePath();
                 maze.CalculateSegments();
@@ -293,31 +279,18 @@ namespace MouseAI.UI
             }
             else
                 DisplayError("Error Calculating Path!", false);
-            
-            isFound = false;
-            searchThread = null;
         }
 
         private void AISearch()
         {
-            isDone = false;
-
+            isValid = false;
             try
             {
-                while (!isFound)
+                while (!maze.ProcessMouseMove())
                 {
-                    if (!isDone)
-                    {
-                        if (maze.ProcessMouseMove())
-                        {
-                            Console.WriteLine("Path solved for {0}",maze.GetMazeModelGUID());
-                            isFound = true;
-                            break;
-                        }
-                        isDone = true;
-                    }
                     Thread.Sleep(SEARCH_DELAY);
                 }
+                Console.WriteLine("Path solved for {0}", maze.GetMazeModelGUID());
                 isValid = true;
             }
             catch (Exception e)
@@ -326,8 +299,7 @@ namespace MouseAI.UI
                 isValid = false;
             }
 
-            isFound = true;
-            isDone = true;
+            //isFound = true;
         }
 
         #endregion
@@ -366,7 +338,7 @@ namespace MouseAI.UI
             if (trainThread.ThreadState != ThreadState.Stopped)
             {
                 trainThread.Interrupt();
-                if(!trainThread.Join(10000))
+                if (!trainThread.Join(10000))
                     trainThread.Abort();
             }
 
@@ -415,7 +387,7 @@ namespace MouseAI.UI
 
         private void RunTest()
         {
-            if (maze == null ||!maze.isMazeModels())
+            if (maze == null || !maze.isMazeModels())
                 return;
 
             List<string> starttimes = maze.GetProjectModels();
@@ -485,7 +457,7 @@ namespace MouseAI.UI
             {
                 modelTest.txtResults.Text = string.Empty;
 
-                ImageDatas ids =  maze.Predict(GetSelectedModel());
+                ImageDatas ids = maze.Predict(GetSelectedModel());
                 if (ids == null)
                     throw new Exception("Prediction result error!");
 
@@ -553,7 +525,7 @@ namespace MouseAI.UI
             {
                 string starttime = GetSelectedModel();
                 string summary = Maze.GetModelSummary(starttime);
-                
+
                 if (!string.IsNullOrEmpty(summary))
                 {
                     modelLoad.tbxSummary.Text = summary;
@@ -913,11 +885,11 @@ namespace MouseAI.UI
         private void AddMazeItems()
         {
             lvwMazes.Items.Clear();
-            
-            for (int i=0;i<maze.GetMazeModelSize();i++)
+
+            for (int i = 0; i < maze.GetMazeModelSize(); i++)
             {
-                ListViewItem item = new ListViewItem((i+1).ToString());
-                
+                ListViewItem item = new ListViewItem((i + 1).ToString());
+
                 item.SubItems.Add(maze.isModelBMP(i) ? "YES" : "NO");
                 lvwMazes.Items.Add(item);
             }
@@ -1150,7 +1122,7 @@ namespace MouseAI.UI
 
             if (!maze.isMazeModels())
                 return;
-            
+
             SetMazeSegmentsVisible();
         }
 

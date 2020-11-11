@@ -12,7 +12,6 @@ using K = Keras.Backend;
 using Numpy;
 using Python.Runtime;
 using System.Configuration;
-using System.Linq;
 using System.Reflection;
 using Keras.Callbacks;
 using MouseAI.SH;
@@ -388,6 +387,5 @@ namespace MouseAI.ML
         }
 
         #endregion
-
     }
 }
