@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using MouseAI.ML;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -22,9 +23,11 @@ namespace MouseAI.UI
 
         private Settings settings;
         private Thread trainThread;
+        private Thread runThread;
         private readonly MazeText mazeText;
         private ModelLoad modelLoad;
-        private ModelTest modelTest;
+        private ModelRun modelRun;
+        private ModelPredict modelPredict;
         private readonly MazeSegments mazeSegments;
         private Maze maze;
         private TrainSettings trainSettings;
@@ -110,6 +113,8 @@ namespace MouseAI.UI
             {
                 SetMenuItems(false);
             }
+
+            RunTest();
         }
 
         private bool CloseProject()
@@ -299,8 +304,6 @@ namespace MouseAI.UI
                 Console.WriteLine("Search Error:" + e.Message);
                 isValid = false;
             }
-
-            //isFound = true;
         }
 
         #endregion
@@ -309,9 +312,9 @@ namespace MouseAI.UI
 
         private void RunTrain()
         {
-            if (trainThread != null || string.IsNullOrEmpty(settings.Guid))
+            if (trainThread != null || string.IsNullOrEmpty(maze.GetModelProjectGuid()))
                 return;
-
+     
             trainSettings = new TrainSettings(maze.GetConfig());
             trainSettings.Closing += TrainSettings_Closing;
             DialogResult dlr = trainSettings.ShowDialog();
@@ -393,9 +396,26 @@ namespace MouseAI.UI
             modelLoad = new ModelLoad(starttimes, maze.GetProjectModel());
             modelLoad.Show();
             modelLoad.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
-            modelLoad.btnCancel.Click += BtnExit_Click;
-            modelLoad.btnLoadModel.Click += btnLoad_Click;
+            modelLoad.btnCancel.Click += btnExit_Click;
+            modelLoad.btnPredict.Click += btnPredict_Click;
+            modelLoad.btnRun.Click += btnRun_Click;
             modelLoad.Shown += ModelLoad_Shown;
+        }
+
+        private void btnRun_Click(object sender, EventArgs e)
+        {
+            if (ModelLoad())
+            {
+                ModelRun();
+            }
+        }
+
+        private void btnPredict_Click(object sender, EventArgs e)
+        {
+            if (ModelLoad())
+            {
+                PredictModel();
+            }
         }
 
         private void ModelLoad_Shown(object sender, EventArgs e)
@@ -428,68 +448,7 @@ namespace MouseAI.UI
             }
         }
 
-        private void TestModel()
-        {
-            modelTest = new ModelTest(MAZE_WIDTH, MAZE_HEIGHT);
-
-            foreach (Control ctl in modelTest.Controls)
-            {
-                if (ctl is Button)
-                    (ctl as Button).Click += btnTestModel;
-            }
-
-            modelTest.Show();
-        }
-
-        private void AIPredict()
-        {
-            Console.WriteLine("Predictions Started ...");
-            try
-            {
-                modelTest.txtResults.Text = string.Empty;
-
-                ImageDatas ids = maze.Predict(GetSelectedModel());
-                if (ids == null)
-                    throw new Exception("Prediction result error!");
-
-                modelTest.txtResults.Text = ids.GetResults();
-                modelTest.SetImages(ids);
-            }
-            catch (Exception e)
-            {
-                DisplayError("Prediction Error:", e, false);
-                Console.WriteLine(e);
-            }
-            Console.WriteLine("Predicitions Ended ...");
-        }
-
-        private void btnTestModel(object sender, EventArgs e)
-        {
-            Button btn = (Button)sender;
-
-            if (btn == null)
-                return;
-
-            if (btn.Name == "btnExit")
-            {
-                modelTest.Close();
-                msMain.Enabled = true;
-                Focus();
-            }
-            else if (btn.Name == "btnBack")
-            {
-                modelTest.Close();
-                RunTest();
-            }
-            else if (btn.Name == "btnPredict")
-            {
-                modelTest.Enabled = false;
-                AIPredict();
-                modelTest.Enabled = true;
-            }
-        }
-
-        private void btnLoad_Click(object sender, EventArgs e)
+        private bool ModelLoad()
         {
             if (modelLoad.lbxModels.SelectedItem != null)
             {
@@ -497,14 +456,14 @@ namespace MouseAI.UI
                 if (LoadModel(modelLoad.lbxModels.SelectedItem.ToString()))
                 {
                     modelLoad.Close();
-                    TestModel();
-                    return;
+                    return true;
                 }
             }
             modelLoad.Enabled = true;
+            return false;
         }
 
-        private void BtnExit_Click(object sender, EventArgs e)
+        private void btnExit_Click(object sender, EventArgs e)
         {
             modelLoad.Close();
             msMain.Enabled = true;
@@ -520,15 +479,16 @@ namespace MouseAI.UI
                 if (!string.IsNullOrEmpty(summary))
                 {
                     modelLoad.tbxSummary.Text = summary;
-                    modelLoad.btnLoadModel.Enabled = true;
+                    modelLoad.btnPredict.Enabled = true;
+                    modelLoad.btnRun.Enabled = true;
 
                     string plot = Maze.GetModelPlot(starttime);
                     modelLoad.pbxPlot.Image = (!string.IsNullOrEmpty(plot)) ? Image.FromFile(plot) : null;
                     return;
                 }
             }
-
-            modelLoad.btnLoadModel.Enabled = false;
+            modelLoad.btnPredict.Enabled = false;
+            modelLoad.btnRun.Enabled = false;
         }
 
         private bool isSelectedModel()
@@ -539,6 +499,164 @@ namespace MouseAI.UI
         private string GetSelectedModel()
         {
             return modelLoad.lbxModels.SelectedItem.ToString();
+        }
+
+        #endregion
+
+        #region Model Running
+
+        private void ModelRun()
+        {
+            if (runThread != null || !maze.isMazeModels())
+            {
+                DisplayError("Error starting model run", false);
+                return;
+            }
+
+            modelRun = new ModelRun();
+
+            foreach (Control ctl in modelRun.Controls)
+            {
+                if (ctl is Button)
+                    (ctl as Button).Click += modelRun_Click;
+            }
+            modelRun.Show();
+            UpdateModelRun();
+        }
+
+        private void UpdateModelRun()
+        {
+            if (modelRun == null || !modelRun.Visible)
+                return;
+
+            string selected = GetSelectedItem();
+            string guid = maze.GetMazeModelGUID();
+
+            modelRun.tbxMaze.Text = (!string.IsNullOrEmpty(selected) && !string.IsNullOrEmpty(guid)) 
+                ?string.Format("{0} [{1}]", selected, guid)  
+                : string.Empty;
+        }
+
+        private void modelRun_Click(object sender, EventArgs e)
+        {
+            Button btn = (Button)sender;
+
+            if (btn == null)
+                return;
+
+            if (btn.Name == "btnExit")
+            {
+                modelRun.Close();
+                msMain.Enabled = true;
+                Focus();
+            }
+            else if (btn.Name == "btnRun")
+            {
+                modelRun.Enabled = false;
+                RunModel();
+                modelRun.Enabled = true;
+            }
+        }
+
+        private void RunModel()
+        {
+            maze.Reset();
+            mouse_last = new Point(-1, -1);
+
+            runThread = new Thread(AIRun);
+            runThread.Start();
+        }
+
+        private void AIRun()
+        {
+            isValid = false;
+            isThreadDone = true;
+
+            try
+            {
+                while (!isValid)
+                {
+                    if (isThreadDone)
+                    {
+                        if (maze.ProcessMouseMove())
+                        {
+                            isValid = true;
+                        }
+                        isThreadDone = false;
+                    }
+                    Thread.Sleep(SEARCH_DELAY);
+                }
+                Console.WriteLine("Mouse solved path for {0}", maze.GetMazeModelGUID());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Search Error:" + e.Message);
+                isValid = false;
+            }
+        }
+
+        #endregion
+
+        #region Model Predict
+
+        private void PredictModel()
+        {
+            modelPredict = new ModelPredict(MAZE_WIDTH, MAZE_HEIGHT);
+
+            foreach (Control ctl in modelPredict.Controls)
+            {
+                if (ctl is Button)
+                    (ctl as Button).Click += btnPredictModel;
+            }
+            modelPredict.Show();
+        }
+
+        private void AIPredict()
+        {
+            Console.WriteLine("Predictions Started ...");
+            try
+            {
+                modelPredict.txtResults.Text = string.Empty;
+
+                ImageDatas ids = maze.Predict(GetSelectedModel());
+                if (ids == null)
+                    throw new Exception("Prediction result error!");
+
+                modelPredict.txtResults.Text = ids.GetResults();
+                modelPredict.SetImages(ids);
+            }
+            catch (Exception e)
+            {
+                DisplayError("Prediction Error:", e, false);
+                Console.WriteLine(e);
+            }
+            Console.WriteLine("Predicitions Ended ...");
+        }
+
+        private void btnPredictModel(object sender, EventArgs e)
+        {
+            Button btn = (Button)sender;
+
+            if (btn == null)
+                return;
+
+            if (btn.Name == "btnExit")
+            {
+                modelPredict.Close();
+                msMain.Enabled = true;
+                Focus();
+            }
+            else if (btn.Name == "btnBack")
+            {
+                modelPredict.Close();
+                RunTest();
+            }
+            else if (btn.Name == "btnPredict")
+            {
+                modelPredict.Enabled = false;
+                AIPredict();
+                modelPredict.Enabled = true;
+            }
         }
 
         #endregion
@@ -873,6 +991,15 @@ namespace MouseAI.UI
             lvwMazes.Refresh();
         }
 
+        private string GetSelectedItem()
+        {
+            if (lvwMazes.SelectedItems.Count == 0 || lvwMazes.SelectedItems[0] == null)
+                return string.Empty;
+
+            ListViewItem item = lvwMazes.SelectedItems[0];
+            return item.SubItems[0].Text;
+        }
+
         private void AddMazeItems()
         {
             lvwMazes.Items.Clear();
@@ -898,7 +1025,10 @@ namespace MouseAI.UI
             if (lvwMazes.FocusedItem == null)
                 return;
 
-            SelectMaze(lvwMazes.FocusedItem.Index);
+            if (SelectMaze(lvwMazes.FocusedItem.Index))
+            {
+                UpdateModelRun();
+            }
         }
 
         private bool SelectItem(int index)
@@ -913,13 +1043,13 @@ namespace MouseAI.UI
             return false;
         }
 
-        private void SelectMaze()
-        {
-            if (lvwMazes.Items.Count > 0 && lvwMazes.FocusedItem != null)
-            {
-                SelectMaze(lvwMazes.FocusedItem.Index);
-            }
-        }
+        //private void SelectMaze()
+        //{
+        //    if (lvwMazes.Items.Count > 0 && lvwMazes.FocusedItem != null && SelectMaze(lvwMazes.FocusedItem.Index))
+        //    {
+        //        SelectMaze(lvwMazes.FocusedItem.Index);
+        //    }
+        //}
 
         private bool SelectMaze(int index)
         {

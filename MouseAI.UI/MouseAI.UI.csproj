@@ -138,11 +138,17 @@
     <Compile Include="ModelLoad.Designer.cs">
       <DependentUpon>ModelLoad.cs</DependentUpon>
     </Compile>
-    <Compile Include="ModelTest.cs">
+    <Compile Include="ModelRun.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ModelTest.Designer.cs">
-      <DependentUpon>ModelTest.cs</DependentUpon>
+    <Compile Include="ModelRun.Designer.cs">
+      <DependentUpon>ModelRun.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModelPredict.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModelPredict.Designer.cs">
+      <DependentUpon>ModelPredict.cs</DependentUpon>
     </Compile>
     <Compile Include="MazeText.cs">
       <SubType>Form</SubType>
@@ -187,8 +193,11 @@
     <EmbeddedResource Include="ModelLoad.resx">
       <DependentUpon>ModelLoad.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ModelTest.resx">
-      <DependentUpon>ModelTest.cs</DependentUpon>
+    <EmbeddedResource Include="ModelRun.resx">
+      <DependentUpon>ModelRun.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModelPredict.resx">
+      <DependentUpon>ModelPredict.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MazeText.resx">
       <DependentUpon>MazeText.cs</DependentUpon>

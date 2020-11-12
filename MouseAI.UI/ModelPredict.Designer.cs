@@ -1,6 +1,6 @@
 ﻿namespace MouseAI.UI
 {
-    partial class ModelTest
+    partial class ModelPredict
     {
         /// <summary>
         /// Required designer variable.
@@ -113,11 +113,11 @@
             this.txtInfo.Size = new System.Drawing.Size(427, 22);
             this.txtInfo.TabIndex = 25;
             // 
-            // ModelTest
+            // ModelPredict
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(549, 591);
+            this.ClientSize = new System.Drawing.Size(545, 587);
             this.ControlBox = false;
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtInfo);
@@ -131,11 +131,11 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "ModelTest";
+            this.Name = "ModelPredict";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "Model Test";
+            this.Text = "Model Predict";
             this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -22,7 +22,8 @@ namespace MouseAI.UI
             if (!string.IsNullOrEmpty(starttime))
             {
                 lbxModels.SelectedItem = starttime;
-                btnLoadModel.Enabled = true;
+                btnPredict.Enabled = true;
+                btnRun.Enabled = true;
             }
         }
     }

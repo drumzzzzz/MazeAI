@@ -7,7 +7,7 @@ using MouseAI.ML;
 
 namespace MouseAI.UI
 {
-    public partial class ModelTest : Form
+    public partial class ModelPredict : Form
     {
         private const int COLUMNS = 10;
         private const int ROWS = 10;
@@ -16,7 +16,7 @@ namespace MouseAI.UI
         private const int CONTROLS_HEIGHT = 200;
         private readonly List<PictureBox> pbxLast;
 
-        public ModelTest(int width, int height)
+        public ModelPredict(int width, int height)
         {
             InitializeComponent();
 

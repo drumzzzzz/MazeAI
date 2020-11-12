@@ -65,7 +65,7 @@ namespace MouseAI
         private const char LOG_DELIMIT = ',';
         private static readonly string[] LOG_COLUMN_VALUES = {"epoch", "accuracy", "loss", "val_accuracy", "val_loss"};
         private static readonly int[] PLOT_COLUMNS_Y = { 1, 3 };
-        private static readonly Color[] PLOT_COLORS_Y = {Color.Empty, Color.Green, Color.Empty, Color.Empty, Color.Blue};
+        private static readonly Color[] PLOT_COLORS_Y = {Color.Empty, Color.Green, Color.Blue, Color.Green, Color.Blue};
         private const int PLOT_COLUMN_X = 0;
         private const int PLOT_WIDTH = 300;
         private const int PLOT_HEIGHT = 300;
@@ -268,7 +268,7 @@ namespace MouseAI
 
         #endregion
 
-        #region Neural Net
+        #region Neural Network Training
 
         public void Train(string guid)
         {
@@ -295,22 +295,6 @@ namespace MouseAI
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT, PLOT_EXT);
             neuralNet.InitDataSets(imageDatas, config.Split, r);
             neuralNet.Process(config, mazeModels.Count());
-        }
-
-        public ImageDatas Predict(string starttime)
-        {
-            if (string.IsNullOrEmpty(starttime))
-                throw new Exception("Invalid Prediction Model");
-
-            Config cfg = (Config)FileIO.DeSerializeXml(typeof(Config), 
-                Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT));
-
-            if (cfg == null || string.IsNullOrEmpty(cfg.Model))
-                throw new Exception("Could not open config file");
-
-            ImageDatas imageSegments = mazeModels.GetImageSegments();
-            neuralNet.InitDataSets(imageSegments);
-            return neuralNet.Predict(cfg.isCNN);
         }
 
         public void LoadModel(string modelName)
@@ -367,86 +351,34 @@ namespace MouseAI
 
         #endregion
 
-        #region Plotting
+        #region Neural Network Prediction
 
-        public static void SavePlot(string plotname)
+        public ImageDatas Predict(string starttime)
         {
-            string plotfile = LOG_DIR + @"\" + plotname + "." + LOG_EXT;
-            List<string> plotvalues = FileIO.ReadFileAsList(plotfile);
+            if (string.IsNullOrEmpty(starttime))
+                throw new Exception("Invalid Prediction Model");
 
-            if (!CheckColumns(plotvalues))
-                throw new Exception("Error reading log file");
+            Config cfg = (Config)FileIO.DeSerializeXml(typeof(Config),
+                Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT));
 
-            Dictionary<int, double[]> values = ProcessLines(plotvalues);
+            if (cfg == null || string.IsNullOrEmpty(cfg.Model))
+                throw new Exception("Could not open config file");
 
-            if (values.Count < PLOT_COLUMNS_Y.Length + 1)
-                throw new Exception("Error reading plot columns");
-
-            var plt = new ScottPlot.Plot(PLOT_WIDTH, PLOT_HEIGHT);
-
-            double[] x = values[PLOT_COLUMN_X];
-
-            foreach (var entry in values.Where(entry => PLOT_COLUMNS_Y.Contains(entry.Key)))
-            {
-                plt.PlotScatter(x, entry.Value, label: LOG_COLUMN_VALUES[entry.Key], color:PLOT_COLORS_Y[entry.Key], markerSize: 0);
-            }
-        
-            plt.Legend(fontSize:8);
-            plt.SaveFig(LOG_DIR + @"\" + plotname + "." + PLOT_EXT);
+            ImageDatas imageSegments = mazeModels.GetImageSegments();
+            neuralNet.InitDataSets(imageSegments);
+            return neuralNet.Predict(cfg.isCNN);
         }
 
-        private static Dictionary<int, double[]> ProcessLines(IReadOnlyList<string> plotvalues)
+        #endregion
+
+        #region Neural Network Running
+
+        public bool ProcessRunMove()
         {
-            Dictionary<int, double[]> dvalues = new Dictionary<int, double[]>();
 
-            int data_size = plotvalues.Count - 1;
 
-            dvalues.Add(PLOT_COLUMN_X, new double[data_size]);
- 
 
-            foreach (int column in PLOT_COLUMNS_Y)
-            {
-                dvalues.Add(column, new double[data_size]);
-            }
-
-            for (int idx = 1; idx < plotvalues.Count; idx++)
-            {
-                ProcessValues(plotvalues[idx], dvalues, idx - 1);
-            }
-
-            return dvalues;
-        }
-
-        private static void ProcessValues(string line, IReadOnlyDictionary<int, double[]> dvalues, int index)
-        {
-            if (string.IsNullOrEmpty(line))
-                throw new Exception("Invalid log data");
-
-            string[] line_values = line.Split(LOG_DELIMIT);
-
-            if (line_values.Length != LOG_COLUMN_VALUES.Length)
-                throw new Exception("Invalid log data length");
-
-            for (int idx = 0; idx < LOG_COLUMN_VALUES.Length; idx++)
-            {
-                if (PLOT_COLUMN_X == idx)
-                    dvalues[idx].SetValue(Convert.ToDouble(line_values[idx]), index);
-                else if (PLOT_COLUMNS_Y.Contains(idx))
-                    dvalues[idx].SetValue(Convert.ToDouble(line_values[idx]), index);
-            }
-        }
-
-        private static bool CheckColumns(IReadOnlyList<string> plotvalues)
-        {
-            if (plotvalues.Count < 2)
-                return false;
-
-            string[] columns = plotvalues[0].Split(LOG_DELIMIT);
-
-            if (columns.Length != LOG_COLUMN_VALUES.Length)
-                return false;
-
-            return !LOG_COLUMN_VALUES.Where((t, idx) => !columns[idx].Trim().Equals(t, StringComparison.InvariantCultureIgnoreCase)).Any();
+            return false;
         }
 
         #endregion
@@ -1259,6 +1191,90 @@ namespace MouseAI
 
         #endregion
 
+        #region Plotting
+
+        public static void SavePlot(string plotname)
+        {
+            string plotfile = LOG_DIR + @"\" + plotname + "." + LOG_EXT;
+            List<string> plotvalues = FileIO.ReadFileAsList(plotfile);
+
+            if (!CheckColumns(plotvalues))
+                throw new Exception("Error reading log file");
+
+            Dictionary<int, double[]> values = ProcessLines(plotvalues);
+
+            if (values.Count < PLOT_COLUMNS_Y.Length + 1)
+                throw new Exception("Error reading plot columns");
+
+            var plt = new Plot(PLOT_WIDTH, PLOT_HEIGHT);
+
+            double[] x = values[PLOT_COLUMN_X];
+
+            foreach (var entry in values.Where(entry => PLOT_COLUMNS_Y.Contains(entry.Key)))
+            {
+                plt.PlotScatter(x, entry.Value, label: LOG_COLUMN_VALUES[entry.Key], color: PLOT_COLORS_Y[entry.Key], markerSize: 0);
+            }
+
+            plt.Legend(fontSize: 8);
+            plt.SaveFig(LOG_DIR + @"\" + plotname + "." + PLOT_EXT);
+        }
+
+        private static Dictionary<int, double[]> ProcessLines(IReadOnlyList<string> plotvalues)
+        {
+            Dictionary<int, double[]> dvalues = new Dictionary<int, double[]>();
+
+            int data_size = plotvalues.Count - 1;
+
+            dvalues.Add(PLOT_COLUMN_X, new double[data_size]);
+
+
+            foreach (int column in PLOT_COLUMNS_Y)
+            {
+                dvalues.Add(column, new double[data_size]);
+            }
+
+            for (int idx = 1; idx < plotvalues.Count; idx++)
+            {
+                ProcessValues(plotvalues[idx], dvalues, idx - 1);
+            }
+
+            return dvalues;
+        }
+
+        private static void ProcessValues(string line, IReadOnlyDictionary<int, double[]> dvalues, int index)
+        {
+            if (string.IsNullOrEmpty(line))
+                throw new Exception("Invalid log data");
+
+            string[] line_values = line.Split(LOG_DELIMIT);
+
+            if (line_values.Length != LOG_COLUMN_VALUES.Length)
+                throw new Exception("Invalid log data length");
+
+            for (int idx = 0; idx < LOG_COLUMN_VALUES.Length; idx++)
+            {
+                if (PLOT_COLUMN_X == idx)
+                    dvalues[idx].SetValue(Convert.ToDouble(line_values[idx]), index);
+                else if (PLOT_COLUMNS_Y.Contains(idx))
+                    dvalues[idx].SetValue(Convert.ToDouble(line_values[idx]), index);
+            }
+        }
+
+        private static bool CheckColumns(IReadOnlyList<string> plotvalues)
+        {
+            if (plotvalues.Count < 2)
+                return false;
+
+            string[] columns = plotvalues[0].Split(LOG_DELIMIT);
+
+            if (columns.Length != LOG_COLUMN_VALUES.Length)
+                return false;
+
+            return !LOG_COLUMN_VALUES.Where((t, idx) => !columns[idx].Trim().Equals(t, StringComparison.InvariantCultureIgnoreCase)).Any();
+        }
+
+        #endregion
+
         #region Saving and Loading
 
         public void SaveMazeModels(string filename)
@@ -1429,12 +1445,13 @@ namespace MouseAI
 
                 foreach (string pm in projectmodels)
                 {
-                    files.Add(GetFileName(log_dir, pm, LOG_EXT));
-                    files.Add(GetFileName(model_dir, pm, CONFIG_EXT));
-                    files.Add(GetFileName(model_dir, pm, MODELS_EXT));
+                    files.Add(Utils.GetFileWithExtension(log_dir, pm, LOG_EXT));
+                    files.Add(Utils.GetFileWithExtension(log_dir, pm, PLOT_EXT));
+                    files.Add(Utils.GetFileWithExtension(model_dir, pm, CONFIG_EXT));
+                    files.Add(Utils.GetFileWithExtension(model_dir, pm, MODELS_EXT));
                 }
 
-                string archive_name = archive_dir + DIR + Utils.GetDateTime_Formatted() + "." + ARCHIVE_EXT;
+                string archive_name = Utils.GetFileWithExtension(archive_dir, Utils.GetDateTime_Formatted(), ARCHIVE_EXT);
 
                 Console.WriteLine("Archiving {0} Files to {1}", files.Count, archive_name);
 
@@ -1473,11 +1490,6 @@ namespace MouseAI
             return removed_count != 0
                 ? "Error Removing 1 Project Record"
                 : "Removed 1 Project Record";
-        }
-
-        private static string GetFileName(string path, string value, string ext)
-        {
-            return string.Format("{0}{1}{2}.{3}", path, DIR, value, ext);
         }
 
         #endregion

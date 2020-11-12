@@ -31,8 +31,9 @@
             this.lbxModels = new System.Windows.Forms.ListBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.tbxSummary = new System.Windows.Forms.TextBox();
-            this.btnLoadModel = new System.Windows.Forms.Button();
             this.pbxPlot = new System.Windows.Forms.PictureBox();
+            this.btnPredict = new System.Windows.Forms.Button();
+            this.btnRun = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPlot)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,9 +51,9 @@
             // btnCancel
             // 
             this.btnCancel.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(195, 286);
+            this.btnCancel.Location = new System.Drawing.Point(565, 276);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(80, 23);
+            this.btnCancel.Size = new System.Drawing.Size(81, 33);
             this.btnCancel.TabIndex = 19;
             this.btnCancel.Text = "CANCEL";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -69,18 +70,6 @@
             this.tbxSummary.TabIndex = 20;
             this.tbxSummary.WordWrap = false;
             // 
-            // btnLoadModel
-            // 
-            this.btnLoadModel.Enabled = false;
-            this.btnLoadModel.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLoadModel.Location = new System.Drawing.Point(71, 286);
-            this.btnLoadModel.Margin = new System.Windows.Forms.Padding(0);
-            this.btnLoadModel.Name = "btnLoadModel";
-            this.btnLoadModel.Size = new System.Drawing.Size(69, 23);
-            this.btnLoadModel.TabIndex = 21;
-            this.btnLoadModel.Text = "LOAD";
-            this.btnLoadModel.UseVisualStyleBackColor = true;
-            // 
             // pbxPlot
             // 
             this.pbxPlot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -91,14 +80,39 @@
             this.pbxPlot.TabIndex = 22;
             this.pbxPlot.TabStop = false;
             // 
+            // btnPredict
+            // 
+            this.btnPredict.Enabled = false;
+            this.btnPredict.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPredict.Location = new System.Drawing.Point(47, 276);
+            this.btnPredict.Margin = new System.Windows.Forms.Padding(0);
+            this.btnPredict.Name = "btnPredict";
+            this.btnPredict.Size = new System.Drawing.Size(81, 33);
+            this.btnPredict.TabIndex = 23;
+            this.btnPredict.Text = "PREDICT";
+            this.btnPredict.UseVisualStyleBackColor = true;
+            // 
+            // btnRun
+            // 
+            this.btnRun.Enabled = false;
+            this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRun.Location = new System.Drawing.Point(167, 276);
+            this.btnRun.Margin = new System.Windows.Forms.Padding(0);
+            this.btnRun.Name = "btnRun";
+            this.btnRun.Size = new System.Drawing.Size(81, 33);
+            this.btnRun.TabIndex = 24;
+            this.btnRun.Text = "RUN";
+            this.btnRun.UseVisualStyleBackColor = true;
+            // 
             // ModelLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(676, 330);
+            this.ClientSize = new System.Drawing.Size(672, 326);
             this.ControlBox = false;
+            this.Controls.Add(this.btnRun);
+            this.Controls.Add(this.btnPredict);
             this.Controls.Add(this.pbxPlot);
-            this.Controls.Add(this.btnLoadModel);
             this.Controls.Add(this.tbxSummary);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.lbxModels);
@@ -118,7 +132,8 @@
         public System.Windows.Forms.ListBox lbxModels;
         public System.Windows.Forms.TextBox tbxSummary;
         public System.Windows.Forms.Button btnCancel;
-        public System.Windows.Forms.Button btnLoadModel;
         public System.Windows.Forms.PictureBox pbxPlot;
+        public System.Windows.Forms.Button btnPredict;
+        public System.Windows.Forms.Button btnRun;
     }
 }
