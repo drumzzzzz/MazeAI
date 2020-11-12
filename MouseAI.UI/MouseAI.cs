@@ -65,6 +65,20 @@ namespace MouseAI.UI
 
         private int maze_count;
 
+        enum RUN_MODE
+        {
+            NONE,
+            READY,
+            RUNNING,
+            STOPPED,
+            PAUSED,
+            STEP,
+            RESET,
+            EXIT
+        }
+
+        private RUN_MODE run_mode;
+
         #endregion
 
         #region Initialization
@@ -114,7 +128,7 @@ namespace MouseAI.UI
                 SetMenuItems(false);
             }
 
-            RunTest();
+            //RunTest();
         }
 
         private bool CloseProject()
@@ -524,6 +538,47 @@ namespace MouseAI.UI
             UpdateModelRun();
         }
 
+        private void SetRunMode(RUN_MODE _run_mode)
+        {
+            if (modelRun == null)
+                return;
+
+            ModelRun mdl = modelRun;
+            run_mode = _run_mode;
+
+            mdl.ResetButtons();
+
+            switch (run_mode)
+            {
+                case RUN_MODE.EXIT:
+                    if (runThread == null)
+                    {
+                        modelRun.Close();
+                        msMain.Enabled = true;
+                        //lvwMazes.Enabled = true;
+                    }
+                    return;
+                case RUN_MODE.READY:
+                    mdl.btnRun.Enabled = true;
+                    mdl.btnExit.Enabled = true;
+                    return;
+                case RUN_MODE.STOPPED:
+                    mdl.btnRun.Enabled = true;
+                    mdl.btnExit.Enabled = true;
+                    return;
+                case RUN_MODE.RUNNING:
+                    mdl.btnPause.Enabled = true;
+                    mdl.btnStop.Enabled = true;
+                    return;
+                case RUN_MODE.STEP:
+                    mdl.btnRun.Enabled = true;
+                    mdl.btnStep.Enabled = true;
+                    return;
+                default:
+                    return;
+            }
+        }
+
         private void UpdateModelRun()
         {
             if (modelRun == null || !modelRun.Visible)
@@ -532,9 +587,13 @@ namespace MouseAI.UI
             string selected = GetSelectedItem();
             string guid = maze.GetMazeModelGUID();
 
-            modelRun.tbxMaze.Text = (!string.IsNullOrEmpty(selected) && !string.IsNullOrEmpty(guid)) 
-                ?string.Format("{0} [{1}]", selected, guid)  
+            bool isReady = (!string.IsNullOrEmpty(selected) && !string.IsNullOrEmpty(guid));
+
+            modelRun.tbxMaze.Text = (isReady) 
+                ? string.Format("{0} [{1}]", selected, guid)  
                 : string.Empty;
+
+            SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.NONE);
         }
 
         private void modelRun_Click(object sender, EventArgs e)
@@ -546,30 +605,70 @@ namespace MouseAI.UI
 
             if (btn.Name == "btnExit")
             {
-                modelRun.Close();
-                msMain.Enabled = true;
-                Focus();
+                if (runThread != null)
+                {
+                    isThreadCancel = true;
+                }
+                SetRunMode(RUN_MODE.EXIT);
             }
             else if (btn.Name == "btnRun")
             {
-                modelRun.Enabled = false;
+                lvwMazes.Enabled = false;
+                SetRunMode(RUN_MODE.RUNNING);
                 RunModel();
-                modelRun.Enabled = true;
             }
+            else if (btn.Name == "btnStop")
+            {
+                if (runThread != null)
+                    isThreadCancel = true;
+
+                SetRunMode(RUN_MODE.NONE);
+            }
+        }
+
+        private void CloseRunModel()
+        {
+            modelRun.Close();
+            msMain.Enabled = true;
+            Focus();
         }
 
         private void RunModel()
         {
             maze.Reset();
             mouse_last = new Point(-1, -1);
+            isThreadCancel = false;
+            isValid = false;
 
             runThread = new Thread(AIRun);
             runThread.Start();
+
+            try
+            {
+                while (!isThreadCancel && !isValid)
+                {
+
+                    Application.DoEvents();
+                    Thread.Sleep(SEARCH_DELAY);
+                }
+            }
+            catch (Exception e)
+            {
+                DisplayError("Run model error", e, false);
+            }
+
+            runThread = null;
+
+            lvwMazes.Enabled = true;
+
+            if (run_mode == RUN_MODE.EXIT)
+                SetRunMode(RUN_MODE.EXIT);
+            else
+                SetRunMode(RUN_MODE.STOPPED);
         }
 
         private void AIRun()
         {
-            isValid = false;
             isThreadDone = true;
 
             try
@@ -1007,16 +1106,18 @@ namespace MouseAI.UI
             for (int i = 0; i < maze.GetMazeModelSize(); i++)
             {
                 ListViewItem item = new ListViewItem((i + 1).ToString());
-
                 item.SubItems.Add(maze.isModelBMP(i) ? "YES" : "NO");
                 lvwMazes.Items.Add(item);
             }
 
             if (lvwMazes.Items.Count > 0)
             {
-                lvwMazes.FocusedItem = lvwMazes.Items[0];
-                lvwMazes.Items[0].Selected = true;
-                lvwMazes.Select();
+                if (lvwMazes.Items[0] != null)
+                {
+                    lvwMazes.FocusedItem = lvwMazes.Items[0];
+                    lvwMazes.Items[0].Selected = true;
+                    lvwMazes.Select();
+                }
             }
         }
 
