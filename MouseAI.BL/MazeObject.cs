@@ -40,6 +40,7 @@ namespace MouseAI
         public bool isDeadEnd { get; set; }
         public bool isJunction { get; set; }
         public bool isPath { get; set; }
+        public bool isVision { get; set; }
 
         public MazeObject Next { get; set; }
         public MazeObject Previous { get; set; }
@@ -53,6 +54,7 @@ namespace MouseAI
             isScanned = false;
             isDeadEnd = false;
             isJunction = false;
+            isVision = false;
             this.x = x;
             this.y = y;
             direction = DIRECTION.SOUTH;

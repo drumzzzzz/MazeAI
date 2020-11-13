@@ -15,6 +15,7 @@ namespace MouseAI.UI
         private readonly Maze maze;
 
         private List<MazeObject> pathObjects;
+        private List<MazeObject> visionObjects;
         private MazeObject[,] mazeObjects;
         private MazeObjectSegments mazeObjectSegments;
 
@@ -29,6 +30,7 @@ namespace MouseAI.UI
         private const char NULL = '?';
         private const char ERROR = '!';
         private const int MARGIN = 30;
+        private const char VISION = 'V';
         private readonly char[] SEGMENTS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         private string guid_last;
         private string guid_current;
@@ -75,6 +77,7 @@ namespace MouseAI.UI
             guid_current = maze.GetMazeModelGUID();
 
             pathObjects = maze.GetPathObjects();
+            visionObjects = maze.GetVisionObjects();
             mazeObjects = maze.GetMazeObjects();
             mazeObjectSegments = maze.GetMazeSegments();
             UpdateSegmentList();
@@ -102,6 +105,15 @@ namespace MouseAI.UI
                     else if (rbPaths.Checked)
                     {
                         c = GetPathChar(x, y);
+                        if (c != NULL)
+                        {
+                            sb.Append(c);
+                            continue;
+                        }
+                    }
+                    else if (rbVision.Checked)
+                    {
+                        c = GetVisionChar(x, y);
                         if (c != NULL)
                         {
                             sb.Append(c);
@@ -171,6 +183,19 @@ namespace MouseAI.UI
             return NULL;
         }
 
+        private char GetVisionChar(int x, int y)
+        {
+            if (visionObjects == null || visionObjects.Count == 0)
+                return NULL;
+
+            if (GetObjectChar(mazeObjects[x, y]) == MOUSE)
+                return MOUSE;
+
+            MazeObject mo = visionObjects.FirstOrDefault(o => o.x == x && o.y == y);
+
+            return (mo != null) ? VISION : NULL;
+        }
+
         private char GetSegmentChar(int x, int y, int segmentIndex)
         {
             if (mazeObjectSegments == null || mazeObjectSegments.Count == 0)
@@ -218,7 +243,7 @@ namespace MouseAI.UI
             if (mo.isDeadEnd)
                 return DEADEND;
 
-            if (mo.isPath && rbAll.Checked)
+            if (mo.isPath && (rbAll.Checked || rbVision.Checked))
                 return NNPATH;
 
             if (mo.isJunction)
@@ -278,8 +303,12 @@ namespace MouseAI.UI
                 DisplayMaze();
         }
 
+        private void rbVision_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbVision.Checked)
+                DisplayMaze();
+        }
+
         #endregion
-
-
     }
 }

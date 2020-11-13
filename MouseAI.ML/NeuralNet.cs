@@ -216,12 +216,12 @@ namespace MouseAI.ML
             return idf;
         }
 
-        public int Predict(List<byte[]> image)
+        public int Predict(List<byte[]> image, string guid)
         {
-            if (model_loaded == null)
-                throw new Exception("Invalid Model!");
+            if (model_loaded == null || dataSets == null)
+                throw new Exception("Neural Network not initialized!");
 
-            NDarray x_data = DataSets.GetDataSet(image, width * height);
+            NDarray x_data = dataSets.GetDataSet(image);
 
             if (config.isCNN)
             {
@@ -235,11 +235,7 @@ namespace MouseAI.ML
             y = y.argmax();
             int index = y.asscalar<int>();
 
-            //if (ids[i].Label != labels[index])
-            //{
-            //    ids[i].Index = labels.IndexOf(ids[i].Label) + 1;
-            //    idf.Add(ids[i]);
-            //}
+            Console.WriteLine("Prediction: {0}", dataSets.GetImageDatas().isLabelValid(index, guid));
 
             return index;
         }

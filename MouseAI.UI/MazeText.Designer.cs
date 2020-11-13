@@ -30,6 +30,7 @@
         {
             this.txtMaze = new System.Windows.Forms.TextBox();
             this.pnlSelections = new System.Windows.Forms.Panel();
+            this.rbVision = new System.Windows.Forms.RadioButton();
             this.rbAll = new System.Windows.Forms.RadioButton();
             this.rbPaths = new System.Windows.Forms.RadioButton();
             this.rbSegments = new System.Windows.Forms.RadioButton();
@@ -56,24 +57,36 @@
             // pnlSelections
             // 
             this.pnlSelections.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pnlSelections.Controls.Add(this.rbVision);
             this.pnlSelections.Controls.Add(this.rbAll);
             this.pnlSelections.Controls.Add(this.rbPaths);
             this.pnlSelections.Controls.Add(this.rbSegments);
             this.pnlSelections.Controls.Add(this.btnRefresh);
             this.pnlSelections.Location = new System.Drawing.Point(0, -1);
             this.pnlSelections.Name = "pnlSelections";
-            this.pnlSelections.Size = new System.Drawing.Size(387, 43);
+            this.pnlSelections.Size = new System.Drawing.Size(486, 43);
             this.pnlSelections.TabIndex = 3;
+            // 
+            // rbVision
+            // 
+            this.rbVision.AutoSize = true;
+            this.rbVision.Checked = true;
+            this.rbVision.Location = new System.Drawing.Point(396, 13);
+            this.rbVision.Name = "rbVision";
+            this.rbVision.Size = new System.Drawing.Size(72, 18);
+            this.rbVision.TabIndex = 7;
+            this.rbVision.TabStop = true;
+            this.rbVision.Text = "NN Vision";
+            this.rbVision.UseVisualStyleBackColor = true;
+            this.rbVision.CheckedChanged += new System.EventHandler(this.rbVision_CheckedChanged);
             // 
             // rbAll
             // 
             this.rbAll.AutoSize = true;
-            this.rbAll.Checked = true;
             this.rbAll.Location = new System.Drawing.Point(135, 13);
             this.rbAll.Name = "rbAll";
             this.rbAll.Size = new System.Drawing.Size(37, 18);
             this.rbAll.TabIndex = 6;
-            this.rbAll.TabStop = true;
             this.rbAll.Text = "All";
             this.rbAll.UseVisualStyleBackColor = true;
             this.rbAll.CheckedChanged += new System.EventHandler(this.rbAll_CheckedChanged);
@@ -152,5 +165,6 @@
         private System.Windows.Forms.RadioButton rbPaths;
         private System.Windows.Forms.RadioButton rbAll;
         private System.Windows.Forms.ListBox lbxSegments;
+        private System.Windows.Forms.RadioButton rbVision;
     }
 }

@@ -55,6 +55,17 @@ namespace MouseAI.ML
         {
             return string.IsNullOrEmpty(results) ? string.Empty : results;
         }
+
+        public bool isLabelValid(int predicted, string expected)
+        {
+            if (predicted < 0 || predicted > Count)
+            {
+                Console.WriteLine("Predicted out of range index: {0} size: {1}", predicted, Count);
+                return false;
+            }
+            Console.WriteLine("Predicted:{0} Expected:{1}", this.ElementAt(predicted).Label, expected);
+            return this.ElementAt(predicted).Label.Equals(expected, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     public class DataSets
@@ -255,33 +266,10 @@ namespace MouseAI.ML
             return (x_data, y_labels);
         }
 
-        public static NDarray GetDataSet(IReadOnlyList<byte[]> data, int imagesize)
-        {
-            int count = data.Count;
-            int[,] x_data = new int[count, imagesize];
-            //int[] y_labels = new int[count];
-
-            byte[] bytes;
-
-            for (int i = 0; i < count; i++)
-            {
-                bytes = data[i];
-
-                for (int byteIdx = 0; byteIdx < imagesize; byteIdx++)
-                {
-                    x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
-                }
-            }
-
-            return x_data;
-        }
-
-        private static NDarray GetDataSet(IReadOnlyList<byte[]> data)
+        public NDarray GetDataSet(IReadOnlyList<byte[]> data)
         {
             int count = data.Count;
             int[,] x_data = new int[count, ImageSize];
-            //int[] y_labels = new int[count];
-
             byte[] bytes;
 
             for (int i = 0; i < count; i++)
@@ -293,8 +281,29 @@ namespace MouseAI.ML
                     x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
                 }
             }
+
             return x_data;
         }
+
+        //private static NDarray GetDataSet(IReadOnlyList<byte[]> data)
+        //{
+        //    int count = data.Count;
+        //    int[,] x_data = new int[count, ImageSize];
+        //    //int[] y_labels = new int[count];
+
+        //    byte[] bytes;
+
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        bytes = data[i];
+
+        //        for (int byteIdx = 0; byteIdx < ImageSize; byteIdx++)
+        //        {
+        //            x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
+        //        }
+        //    }
+        //    return x_data;
+        //}
 
         public ImageDatas GetImageDatas()
         {
