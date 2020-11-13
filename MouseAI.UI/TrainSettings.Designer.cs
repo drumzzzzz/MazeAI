@@ -415,13 +415,14 @@
             // 
             // nudLearnDecay
             // 
-            this.nudLearnDecay.DecimalPlaces = 2;
+            this.nudLearnDecay.Cursor = System.Windows.Forms.Cursors.Default;
+            this.nudLearnDecay.DecimalPlaces = 4;
             this.nudLearnDecay.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.nudLearnDecay.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            262144});
             this.nudLearnDecay.Location = new System.Drawing.Point(84, 81);
             this.nudLearnDecay.Maximum = new decimal(new int[] {
             99,

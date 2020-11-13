@@ -526,16 +526,17 @@ namespace MouseAI.UI
 
         private async void RunModel()
         {
-            maze.Reset();
             mouse_last = new Point(-1, -1);
             isValid = false;
-            maze.InitRunMove();
             bool isProcess = false;
-
-            Console.WriteLine("Mouse move started ...");
 
             try
             {
+                maze.Reset();
+                maze.InitRunMove();
+
+                Console.WriteLine("Mouse move started ...");
+
                 while (run_mode != RUN_MODE.STOPPED && !isValid)
                 {
                     if (run_mode == RUN_MODE.STEP)

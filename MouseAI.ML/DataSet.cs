@@ -63,8 +63,35 @@ namespace MouseAI.ML
                 Console.WriteLine("Predicted out of range index: {0} size: {1}", predicted, Count);
                 return false;
             }
-            Console.WriteLine("Predicted:{0} Expected:{1}", this.ElementAt(predicted).Label, expected);
-            return this.ElementAt(predicted).Label.Equals(expected, StringComparison.OrdinalIgnoreCase);
+
+            ImageData id = this.FirstOrDefault(o => o.Index == predicted);
+            if (id == null)
+            {
+                Console.WriteLine("Prediction failed for index: {0}", predicted);
+                return false;
+            }
+
+            Console.WriteLine("Predicted:{0} Expected:{1}", id.Label, expected);
+            return (id.Label.Equals(expected, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public void InitLabelIndexes()
+        {
+            if (Count == 0)
+                return;
+
+            string lbl = this.ElementAt(0).Label;
+            int index = 0;
+
+            foreach (ImageData id in this)
+            {
+                if (!id.Label.Equals(lbl, StringComparison.OrdinalIgnoreCase))
+                {
+                    index++;
+                    lbl = id.Label;
+                }
+                id.Index = index;
+            }
         }
     }
 
@@ -99,7 +126,7 @@ namespace MouseAI.ML
             return RandomValues;
         }
 
-        public DataSets(int Width, int Height, ImageDatas imageDatas, double split, Random r)
+        public DataSets(int Width, int Height, ImageDatas imageDatas, double split, int seed)
         {
             if (split < 0 || split > 1.00)
                 throw new Exception(string.Format("Invalid split parameter: {0}", split));
@@ -107,14 +134,19 @@ namespace MouseAI.ML
             ImageSize = (Width * Height);
 
             this.imageDatas = imageDatas;
-            this.r = r;
             this.split = split;
+
+            if (seed != 0)
+                r = new Random(seed);
+            else
+                r = new Random();
         }
 
-        public DataSets(int Width, int Height, ImageDatas imageDatas)
+        public DataSets(int Width, int Height, ImageDatas imageDatas, int seed)
         {
             ImageSize = (Width * Height);
             this.imageDatas = imageDatas;
+            imageDatas.InitLabelIndexes();
         }
 
         public bool isImageDatas()
@@ -284,26 +316,6 @@ namespace MouseAI.ML
 
             return x_data;
         }
-
-        //private static NDarray GetDataSet(IReadOnlyList<byte[]> data)
-        //{
-        //    int count = data.Count;
-        //    int[,] x_data = new int[count, ImageSize];
-        //    //int[] y_labels = new int[count];
-
-        //    byte[] bytes;
-
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        bytes = data[i];
-
-        //        for (int byteIdx = 0; byteIdx < ImageSize; byteIdx++)
-        //        {
-        //            x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
-        //        }
-        //    }
-        //    return x_data;
-        //}
 
         public ImageDatas GetImageDatas()
         {

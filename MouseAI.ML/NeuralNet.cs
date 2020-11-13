@@ -77,15 +77,15 @@ namespace MouseAI.ML
             K.ResetUids();
         }
 
-        public void InitDataSets(ImageDatas imageDatas, double split, Random r)
+        public void InitDataSets(ImageDatas imageDatas, double split, int seed)
         {
-            dataSets = new DataSets(width, height, imageDatas, split, r);
+            dataSets = new DataSets(width, height, imageDatas, split, seed);
             BuildDataSets();
         }
 
         public void InitDataSets(ImageDatas imageDatas)
         {
-            dataSets = new DataSets(width, height, imageDatas);
+            dataSets = new DataSets(width, height, imageDatas, 0);
         }
 
         public void BuildDataSets()
@@ -235,7 +235,10 @@ namespace MouseAI.ML
             y = y.argmax();
             int index = y.asscalar<int>();
 
-            Console.WriteLine("Prediction: {0}", dataSets.GetImageDatas().isLabelValid(index, guid));
+            bool result = dataSets.GetImageDatas().isLabelValid(index, guid);
+
+            // ToDo: Debugging
+            Console.WriteLine("Prediction Valid: {0}", result);
 
             return index;
         }
@@ -278,7 +281,8 @@ namespace MouseAI.ML
             model.Add(new Dense(num_classes, activation: "softmax"));
 
             // Compile with loss, metrics and optimizer
-            model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
+            model.Compile(loss: "categorical_crossentropy", 
+                optimizer: new Adam(lr: (float)config.LearnRate, decay: (float)config.LearnDecay), metrics: new[] { "accuracy" });
 
             Callback[] callbacks = GetCallbacks(config.isEarlyStop, logname);
 
@@ -294,8 +298,10 @@ namespace MouseAI.ML
         {
             // Build CNN model
             Sequential model = new Sequential();
-            model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
-            model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
+            //model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
+            //model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
+            model.Add(new Conv2D(16, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
+            model.Add(new Conv2D(32, (3, 3).ToTuple(), activation: "relu"));
             model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
             model.Add(new Flatten());
 
@@ -317,10 +323,9 @@ namespace MouseAI.ML
 
             model.Add(new Dense(num_classes, activation: "softmax"));
 
-            
-
             // Compile with loss, metrics and optimizer
-            model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
+            model.Compile(loss: "categorical_crossentropy", 
+                optimizer: new Adam(lr:(float)config.LearnRate, decay:(float)config.LearnDecay), metrics: new[] { "accuracy" });
 
             // Train the model
             model.Fit(x_train, y_train, batch_size: config.Batch, epochs: config.Epochs, verbose: 1,

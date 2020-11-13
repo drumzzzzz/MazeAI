@@ -19,6 +19,7 @@ namespace MouseAI.BL
         public byte[][] mazepath { get; set; }
         public byte[] maze { get; set; }
         public List<byte[]> segments { get; set; }
+        public List<PathNode> pathnodes { get; set; }
 
         public MazeModel()
         { }
@@ -160,6 +161,19 @@ namespace MouseAI.BL
             }
 
             return null;
+        }
+
+        public List<PathNode> GetPathNodes(int index)
+        {
+            if (index < 0 || index >= mazeModels.Count)
+                return null;
+
+            return mazeModels[index].pathnodes;
+        }
+
+        public bool CheckPathNodes()
+        {
+            return mazeModels.All(mm => mm.pathnodes != null && mm.pathnodes.Count != 0);
         }
     }
 }

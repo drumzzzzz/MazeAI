@@ -11,12 +11,12 @@ namespace MouseAI.UI
         private const int BATCH = 10;
         private const int LAYERS = 1;
         private const int NODES = 100;
-        private const bool CNN = false;
+        private const bool CNN = true;
         private const bool NORMALIZE = true;
         private const bool EARLYSTOP = false;
         private const double DROPOUT = 0.05;
         private const int AMOUNT = 1;
-        private const int SEED = 0;
+        private const int SEED = 60;
         private const double SPLIT = 0.70;
         private const double LEARN_RATE = 0.001;
         private const double LEARN_DECAY = 0.00;
