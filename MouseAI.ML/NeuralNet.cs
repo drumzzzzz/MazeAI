@@ -14,6 +14,7 @@ using Python.Runtime;
 using System.Configuration;
 using System.Reflection;
 using Keras.Callbacks;
+using Keras.PreProcessing.Image;
 using MouseAI.SH;
 using MouseAI.PL;
 
@@ -215,6 +216,34 @@ namespace MouseAI.ML
             return idf;
         }
 
+        public int Predict(List<byte[]> image)
+        {
+            if (model_loaded == null)
+                throw new Exception("Invalid Model!");
+
+            NDarray x_data = DataSets.GetDataSet(image, width * height);
+
+            if (config.isCNN)
+            {
+                x_data = (K.ImageDataFormat() == "channels_first")
+                    ? x_data.reshape(x_data.shape[0], 1, height, width)
+                    : x_data.reshape(x_data.shape[0], height, width, 1);
+            }
+
+            NDarray y = model_loaded.Predict(x_data, verbose: 1);
+
+            y = y.argmax();
+            int index = y.asscalar<int>();
+
+            //if (ids[i].Label != labels[index])
+            //{
+            //    ids[i].Index = labels.IndexOf(ids[i].Label) + 1;
+            //    idf.Add(ids[i]);
+            //}
+
+            return index;
+        }
+
         #endregion
 
         #region Models
@@ -327,12 +356,12 @@ namespace MouseAI.ML
 
             //string filename = model_dir + @"\" + stime + ".";
             string filename = Utils.GetFileWithoutExtension(model_dir, stime);
-            Config cfg = (Config)FileIO.DeSerializeXml(typeof(Config), filename + config_ext);
+            config = (Config)FileIO.DeSerializeXml(typeof(Config), filename + config_ext);
 
-            if (cfg == null || string.IsNullOrEmpty(cfg.Model))
+            if (config == null || string.IsNullOrEmpty(config.Model))
                 throw new Exception("Invalid config file");
 
-            model_loaded = BaseModel.ModelFromJson(cfg.Model);
+            model_loaded = BaseModel.ModelFromJson(config.Model);
             model_loaded.LoadWeight(filename + model_ext);
             model_loaded.Summary();
         }

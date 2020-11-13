@@ -255,11 +255,32 @@ namespace MouseAI.ML
             return (x_data, y_labels);
         }
 
+        public static NDarray GetDataSet(IReadOnlyList<byte[]> data, int imagesize)
+        {
+            int count = data.Count;
+            int[,] x_data = new int[count, imagesize];
+            //int[] y_labels = new int[count];
+
+            byte[] bytes;
+
+            for (int i = 0; i < count; i++)
+            {
+                bytes = data[i];
+
+                for (int byteIdx = 0; byteIdx < imagesize; byteIdx++)
+                {
+                    x_data[i, byteIdx] = bytes[GetByteOffset(byteIdx)];
+                }
+            }
+
+            return x_data;
+        }
+
         private static NDarray GetDataSet(IReadOnlyList<byte[]> data)
         {
             int count = data.Count;
             int[,] x_data = new int[count, ImageSize];
-            int[] y_labels = new int[count];
+            //int[] y_labels = new int[count];
 
             byte[] bytes;
 

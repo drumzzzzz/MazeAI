@@ -608,7 +608,11 @@ namespace MouseAI.UI
                     lvwMazes.Enabled = false;
                     isStep = false;
                     SetRunMode(RUN_MODE.RUNNING);
-                    RunModel();
+                    if (runThread == null)
+                    {
+                        SetRunMode(RUN_MODE.STEP);
+                        RunModel();
+                    }
                     return;
                 case "btnStop":
                     isStep = false;
@@ -643,16 +647,10 @@ namespace MouseAI.UI
             SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.NONE);
         }
 
-        private void CloseRunModel()
-        {
-            modelRun.Close();
-            msMain.Enabled = true;
-            Focus();
-        }
-
         private void RunModel()
         {
             maze.Reset();
+
             mouse_last = new Point(-1, -1);
             isThreadCancel = false;
             isValid = false;
@@ -676,14 +674,16 @@ namespace MouseAI.UI
                                 isThreadDone = false;
                                 isStep = false;
                                 SetRunMode(RUN_MODE.STEP);
+                                maze.ProcessRunImage();
                             }
                         }
                         else if (run_mode != RUN_MODE.PAUSED)
                         {
                             isThreadDone = false;
+                            maze.ProcessRunImage();
                         }
                     }
-
+                    UpdateMaze();
                     Application.DoEvents();
                     Thread.Sleep(SEARCH_DELAY);
                 }
@@ -950,8 +950,13 @@ namespace MouseAI.UI
         private void UpdateMaze()
         {
             Point p = maze.GetMousePosition();
-            if (p.X == mouse_last.X && p.Y == mouse_last.Y)
+            //if (p.X == mouse_last.X && p.Y == mouse_last.Y)
+            if (p == mouse_last)
                 return;
+
+            mouse_last = p;
+
+            Console.WriteLine("Mouse Update");
 
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);

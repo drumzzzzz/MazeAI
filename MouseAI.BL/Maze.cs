@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using MouseAI.BL;
@@ -82,6 +83,10 @@ namespace MouseAI
         private string ModelProjectGuid;
 
         private static readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
+
+        private static Bitmap visualbmp;
+        // private static byte[] imagebytes;
+        private List<byte[]> imagebytes;
 
         #endregion
 
@@ -375,10 +380,69 @@ namespace MouseAI
 
         public bool ProcessRunMove()
         {
+            int x = oMouse.x;
+            int y = oMouse.y;
 
+            // Check if mouse can see the cheese
+            if (!isCheesePath)
+                ScanObjects(x, y);
 
+            List<MazeObject> mazeobjects = CheckNode(x, y);
 
+            MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+
+            if (mouse == null)
+            {
+                throw new Exception("Mouse Object Null!");
+            }
+
+            MazeObjects segmentObjects = new MazeObjects {mouse};
+            segmentObjects.AddRange(SearchObjects(mouse.x, mouse.y).Distinct());
+
+            if (imagebytes == null)
+            {
+                imagebytes = new List<byte[]>();
+            }
+            imagebytes.Clear();
+            imagebytes.Add(GenerateVisualImage(segmentObjects));
             return false;
+        }
+
+        public void ProcessRunImage()
+        {
+            if (imagebytes == null || imagebytes.Count == 0)
+            {
+                Console.WriteLine("Invalid image bytes");
+                return;
+            }
+
+            int index = neuralNet.Predict(imagebytes);
+            Console.WriteLine("Index: {0}", index);
+        }
+
+        private static byte[] GenerateVisualImage(MazeObjects mos)
+        {
+            byte b;
+            if (visualbmp == null)
+            {
+                visualbmp = new Bitmap(maze_width, maze_height);
+            }
+
+            Graphics g = Graphics.FromImage(visualbmp);
+            g.Clear(GetColorNN(WHITE));
+
+            foreach (MazeObject mo in mos)
+            {
+                b = GetByteColor(mo);
+                (visualbmp).SetPixel(mo.x, mo.y, GetColorNN(b));
+            }
+
+            MemoryStream memoryStream = new MemoryStream();
+            visualbmp.Save(memoryStream, ImageFormat.Bmp);
+            byte[] bytes = memoryStream.ToArray();
+            memoryStream.Close();
+            
+            return bytes;
         }
 
         #endregion
