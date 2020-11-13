@@ -16,7 +16,7 @@ namespace MouseAI.SH
         public bool isNormalize { get; set; }
         public bool isEarlyStop { get; set; }
         public double DropOut { get; set; }
-        public int DropLayers { get; set; }
+        public int DropOutLayers { get; set; }
         public int Seed { get; set; }
         public double Split { get; set; }
         public double LearnRate { get; set; }

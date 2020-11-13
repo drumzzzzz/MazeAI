@@ -267,7 +267,7 @@ namespace MouseAI.ML
             for (int i = config.Layers; i > -1;i--)
             {
                 model.Add(new Dense(config.Nodes, activation: "relu"));
-                if (config.Amount != 0 && i < config.Amount)
+                if (config.DropOutLayers != 0 && i < config.DropOutLayers)
                 {
                     droput_value = config.DropOut - (dropout_increment * i);
                     model.Add(new Dropout(droput_value));
@@ -307,7 +307,7 @@ namespace MouseAI.ML
             for (int i = config.Layers; i > -1; i--)
             {
                 model.Add(new Dense(config.Nodes, activation: "relu"));
-                if (config.Amount != 0 && i < config.Amount)
+                if (config.DropOutLayers != 0 && i < config.DropOutLayers)
                 {
                     droput_value = config.DropOut - (dropout_increment * i);
                     model.Add(new Dropout(droput_value));
@@ -316,6 +316,8 @@ namespace MouseAI.ML
             }
 
             model.Add(new Dense(num_classes, activation: "softmax"));
+
+            
 
             // Compile with loss, metrics and optimizer
             model.Compile(loss: "categorical_crossentropy", optimizer: new Adam(), metrics: new[] { "accuracy" });
@@ -329,15 +331,15 @@ namespace MouseAI.ML
 
         private static double GetDropOutRate(Config config)
         {
-            if (config.Amount <= 0)
+            if (config.DropOutLayers <= 0)
             {
-                config.Amount = 0;
+                config.DropOutLayers = 0;
                 return 0;
             }
-            if (config.Amount > config.Layers)
-                    config.Amount = config.Layers;
+            if (config.DropOutLayers > config.Layers)
+                    config.DropOutLayers = config.Layers;
 
-            return config.DropOut / config.Amount;
+            return config.DropOut / config.DropOutLayers;
         }
 
         #endregion

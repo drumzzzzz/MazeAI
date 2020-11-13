@@ -18,6 +18,8 @@ namespace MouseAI.UI
         private const int AMOUNT = 1;
         private const int SEED = 0;
         private const double SPLIT = 0.70;
+        private const double LEARN_RATE = 0.001;
+        private const double LEARN_DECAY = 0.00;
 
         public TrainSettings(Config config)
         {
@@ -35,9 +37,11 @@ namespace MouseAI.UI
                     isNormalize = NORMALIZE,
                     isEarlyStop = EARLYSTOP,
                     DropOut = DROPOUT,
-                    Amount = AMOUNT,
+                    DropOutLayers = AMOUNT,
                     Split = SPLIT,
-                    Seed = SEED
+                    Seed = SEED,
+                    LearnRate = LEARN_RATE,
+                    LearnDecay = LEARN_DECAY
                 };
             }
             else
@@ -61,11 +65,12 @@ namespace MouseAI.UI
             nudSeed.Value = config.Seed;
             nudSplit.Value = Convert.ToDecimal(config.Split);
             nudDropOut.Value = Convert.ToDecimal(config.DropOut);
-            nudAmount.Value = config.Amount;
+            nudDropOutLayers.Value = config.DropOutLayers;
+            nudLearnRate.Value = Convert.ToDecimal(config.LearnRate);
+            nudLearnDecay.Value = Convert.ToDecimal(config.LearnDecay);
             chkCNN.Checked = config.isCNN;
             chkNormalize.Checked = config.isNormalize;
             chkEarlyStop.Checked = config.isEarlyStop;
-
         }
 
         private void UpdateConfig()
@@ -77,7 +82,9 @@ namespace MouseAI.UI
             config.Seed = (int) nudSeed.Value;
             config.Split = Convert.ToDouble(nudSplit.Value);
             config.DropOut = Convert.ToDouble(nudDropOut.Value);
-            config.Amount = (int) nudAmount.Value;
+            config.DropOutLayers = (int) nudDropOutLayers.Value;
+            config.LearnRate = Convert.ToDouble(nudLearnRate.Value);
+            config.LearnDecay = Convert.ToDouble(nudLearnDecay.Value);
             config.isCNN = chkCNN.Checked;
             config.isNormalize = chkNormalize.Checked;
             config.isEarlyStop = chkEarlyStop.Checked;
