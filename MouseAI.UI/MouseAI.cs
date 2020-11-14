@@ -64,13 +64,14 @@ namespace MouseAI.UI
 
         private int maze_count;
         private bool isStep;
+        private const int RUN_DELAY = 100;
 
         enum RUN_MODE
         {
             READY,
-            RUNNING,
-            STOPPED,
-            PAUSED,
+            RUN,
+            STOP,
+            PAUSE,
             STEP,
             RESET,
             EXIT
@@ -445,10 +446,10 @@ namespace MouseAI.UI
             }
 
             // ToDo: Debug remove!
-            if (ModelLoad())
-            {
-                ModelRun();
-            }
+            //if (ModelLoad())
+            //{
+            //    ModelRun();
+            //}
         }
 
         private bool LoadModel(string starttime)
@@ -537,7 +538,7 @@ namespace MouseAI.UI
 
                 Console.WriteLine("Mouse move started ...");
 
-                while (run_mode != RUN_MODE.STOPPED && !isValid)
+                while (run_mode != RUN_MODE.STOP && !isValid)
                 {
                     if (run_mode == RUN_MODE.STEP)
                     {
@@ -550,23 +551,28 @@ namespace MouseAI.UI
                         }
                     }
                     else
-                        isProcess = (run_mode != RUN_MODE.PAUSED);
+                        isProcess = (run_mode != RUN_MODE.PAUSE);
 
                     if (isProcess)
                     {
-                        await Task.Run(AIRun);
-                        maze.ProcessVisionImage();
                         isProcess = false;
+                        await Task.Run(AIRun);
+
+                        if (!isValid)
+                            maze.ProcessVisionImage();
+                        else
+                        {
+                            run_mode = RUN_MODE.STOP;
+                            break;
+                        }
 
                         if (run_mode == RUN_MODE.STEP)
-                        {
                             DisplayMazeText();
-                        }
                     }
-          
                     UpdateMaze();
                     Application.DoEvents();
-                    Thread.Sleep(SEARCH_DELAY);
+                    if (run_mode == RUN_MODE.RUN)
+                        Thread.Sleep((run_mode == RUN_MODE.RUN) ? RUN_DELAY : SEARCH_DELAY);
                 }
             }
             catch (Exception e)
@@ -584,7 +590,7 @@ namespace MouseAI.UI
             if (run_mode == RUN_MODE.EXIT)
                 SetRunMode(RUN_MODE.EXIT);
             else
-                SetRunMode(RUN_MODE.STOPPED);
+                SetRunMode(RUN_MODE.STOP);
         }
 
         private void AIRun()
@@ -625,16 +631,16 @@ namespace MouseAI.UI
                     return;
                 case "btnRun":
                     lvwMazes.Enabled = false;
-                    // SetRunMode(RUN_MODE.RUNNING);
-                    SetRunMode(RUN_MODE.STEP);
+                    SetRunMode(RUN_MODE.RUN);
+                    // SetRunMode(RUN_MODE.STEP);
                     RunModel();
                     return;
                 case "btnStop":
                     isStep = false;
-                    SetRunMode(RUN_MODE.STOPPED);
+                    SetRunMode(RUN_MODE.STOP);
                     return;
                 case "btnPause":
-                    SetRunMode(RUN_MODE.PAUSED);
+                    SetRunMode(RUN_MODE.PAUSE);
                     return;
                 case "btnStep":
                     isStep = true;
@@ -663,11 +669,11 @@ namespace MouseAI.UI
                     mdl.btnRun.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     return;
-                case RUN_MODE.STOPPED:
+                case RUN_MODE.STOP:
                     mdl.btnRun.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     return;
-                case RUN_MODE.RUNNING:
+                case RUN_MODE.RUN:
                     mdl.btnPause.Enabled = true;
                     mdl.btnStop.Enabled = true;
                     mdl.btnStep.Enabled = true;
@@ -681,7 +687,7 @@ namespace MouseAI.UI
                         mdl.btnStop.Enabled = true;
                     }
                     return;
-                case RUN_MODE.PAUSED:
+                case RUN_MODE.PAUSE:
                     mdl.btnRun.Enabled = true;
                     mdl.btnStep.Enabled = true;
                     return;
@@ -704,7 +710,7 @@ namespace MouseAI.UI
                 ? string.Format("{0} [{1}]", selected, guid)
                 : string.Empty;
 
-            SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOPPED);
+            SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOP);
         }
 
         #endregion

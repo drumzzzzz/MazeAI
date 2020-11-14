@@ -419,10 +419,8 @@ namespace MouseAI
 
             if (mouse == null)
             {
-                Console.WriteLine("Mouse object is null!");
-                return false;
+                throw new Exception("Mouse Object Null!");
             }
-            //throw new Exception("Mouse Object Null!");
 
             Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
@@ -481,15 +479,9 @@ namespace MouseAI
                         pathNodes.Add(p);
                         count++;
                     }
-
-                    //else
-                    //    break;
-                    //if (pn[i].isJunction)
-                    //    break;
                 }
             }
             Console.WriteLine("Added Path Memories: {0} Total:{1}", count, pathNodes.Count);
-            return;
         }
 
         private bool ProcessPathNode(MazeObject mouse)
@@ -535,16 +527,6 @@ namespace MouseAI
 
         private void CreateVisionImage(MazeObject mouse) // Create a image from visible path of mouse 
         {
-            //if (pathNodes.Count != 0)
-            //{
-            //    foreach (PathNode p in pathNodes)
-            //    {
-            //        if (p.x == mouse.x && p.y == mouse.y)
-            //            break;
-            //        segmentPathObjects.Add(new MazeObject(p.x, p.y));
-            //    }
-            //}
-
             if (segmentPathObjects.Count == 0)
                 segmentPathObjects.Add(mouse);
 
@@ -558,7 +540,6 @@ namespace MouseAI
                 }
             }
 
-            //segmentPathObjects.AddRange(so);
             VisionObjects.Clear();
             VisionObjects.AddRange(segmentPathObjects);
             
@@ -583,11 +564,12 @@ namespace MouseAI
         {
             if (imagebytes == null || imagebytes.Count == 0)
             {
-                Console.WriteLine("Invalid image bytes");
+                //Console.WriteLine("Invalid image bytes");
                 return;
             }
 
             segment_current = neuralNet.Predict(imagebytes, mazeModel.guid);
+            imagebytes.Clear();
             Console.WriteLine("Processed Vision Result: {0}", segment_current);
         }
 
