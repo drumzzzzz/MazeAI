@@ -32,7 +32,7 @@ namespace MouseAI
     {
         public OBJECT_TYPE object_type { get; set; }
         public OBJECT_STATE object_state { get; set; }
-        public DIRECTION direction { get; set; }
+        // public DIRECTION direction { get; set; }
         public int x { get; set; }
         public int y { get; set; }
         public bool isVisited { get; set; }
@@ -57,7 +57,7 @@ namespace MouseAI
             isVision = false;
             this.x = x;
             this.y = y;
-            direction = DIRECTION.SOUTH;
+            //direction = DIRECTION.SOUTH;
         }
 
         public MazeObject(int x, int y)

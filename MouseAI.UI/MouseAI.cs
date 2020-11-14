@@ -944,9 +944,9 @@ namespace MouseAI.UI
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);
 
-            int direction = maze.GetMouseDirection();
+            //int direction = maze.GetMouseDirection();
 
-            canvas.DrawBitmap(Mouse_Bitmaps[direction], (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+            canvas.DrawBitmap(Mouse_Bitmaps[(int)DIRECTION.SOUTH], (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
 
             SKImage image = surface.Snapshot();
             MazeData = image.Encode();

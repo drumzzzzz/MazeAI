@@ -499,7 +499,7 @@ namespace MouseAI
             // Now the mouse needs to choose an optimal and/or random move
             if (!isMouse || count == 0)
             {
-                ChooseBestPath(mouse);
+                ProcessMove(VisionObjects, mouse);
             }
 
             Console.WriteLine("Added Path Memories: {0} Total:{1}", count, pathNodes.Count);
@@ -686,7 +686,7 @@ namespace MouseAI
                     CleanPathObjects();
                 }
 
-                oMouse.direction = DIRECTION.SOUTH;
+                //oMouse.direction = DIRECTION.SOUTH;
                 oMouse.x = mo.x;
                 oMouse.y = mo.y;
                 mo.object_state = OBJECT_STATE.MOUSE;
@@ -715,7 +715,7 @@ namespace MouseAI
 
                 oMouse.x = mo_oldest.x;
                 oMouse.y = mo_oldest.y;
-                oMouse.direction = DIRECTION.SOUTH;
+                //oMouse.direction = DIRECTION.SOUTH;
 
                 if (!mouse.isJunction)
                     mouse.isDeadEnd = true;
@@ -1817,10 +1817,10 @@ namespace MouseAI
             return new Point(oMouse.x, oMouse.y);
         }
 
-        public int GetMouseDirection()
-        {
-            return (int)oMouse.direction;
-        }
+        //public int GetMouseDirection()
+        //{
+        //    return (int)oMouse.direction;
+        //}
 
         public static bool IsInBounds(int x, int y)
         {
