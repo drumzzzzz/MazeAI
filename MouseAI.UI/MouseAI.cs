@@ -34,9 +34,6 @@ namespace MouseAI.UI
         private MazeNew mazeNew;
         private MazeManage mazeManage;
 
-        private bool isValid;
-        private bool isThreadDone;
-        private bool isThreadCancel;
         private const int MAZE_WIDTH = 41;
         private const int MAZE_HEIGHT = 25;
         private const int MAZE_SCALE_WIDTH_PX = 28;
@@ -65,6 +62,10 @@ namespace MouseAI.UI
         private int maze_count;
         private bool isStep;
         private const int RUN_DELAY = 100;
+
+        private bool isCheese;
+        private bool isThreadDone;
+        private bool isThreadCancel;
 
         enum RUN_MODE
         {
@@ -288,7 +289,7 @@ namespace MouseAI.UI
 
             DrawMaze();
 
-            if (isValid)
+            if (isCheese)
             {
                 maze.CalculatePath();
                 maze.CalculateSegments();
@@ -303,7 +304,7 @@ namespace MouseAI.UI
 
         private void AISearch()
         {
-            isValid = false;
+            isCheese = false;
             try
             {
                 while (!maze.ProcessMouseMove())
@@ -311,12 +312,12 @@ namespace MouseAI.UI
                     Thread.Sleep(SEARCH_DELAY);
                 }
                 Console.WriteLine("Path solved for {0}", maze.GetMazeModelGUID());
-                isValid = true;
+                isCheese = true;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Search Error:" + e.Message);
-                isValid = false;
+                isCheese = false;
             }
         }
 
@@ -528,7 +529,7 @@ namespace MouseAI.UI
         private async void RunModel()
         {
             mouse_last = new Point(-1, -1);
-            isValid = false;
+            isCheese = false;
             bool isProcess = false;
 
             try
@@ -538,7 +539,7 @@ namespace MouseAI.UI
 
                 Console.WriteLine("Mouse move started ...");
 
-                while (run_mode != RUN_MODE.STOP && !isValid)
+                while (run_mode != RUN_MODE.STOP)
                 {
                     if (run_mode == RUN_MODE.STEP)
                     {
@@ -556,15 +557,13 @@ namespace MouseAI.UI
                     if (isProcess)
                     {
                         isProcess = false;
-                        await Task.Run(AIRun);
 
-                        if (!isValid)
-                            maze.ProcessVisionImage();
-                        else
+                        if (await Task.Run(AIRun))
                         {
-                            run_mode = RUN_MODE.STOP;
-                            break;
+                            SetRunMode(RUN_MODE.STOP);
                         }
+                        else
+                            maze.ProcessVisionImage();
 
                         if (run_mode == RUN_MODE.STEP)
                             DisplayMazeText();
@@ -580,7 +579,7 @@ namespace MouseAI.UI
                 DisplayError("Run model error", e, false);
             }
 
-            if (isValid)
+            if (isCheese)
                 Console.WriteLine("Mouse found the cheese!");
             else
                 Console.WriteLine("Search Cancelled.");
@@ -593,9 +592,9 @@ namespace MouseAI.UI
                 SetRunMode(RUN_MODE.STOP);
         }
 
-        private void AIRun()
+        private bool AIRun()
         {
-            isValid = maze.ProcessRunMove();
+            return maze.ProcessRunMove();
         }
 
         private void ModelRun()
@@ -632,7 +631,6 @@ namespace MouseAI.UI
                 case "btnRun":
                     lvwMazes.Enabled = false;
                     SetRunMode(RUN_MODE.RUN);
-                    // SetRunMode(RUN_MODE.STEP);
                     RunModel();
                     return;
                 case "btnStop":

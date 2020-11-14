@@ -425,6 +425,9 @@ namespace MouseAI
                 throw new Exception("Mouse Object Null!");
             }
 
+            if (mouse.x == cheese_x && mouse.y == cheese_y)
+                return true;
+
             Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
             ProcessVisionState(mouse);
