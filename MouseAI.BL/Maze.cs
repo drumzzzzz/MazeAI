@@ -38,7 +38,7 @@ namespace MouseAI
         private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
         private Config config;
 
-        private MazeObjects segmentObjects;
+        private readonly MazeObjects segmentPathObjects;
         private readonly List<PathNode> pathNodes;
         private int lastNode;
 
@@ -115,7 +115,7 @@ namespace MouseAI
             mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
             mazePaths = new MazePaths(maze_width, maze_height);
             pathNodes = new List<PathNode>();
-            segmentObjects = new MazeObjects();
+            segmentPathObjects = new MazeObjects();
 
             for (int i = 0; i < scanObjects.Length; i++)
             {
@@ -398,7 +398,7 @@ namespace MouseAI
                 throw new Exception("Invalid maze model path nodes!");
 
             pathNodes.Clear();
-            segmentObjects.Clear();
+            segmentPathObjects.Clear();
             lastNode = 0;
             neuralNet.InitDataSets(mazeModels.GetImageSegments());
         }
@@ -465,6 +465,7 @@ namespace MouseAI
             Console.WriteLine("Processing Path node memory for index: {0}", segment_current);
 
             PathNode p;
+            int count = 0;
             for (int i = 0; i < pn.Count; i++)
             {
                 p = pn[i];
@@ -474,15 +475,20 @@ namespace MouseAI
                 if (isMouse)
                 {
                     // If visible and not a duplicate
-                    if (VisionObjects.Any(o => o.x == p.x && o.y == p.y) && !pathNodes.Any(o=> o.x == p.x && o.y == p.y))
+                    if (VisionObjects.Any(o => o.x == p.x && o.y == p.y) &&
+                        !pathNodes.Any(o => o.x == p.x && o.y == p.y))
+                    {
                         pathNodes.Add(p);
-                    else
-                        break;
+                        count++;
+                    }
+
+                    //else
+                    //    break;
                     //if (pn[i].isJunction)
                     //    break;
                 }
             }
-            Console.WriteLine("Found {0} Path node memories", pathNodes.Count);
+            Console.WriteLine("Added Path Memories: {0} Total:{1}", count, pathNodes.Count);
             return;
         }
 
@@ -529,26 +535,39 @@ namespace MouseAI
 
         private void CreateVisionImage(MazeObject mouse) // Create a image from visible path of mouse 
         {
-            if (pathNodes.Count != 0)
+            //if (pathNodes.Count != 0)
+            //{
+            //    foreach (PathNode p in pathNodes)
+            //    {
+            //        if (p.x == mouse.x && p.y == mouse.y)
+            //            break;
+            //        segmentPathObjects.Add(new MazeObject(p.x, p.y));
+            //    }
+            //}
+
+            if (segmentPathObjects.Count == 0)
+                segmentPathObjects.Add(mouse);
+
+            IList<MazeObject> so = SearchObjects(mouse.x, mouse.y).Distinct().ToList();
+
+            foreach (MazeObject mo in so)
             {
-                foreach (PathNode p in pathNodes)
+                if (!segmentPathObjects.Any(o => o.x == mo.x && o.y == mo.y))
                 {
-                    if (p.x == mouse.x && p.y == mouse.y)
-                        break;
-                    segmentObjects.Add(new MazeObject(p.x, p.y));
+                    segmentPathObjects.Add(mo);
                 }
             }
-            segmentObjects.Add(mouse);
-            segmentObjects.AddRange(SearchObjects(mouse.x, mouse.y).Distinct());
+
+            //segmentPathObjects.AddRange(so);
             VisionObjects.Clear();
-            VisionObjects.AddRange(segmentObjects);
+            VisionObjects.AddRange(segmentPathObjects);
             
             if (imagebytes == null)
             {
                 imagebytes = new List<byte[]>();
             }
             imagebytes.Clear();
-            imagebytes.Add(GenerateVisualImage(segmentObjects));
+            imagebytes.Add(GenerateVisualImage(segmentPathObjects));
         }
 
         private void UpdateVisionState()
