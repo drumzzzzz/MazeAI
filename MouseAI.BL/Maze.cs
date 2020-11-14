@@ -31,16 +31,11 @@ namespace MouseAI
         private static MazeModels mazeModels;
         private static MazeModel mazeModel;
         private static List<MazeObject> PathObjects;
-        private static List<MazeObject> VisionObjects;
         private MazeObjectSegments mazeObjectSegments;
         private static MazeObject oMouse;
         private static MazePaths mazePaths;
         private readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
         private Config config;
-
-        private readonly MazeObjects segmentPathObjects;
-        private readonly List<PathNode> pathNodes;
-        private int lastNode;
 
         // Db
         private static MazeDb mazeDb;
@@ -89,11 +84,17 @@ namespace MouseAI
 
         private static readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
+        // Model Running
+        private readonly MazeObjects segmentPathObjects;
+        private readonly List<PathNode> pathNodes;
+        private int lastNode;
         private static Bitmap visualbmp;
         private List<byte[]> imagebytes;
         private int segment_last;
         private int segment_current;
         private const int INVALID = -1;
+        private static List<MazeObject> VisionObjects;
+        private static List<MazeObject> segmentStartObjects;
 
         #endregion
 
@@ -112,6 +113,7 @@ namespace MouseAI
             sb = new StringBuilder();
             PathObjects = new List<MazeObject>();
             VisionObjects = new List<MazeObject>();
+            segmentStartObjects = new List<MazeObject>();
             mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
             mazePaths = new MazePaths(maze_width, maze_height);
             pathNodes = new List<PathNode>();
@@ -399,6 +401,7 @@ namespace MouseAI
 
             pathNodes.Clear();
             segmentPathObjects.Clear();
+            segmentStartObjects.Clear();
             lastNode = 0;
             neuralNet.InitDataSets(mazeModels.GetImageSegments());
         }
@@ -482,19 +485,27 @@ namespace MouseAI
                 }
             }
 
+            // Build a memory of the starting visible segment
+            if (segmentStartObjects.Count == 0)
+            {
+                foreach (MazeObject mo in VisionObjects)
+                {
+                    segmentStartObjects.Add(new MazeObject(OBJECT_TYPE.SPACE, mo.x, mo.y));
+                }
+            }
+
             // The mouse is confused because it is in an unrecognized portion of a maze due
             // to the predicted neural path memory not relating to anything it sees.
             // Now the mouse needs to choose an optimal and/or random move
-            if (!isMouse && pathNodes.Count == 0)
+            if (!isMouse || count == 0)
             {
-                ChooseBestPath();
-                return;
+                ChooseBestPath(mouse);
             }
 
             Console.WriteLine("Added Path Memories: {0} Total:{1}", count, pathNodes.Count);
         }
 
-        private void ChooseBestPath()
+        private void ChooseBestPath(MazeObject mouse)
         {
             Console.WriteLine("The mouse has not recognized a path");
             if (VisionObjects.Count == 0)
@@ -502,7 +513,7 @@ namespace MouseAI
                 Console.WriteLine("Move Error: there are no visible path objects to choose!");
             }
 
-
+            ProcessMove(VisionObjects, mouse);
         }
 
         private bool ProcessPathNode(MazeObject mouse)
