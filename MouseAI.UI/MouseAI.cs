@@ -445,10 +445,10 @@ namespace MouseAI.UI
             }
 
             // ToDo: Debug remove!
-            //if (ModelLoad())
-            //{
-            //    ModelRun();
-            //}
+            if (ModelLoad())
+            {
+                ModelRun();
+            }
         }
 
         private bool LoadModel(string starttime)

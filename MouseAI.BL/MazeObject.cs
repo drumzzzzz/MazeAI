@@ -59,6 +59,12 @@ namespace MouseAI
             this.y = y;
             direction = DIRECTION.SOUTH;
         }
+
+        public MazeObject(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
     }
 
     public class MazeObjects : List<MazeObject>
