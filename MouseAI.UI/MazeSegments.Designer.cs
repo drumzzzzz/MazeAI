@@ -34,12 +34,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(786, 518);
+            this.ClientSize = new System.Drawing.Size(782, 514);
             this.ControlBox = false;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "MazeSegments";
             this.ShowIcon = false;
-            this.ShowInTaskbar = false;
             this.Text = "Maze Segments";
             this.TopMost = true;
             this.ResumeLayout(false);

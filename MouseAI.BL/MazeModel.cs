@@ -20,6 +20,7 @@ namespace MouseAI.BL
         public byte[] maze { get; set; }
         public List<byte[]> segments { get; set; }
         public List<PathNode> pathnodes { get; set; }
+        public int errors { get; set; }
 
         public MazeModel()
         { }

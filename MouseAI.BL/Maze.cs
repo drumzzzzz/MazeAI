@@ -383,7 +383,21 @@ namespace MouseAI
 
             ImageDatas imageSegments = mazeModels.GetImageSegments();
             neuralNet.InitDataSets(imageSegments);
+
             return neuralNet.Predict(cfg.isCNN);
+        }
+
+        public bool UpdateAccuracies(ImageDatas imageSegments)
+        {
+            if (imageSegments == null || imageSegments.Count == 0 || mazeModels == null || mazeModels.Count() == 0)
+                return false;
+
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
+            {
+                mm.errors = imageSegments.Count(o => o.Label.Equals(mm.guid, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return true;
         }
 
         #endregion
@@ -1345,13 +1359,22 @@ namespace MouseAI
             return mazeModels?.Guid;
         }
 
-        public bool SetTested(bool isTested)
+        public bool GetTested()
+        {
+            return mazeModel != null && mazeModel.isPath;
+        }
+
+        public void SetTested(bool isTested)
         {
             if (mazeModel == null)
-                return false;
+                return;
 
             mazeModel.isPath = isTested;
-            return true;
+        }
+
+        public int GetAccuracy()
+        {
+            return mazeModel == null ? 0 : mazeModel.errors;
         }
 
 
@@ -1380,6 +1403,14 @@ namespace MouseAI
         private static byte GetByteColor(MazeObject mo)
         {
             return mo.isDeadEnd ? (byte)GREY : (byte)BLACK;
+        }
+
+        public List<int> GetMazeModelAccuracies()
+        {
+            if (mazeModels == null || mazeModels.Count() == 0)
+                return null;
+
+            return mazeModels.GetMazeModels().Select(mm => mm.errors).ToList();
         }
 
         #endregion

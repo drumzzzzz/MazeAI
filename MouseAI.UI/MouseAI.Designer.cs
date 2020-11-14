@@ -53,6 +53,7 @@
             this.c2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
+            this.c3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
@@ -189,21 +190,21 @@
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.debugToolStripMenuItem.Text = "Debug";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // loadLastToolStripMenuItem
             // 
             this.loadLastToolStripMenuItem.Name = "loadLastToolStripMenuItem";
-            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.loadLastToolStripMenuItem.Text = "Load Last";
             this.loadLastToolStripMenuItem.Click += new System.EventHandler(this.loadLastToolStripMenuItem_Click);
             // 
@@ -221,7 +222,7 @@
             // 
             this.mazeTextToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.mazeTextToolStripMenuItem.Name = "mazeTextToolStripMenuItem";
-            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.mazeTextToolStripMenuItem.Text = "Maze Text";
             this.mazeTextToolStripMenuItem.Click += new System.EventHandler(this.mazeTextToolStripMenuItem_Click);
             // 
@@ -229,7 +230,7 @@
             // 
             this.mazeSegmentsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
-            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
             this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
             // 
@@ -238,14 +239,15 @@
             this.lvwMazes.AutoArrange = false;
             this.lvwMazes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.c1,
-            this.c2});
+            this.c2,
+            this.c3});
             this.lvwMazes.FullRowSelect = true;
             this.lvwMazes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lvwMazes.HideSelection = false;
-            this.lvwMazes.Location = new System.Drawing.Point(797, 38);
+            this.lvwMazes.Location = new System.Drawing.Point(744, 38);
             this.lvwMazes.MultiSelect = false;
             this.lvwMazes.Name = "lvwMazes";
-            this.lvwMazes.Size = new System.Drawing.Size(95, 500);
+            this.lvwMazes.Size = new System.Drawing.Size(150, 500);
             this.lvwMazes.TabIndex = 11;
             this.lvwMazes.UseCompatibleStateImageBehavior = false;
             this.lvwMazes.View = System.Windows.Forms.View.Details;
@@ -258,6 +260,7 @@
             // c2
             // 
             this.c2.Text = "Path";
+            this.c2.Width = 37;
             // 
             // pbxPath
             // 
@@ -283,6 +286,10 @@
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
             // 
+            // c3
+            // 
+            this.c3.Text = "%Acc";
+            // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
@@ -296,6 +303,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
+            this.MaximizeBox = false;
             this.Name = "MouseAI";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "MouseAI";
@@ -336,6 +344,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mazeTextToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
+        private System.Windows.Forms.ColumnHeader c3;
     }
 }
 

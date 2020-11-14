@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using MouseAI.BL;
 using MouseAI.ML;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -744,6 +745,11 @@ namespace MouseAI.UI
                 if (ids == null)
                     throw new Exception("Prediction result error!");
 
+                if (maze.UpdateAccuracies(ids))
+                {
+                    UpdateItemAccuracies(maze.GetMazeModelAccuracies());
+                }
+
                 modelPredict.txtResults.Text = ids.GetResults();
                 modelPredict.SetImages(ids);
             }
@@ -787,7 +793,7 @@ namespace MouseAI.UI
 
         private void InitMazeGraphics()
         {
-            pbxPath.Width = MAZE_WIDTH * 3;
+            pbxPath.Width = MAZE_WIDTH * 4;
             pbxPath.Height = MAZE_HEIGHT * 4;
             pbxMaze.Width = MAZE_WIDTH_PX;
             pbxMaze.Height = MAZE_HEIGHT_PX;
@@ -798,6 +804,8 @@ namespace MouseAI.UI
             pbxPath.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10);
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
+            MinimumSize = new Size(Width, Height);
+            MaximumSize = new Size(Width, Height);
 
             BlockColor = new SKColor(
                     red: 46,
@@ -843,11 +851,8 @@ namespace MouseAI.UI
             if (bmp != null)
             {
                 pbxPath.Image = new Bitmap(bmp);
-
-                if (maze.SetTested(true))
-                {
-                    UpdateItemState(true);
-                }
+                maze.SetTested(true);
+                UpdateItemState(maze.GetTested(), maze.GetAccuracy());
             }
         }
 
@@ -1108,13 +1113,25 @@ namespace MouseAI.UI
 
         #region Listview
 
-        private void UpdateItemState(bool isPath)
+        private void UpdateItemAccuracies(IReadOnlyList<int> values)
+        {
+            int index = 0;
+            foreach (ListViewItem item in lvwMazes.Items)
+            {
+                item.SubItems[2].Text = values[index++].ToString();
+                if (index >= values.Count)
+                    break;
+            }
+        }
+
+        private void UpdateItemState(bool isPath, double Acc)
         {
             if (lvwMazes.SelectedItems.Count == 0 || lvwMazes.SelectedItems[0] == null)
                 return;
 
             ListViewItem item = lvwMazes.SelectedItems[0];
-            item.SubItems[1].Text = (isPath) ? "YES" : "NO";
+            item.SubItems[1].Text = (isPath) ? "Y" : "N";
+            item.SubItems[2].Text = Acc.ToString("#.##");
             lvwMazes.Refresh();
         }
 
@@ -1134,7 +1151,8 @@ namespace MouseAI.UI
             for (int i = 0; i < maze.GetMazeModelSize(); i++)
             {
                 ListViewItem item = new ListViewItem((i + 1).ToString());
-                item.SubItems.Add(maze.isModelBMP(i) ? "YES" : "NO");
+                item.SubItems.Add(maze.isModelBMP(i) ? "Y" : "N");
+                item.SubItems.Add("0");
                 lvwMazes.Items.Add(item);
             }
 

@@ -146,7 +146,6 @@
             this.Controls.Add(this.pnlSelections);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "MazeText";
-            this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Mouse AI";
             this.pnlSelections.ResumeLayout(false);
