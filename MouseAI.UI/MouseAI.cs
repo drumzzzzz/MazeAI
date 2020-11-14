@@ -645,6 +645,11 @@ namespace MouseAI.UI
                 case "btnStep":
                     isStep = true;
                     SetRunMode(RUN_MODE.STEP);
+                    if (lvwMazes.Enabled)
+                    {
+                        lvwMazes.Enabled = false;
+                        RunModel();
+                    }
                     return;
             }
         }
@@ -667,6 +672,7 @@ namespace MouseAI.UI
                     return;
                 case RUN_MODE.READY:
                     mdl.btnRun.Enabled = true;
+                    mdl.btnStep.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     return;
                 case RUN_MODE.STOP:

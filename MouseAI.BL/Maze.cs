@@ -481,7 +481,28 @@ namespace MouseAI
                     }
                 }
             }
+
+            // The mouse is confused because it is in an unrecognized portion of a maze due
+            // to the predicted neural path memory not relating to anything it sees.
+            // Now the mouse needs to choose an optimal and/or random move
+            if (!isMouse && pathNodes.Count == 0)
+            {
+                ChooseBestPath();
+                return;
+            }
+
             Console.WriteLine("Added Path Memories: {0} Total:{1}", count, pathNodes.Count);
+        }
+
+        private void ChooseBestPath()
+        {
+            Console.WriteLine("The mouse has not recognized a path");
+            if (VisionObjects.Count == 0)
+            {
+                Console.WriteLine("Move Error: there are no visible path objects to choose!");
+            }
+
+
         }
 
         private bool ProcessPathNode(MazeObject mouse)
