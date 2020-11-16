@@ -89,7 +89,6 @@ namespace MouseAI
         private int lastNode;
         private static Bitmap visualbmp;
         private List<byte[]> imagebytes;
-        private int segment_last;
         private int segment_current;
         private const int INVALID = -1;
         private static List<MazeObject> VisionObjects;
@@ -140,11 +139,6 @@ namespace MouseAI
                 throw new Exception("Could not create archive directory");
 
             mazeDb = new MazeDb();
-        }
-
-        public void ClearMazeModels()
-        {
-            mazeModels.Clear();
         }
 
         public void AddMazeModel()
@@ -402,18 +396,18 @@ namespace MouseAI
 
         #endregion
 
-        #region Neural Network Running
+        #region Neural Network Run Movement
 
         public void InitRunMove()
         {
             Console.Clear();
-            segment_last = INVALID;
             segment_current = INVALID;
 
             if(!mazeModels.CheckPathNodes())
                 throw new Exception("Invalid maze model path nodes!");
 
             pathNodes.Clear();
+            PathObjects.Clear();
             badNodes.Clear();
             segmentPathObjects.Clear();
             segmentStartObjects.Clear();
@@ -547,20 +541,6 @@ namespace MouseAI
             if (mo != null)
             {
                 UpdatePathObject(mazeobjects, mo, mouse);
-                //if (mazeobjects.Count >= 4)
-                //{
-                //    mouse.isJunction = true;
-                //    CleanPathObjects();
-                //}
-
-                //oMouse.x = mo.x;
-                //oMouse.y = mo.y;
-                //mo.object_state = OBJECT_STATE.MOUSE;
-                //mo.dtLastVisit = DateTime.UtcNow;
-                //mo.isPath = true;
-                //mouse.isVisited = true;
-                //mouse.object_state = OBJECT_STATE.VISITED;
-                //PathObjects.Add(mo);
             }
             else
             {
@@ -608,7 +588,6 @@ namespace MouseAI
                 mouse.isJunction = true;
                 CleanPathObjects();
             }
-
             oMouse.x = mo.x;
             oMouse.y = mo.y;
             mo.object_state = OBJECT_STATE.MOUSE;
@@ -640,51 +619,30 @@ namespace MouseAI
                         if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse)) // If mouse can move on the next node
                         {
                             mo = MazeObjects[pn.x, pn.y];
-
                             UpdatePathObject(mazeobjects, mo, mouse);
-                            //mo.object_state = OBJECT_STATE.MOUSE;
-                            //mo.isPath = true;
-                            //mouse.isVisited = true;
-                            //mouse.object_state = OBJECT_STATE.VISITED;
-                            //oMouse.x = mo.x;
-                            //oMouse.y = mo.y;
-
                             lastNode = i + 1;
-                            segment_last = segment_current;
                             segment_current = INVALID;
-                            //PathObjects.Add(mo);
                             return true;
                         }
-                        else // Error! This is an invalid path
+
+                        Console.WriteLine("Bad path encountered");
+                        segment_current = INVALID;
+
+                        for (int idx = pathNodes.Count - 1; idx > -1; idx--)
                         {
-                            Console.WriteLine("Bad path encountered");
-                            
-                            segment_last = segment_current;
-                            segment_current = INVALID;
+                            pn = pathNodes[idx];
+                            mo = MazeObjects[pn.x, pn.y];
 
-                            for (int idx = pathNodes.Count - 1; idx > -1; idx--)
+                            if (!mo.isJunction)
                             {
-                                pn = pathNodes[idx];
-                                mo = MazeObjects[pn.x, pn.y];
+                                if (!badNodes.Any(o => o.x == mo.x && o.y == mo.y))
+                                    badNodes.Add(pn);
 
-                                if (!mo.isJunction)
-                                {
-                                    if (!badNodes.Any(o => o.x == mo.x && o.y == mo.y))
-                                        badNodes.Add(pn);
-
-                                    pathNodes.RemoveAt(idx);
-                                }
+                                pathNodes.RemoveAt(idx);
                             }
-
-                            //lastNode = pathNodes.Count - 1;
-                            break;
                         }
                     }
-                    else // No further moves
-                    {
-                        //lastNode = pathNodes.Count - 1;
-                        break;
-                    }
+                    break;
                 }
             }
             lastNode = pathNodes.Count - 1;
@@ -704,7 +662,7 @@ namespace MouseAI
             return false;
         }
 
-        private void CreateVisionImage(MazeObject mouse) // Create a image from visible path of mouse 
+        private void CreateVisionImage(MazeObject mouse) // Create a image from the visible path of mouse 
         {
             if (segmentPathObjects.Count == 0)
                 segmentPathObjects.Add(mouse);
@@ -732,9 +690,6 @@ namespace MouseAI
 
         private void UpdateVisionState()
         {
-            if (segment_current != INVALID)
-                segment_last = segment_current;
-
             segment_current = INVALID;
             Console.WriteLine("Processed and Updated Vision");
         }
@@ -743,7 +698,6 @@ namespace MouseAI
         {
             if (imagebytes == null || imagebytes.Count == 0)
             {
-                //Console.WriteLine("Invalid image bytes");
                 return;
             }
 
@@ -761,13 +715,13 @@ namespace MouseAI
             }
 
             Graphics g = Graphics.FromImage(visualbmp);
-            g.Clear(GetColorNN(WHITE));
+            g.Clear(GetColor(WHITE));
 
             foreach (MazeObject mo in mos)
             {
                 mo.isVision = true;
                 b = GetByteColor(mo);
-                (visualbmp).SetPixel(mo.x, mo.y, GetColorNN(b));
+                (visualbmp).SetPixel(mo.x, mo.y, GetColor(b));
             }
 
             MemoryStream memoryStream = new MemoryStream();
@@ -1208,12 +1162,12 @@ namespace MouseAI
             {
                 mos = mazeObjectSegments[idx];
                 g = Graphics.FromImage(bmp);
-                g.Clear(GetColorNN(WHITE));
+                g.Clear(GetColor(WHITE));
 
                 foreach (MazeObject mo in mos)
                 {
                     b = GetByteColor(mo);
-                    (bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
+                    (bmp).SetPixel(mo.x, mo.y, GetColor(b));
                 }
 
                 memoryStream = new MemoryStream();
@@ -1259,13 +1213,13 @@ namespace MouseAI
 
             mp.bmp = new Bitmap(maze_width, maze_height);
             Graphics g = Graphics.FromImage(mp.bmp);
-            g.Clear(GetColorNN(WHITE));
+            g.Clear(GetColor(WHITE));
 
             foreach (MazeObject mo in PathObjects)
             {
                 b = GetByteColor(mo);
                 mp.mazepath[mo.y][mo.x] = b;
-                (mp.bmp).SetPixel(mo.x, mo.y, GetColorNN(b));
+                (mp.bmp).SetPixel(mo.x, mo.y, GetColor(b));
             }
         }
 
@@ -1488,11 +1442,6 @@ namespace MouseAI
             return mazeModel?.guid;
         }
 
-        public string GetMazeModelsGUID()
-        {
-            return mazeModels?.Guid;
-        }
-
         public bool GetTested()
         {
             return mazeModel != null && mazeModel.isPath;
@@ -1511,26 +1460,13 @@ namespace MouseAI
             return mazeModel == null ? 0 : mazeModel.errors;
         }
 
-
         private static Color GetColor(byte b)
         {
             switch (b)
             {
                 case BLACK: return Color.Black;
-                case GREY: return Color.Gray;
                 case WHITE: return Color.White;
-                default: return Color.Yellow;
-            }
-        }
-
-        private static Color GetColorNN(byte b)
-        {
-            switch (b)
-            {
-                case BLACK: return Color.Black;
-                case GREY: return Color.Black;
-                case WHITE: return Color.White;
-                default: return Color.Yellow;
+                default: return Color.White;
             }
         }
 
@@ -1599,14 +1535,15 @@ namespace MouseAI
 
         public static string GetModelSummary(string starttime)
         {
-            string filename = model_dir + DIR + starttime + "." + CONFIG_EXT;
+            string filename = Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT);
 
             try
             {
                 return FileIO.ReadXml(filename, IGNORE_VALUES);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine("Error reading summary: {0}", e.Message);
             }
 
             return null;
@@ -1792,19 +1729,9 @@ namespace MouseAI
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error reading last project model", e);
+                Console.WriteLine("Error reading last project model: {0}", e.Message);
                 return string.Empty;
             }
-        }
-
-        public string GetLogDir()
-        {
-            return log_dir;
-        }
-
-        public string GetModelsDir()
-        {
-            return model_dir;
         }
 
         #endregion

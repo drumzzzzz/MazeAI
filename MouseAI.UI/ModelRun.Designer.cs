@@ -35,12 +35,13 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.btnPause = new System.Windows.Forms.Button();
             this.btnStep = new System.Windows.Forms.Button();
+            this.btnBack = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnExit
             // 
             this.btnExit.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(197, 149);
+            this.btnExit.Location = new System.Drawing.Point(255, 146);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(84, 26);
             this.btnExit.TabIndex = 21;
@@ -107,12 +108,23 @@
             this.btnStep.Text = "STEP";
             this.btnStep.UseVisualStyleBackColor = true;
             // 
+            // btnBack
+            // 
+            this.btnBack.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnBack.Location = new System.Drawing.Point(142, 146);
+            this.btnBack.Name = "btnBack";
+            this.btnBack.Size = new System.Drawing.Size(84, 26);
+            this.btnBack.TabIndex = 28;
+            this.btnBack.Text = "BACK";
+            this.btnBack.UseVisualStyleBackColor = true;
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(495, 205);
+            this.ClientSize = new System.Drawing.Size(491, 201);
             this.ControlBox = false;
+            this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnStep);
             this.Controls.Add(this.btnPause);
             this.Controls.Add(this.btnStop);
@@ -141,5 +153,6 @@
         public System.Windows.Forms.Button btnStop;
         public System.Windows.Forms.Button btnPause;
         public System.Windows.Forms.Button btnStep;
+        public System.Windows.Forms.Button btnBack;
     }
 }

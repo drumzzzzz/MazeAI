@@ -4,12 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
-using MouseAI.BL;
 using MouseAI.ML;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -68,7 +65,7 @@ namespace MouseAI.UI
         private bool isThreadDone;
         private bool isThreadCancel;
 
-        enum RUN_MODE
+        private enum RUN_MODE
         {
             READY,
             RUN,
@@ -76,7 +73,8 @@ namespace MouseAI.UI
             PAUSE,
             STEP,
             RESET,
-            EXIT
+            EXIT,
+            BACK
         }
 
         private RUN_MODE run_mode;
@@ -528,6 +526,11 @@ namespace MouseAI.UI
 
         #region Model Running
 
+        private bool isRunMode()
+        {
+            return (run_mode == RUN_MODE.STEP || run_mode == RUN_MODE.RUN || run_mode == RUN_MODE.PAUSE);
+        }
+
         private async void RunModel()
         {
             mouse_last = new Point(-1, -1);
@@ -540,7 +543,7 @@ namespace MouseAI.UI
 
                 Console.WriteLine("Mouse move started ...");
 
-                while (run_mode != RUN_MODE.STOP)
+                while (isRunMode())
                 {
                     if (run_mode == RUN_MODE.STEP)
                     {
@@ -585,7 +588,9 @@ namespace MouseAI.UI
             lvwMazes.Enabled = true;
 
             if (run_mode == RUN_MODE.EXIT)
-                SetRunMode(RUN_MODE.EXIT);
+                RunExit();
+            else if (run_mode == RUN_MODE.BACK)
+                RunBack();
             else
                 SetRunMode(RUN_MODE.STOP);
         }
@@ -624,7 +629,16 @@ namespace MouseAI.UI
             switch (btn.Name)
             {
                 case "btnExit":
+                    if (!isRunMode())
+                        RunExit();
+
                     SetRunMode(RUN_MODE.EXIT);
+                    return;
+                case "btnBack":
+                    if (!isRunMode())
+                        RunBack();
+
+                    SetRunMode(RUN_MODE.BACK);
                     return;
                 case "btnRun":
                     lvwMazes.Enabled = false;
@@ -650,6 +664,18 @@ namespace MouseAI.UI
             }
         }
 
+        private void RunExit()
+        {
+            modelRun.Close();
+            msMain.Enabled = true;
+        }
+
+        private void RunBack()
+        {
+            modelRun.Close();
+            RunTest();
+        }
+
         private void SetRunMode(RUN_MODE _run_mode)
         {
             if (modelRun == null)
@@ -663,17 +689,19 @@ namespace MouseAI.UI
             switch (run_mode)
             {
                 case RUN_MODE.EXIT:
-                    modelRun.Close();
-                    msMain.Enabled = true;
+                    return;
+                case RUN_MODE.BACK:
                     return;
                 case RUN_MODE.READY:
                     mdl.btnRun.Enabled = true;
                     mdl.btnStep.Enabled = true;
                     mdl.btnExit.Enabled = true;
+                    mdl.btnBack.Enabled = true;
                     return;
                 case RUN_MODE.STOP:
                     mdl.btnRun.Enabled = true;
                     mdl.btnExit.Enabled = true;
+                    mdl.btnBack.Enabled = true;
                     return;
                 case RUN_MODE.RUN:
                     mdl.btnPause.Enabled = true;
@@ -1187,14 +1215,6 @@ namespace MouseAI.UI
             return false;
         }
 
-        //private void SelectMaze()
-        //{
-        //    if (lvwMazes.Items.Count > 0 && lvwMazes.FocusedItem != null && SelectMaze(lvwMazes.FocusedItem.Index))
-        //    {
-        //        SelectMaze(lvwMazes.FocusedItem.Index);
-        //    }
-        //}
-
         private bool SelectMaze(int index)
         {
             try
@@ -1216,7 +1236,7 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
-                Console.WriteLine("Maze selection error:{0}", e.Message); ;
+                Console.WriteLine("Maze selection error:{0}", e.Message);
                 return false;
             }
         }
