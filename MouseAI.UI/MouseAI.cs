@@ -450,6 +450,7 @@ namespace MouseAI.UI
             // ToDo: Debug remove!
             //if (ModelLoad())
             //{
+            //    SetRunMode(RUN_MODE.STEP);
             //    ModelRun();
             //}
         }

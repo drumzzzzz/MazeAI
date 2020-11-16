@@ -85,6 +85,7 @@ namespace MouseAI
         // Model Running
         private readonly MazeObjects segmentPathObjects;
         private readonly List<PathNode> pathNodes;
+        private readonly List<PathNode> badNodes;
         private int lastNode;
         private static Bitmap visualbmp;
         private List<byte[]> imagebytes;
@@ -115,6 +116,7 @@ namespace MouseAI
             mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
             mazePaths = new MazePaths(maze_width, maze_height);
             pathNodes = new List<PathNode>();
+            badNodes = new List<PathNode>();
             segmentPathObjects = new MazeObjects();
 
             for (int i = 0; i < scanObjects.Length; i++)
@@ -412,6 +414,7 @@ namespace MouseAI
                 throw new Exception("Invalid maze model path nodes!");
 
             pathNodes.Clear();
+            badNodes.Clear();
             segmentPathObjects.Clear();
             segmentStartObjects.Clear();
             lastNode = 0;
@@ -447,7 +450,7 @@ namespace MouseAI
             {
                 ProcessVisionMove(mazeobjects, mouse);
             }
-            else if (ProcessPathNode(mouse))
+            else if (ProcessPathNode(mazeobjects, mouse))
             {
                 return false;
             }
@@ -461,6 +464,12 @@ namespace MouseAI
 
         private bool ProcessVisionState(MazeObject mouse, List<MazeObject> mazeobjects)
         {
+            if (mazeobjects.Count >= 4)
+            {
+                mouse.isJunction = true;
+                CleanPathObjects();
+            }
+
             if (lastNode < pathNodes.Count - 1) // If remaining moves
                 return true;
 
@@ -486,10 +495,17 @@ namespace MouseAI
             Console.WriteLine("Processing Path node memory for index: {0}", segment_current);
 
             PathNode p;
+            MazeObject mo;
             int count = 0;
             for (int i = 0; i < pn.Count; i++)
             {
                 p = pn[i];
+                mo = MazeObjects[p.x, p.y];
+                if (mo.isDeadEnd || badNodes.Any(o=>o.x ==p.x && o.y == p.y))
+                {
+                    return false;
+                }
+
                 if (p.x == mouse.x && p.y == mouse.y)
                     isMouse = true;
 
@@ -530,51 +546,80 @@ namespace MouseAI
 
             if (mo != null)
             {
-                if (mazeobjects.Count >= 4)
-                {
-                    mouse.isJunction = true;
-                    CleanPathObjects();
-                }
+                UpdatePathObject(mazeobjects, mo, mouse);
+                //if (mazeobjects.Count >= 4)
+                //{
+                //    mouse.isJunction = true;
+                //    CleanPathObjects();
+                //}
 
-                oMouse.x = mo.x;
-                oMouse.y = mo.y;
-                mo.object_state = OBJECT_STATE.MOUSE;
-                mo.dtLastVisit = DateTime.UtcNow;
-                mo.isPath = true;
-                mouse.isVisited = true;
-                mouse.object_state = OBJECT_STATE.VISITED;
-                PathObjects.Add(mo);
+                //oMouse.x = mo.x;
+                //oMouse.y = mo.y;
+                //mo.object_state = OBJECT_STATE.MOUSE;
+                //mo.dtLastVisit = DateTime.UtcNow;
+                //mo.isPath = true;
+                //mouse.isVisited = true;
+                //mouse.object_state = OBJECT_STATE.VISITED;
+                //PathObjects.Add(mo);
             }
             else
             {
-                DateTime dtOldest = DateTime.UtcNow;
-                MazeObject mo_oldest = null;
-
-                foreach (MazeObject m in mazeobjects.Where(m => m.object_state != OBJECT_STATE.MOUSE))
-                {
-                    if (m.dtLastVisit < dtOldest)
-                    {
-                        mo_oldest = m;
-                        dtOldest = mo_oldest.dtLastVisit;
-                    }
-                }
-
-                if (mo_oldest == null)
-                    throw new Exception("Maze Object Null");
-
-                oMouse.x = mo_oldest.x;
-                oMouse.y = mo_oldest.y;
-
-                if (!mouse.isJunction)
-                    mouse.isDeadEnd = true;
-
-                MazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
-                mouse.isVisited = true;
-                mouse.object_state = OBJECT_STATE.VISITED;
+               ProcessOldestPath(mazeobjects, mouse);
             }
         }
 
-        private bool ProcessPathNode(MazeObject mouse)
+        private void ProcessOldestPath(IEnumerable<MazeObject> mazeobjects, MazeObject mouse)
+        {
+            DateTime dtOldest = DateTime.UtcNow;
+            MazeObject mo_oldest = null;
+
+            foreach (MazeObject m in mazeobjects.Where(m => m.object_state != OBJECT_STATE.MOUSE))
+            {
+                if (m.dtLastVisit < dtOldest)
+                {
+                    mo_oldest = m;
+                    dtOldest = mo_oldest.dtLastVisit;
+                }
+            }
+
+            if (mo_oldest == null)
+                throw new Exception("Maze Object Null");
+
+            oMouse.x = mo_oldest.x;
+            oMouse.y = mo_oldest.y;
+
+            if (!mouse.isJunction)
+                mouse.isDeadEnd = true;
+
+            MazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
+            mouse.isVisited = true;
+            mouse.object_state = OBJECT_STATE.VISITED;
+
+            if (mouse.isDeadEnd && !badNodes.Any(o=>o.x == mouse.x && o.y == mouse.y))
+            {
+                badNodes.Add(new PathNode(mouse.x, mouse.y, false));
+            }
+        }
+
+        private void UpdatePathObject(IReadOnlyCollection<MazeObject> mazeobjects,MazeObject mo, MazeObject mouse)
+        {
+            if (mazeobjects.Count >= 4)
+            {
+                mouse.isJunction = true;
+                CleanPathObjects();
+            }
+
+            oMouse.x = mo.x;
+            oMouse.y = mo.y;
+            mo.object_state = OBJECT_STATE.MOUSE;
+            mo.dtLastVisit = DateTime.UtcNow;
+            mo.isPath = true;
+            mouse.isVisited = true;
+            mouse.object_state = OBJECT_STATE.VISITED;
+            PathObjects.Add(mo);
+        }
+
+        private bool ProcessPathNode(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
         {
             if (lastNode >= pathNodes.Count - 1)
             {
@@ -583,7 +628,7 @@ namespace MouseAI
             }
 
             Console.WriteLine("Processing path node");
-
+            MazeObject mo;
             for (int i = 0; i < pathNodes.Count; i++) // Iterate nodes
             {
                 if (isMouseNode(mouse, pathNodes[i])) // If at the mouse
@@ -592,29 +637,70 @@ namespace MouseAI
                     {
                         PathNode pn = pathNodes[i + 1]; // Get the node
 
-                        if (CheckPathMove(pn.x, pn.y)) // If mouse can move on the next node
+                        if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse)) // If mouse can move on the next node
                         {
-                            MazeObject mo = MazeObjects[pn.x, pn.y];
-                            mo.object_state = OBJECT_STATE.MOUSE;
-                            mo.isPath = true;
-                            mouse.isVisited = true;
-                            mouse.object_state = OBJECT_STATE.VISITED;
-                            oMouse.x = mo.x;
-                            oMouse.y = mo.y;
-                            
+                            mo = MazeObjects[pn.x, pn.y];
+
+                            UpdatePathObject(mazeobjects, mo, mouse);
+                            //mo.object_state = OBJECT_STATE.MOUSE;
+                            //mo.isPath = true;
+                            //mouse.isVisited = true;
+                            //mouse.object_state = OBJECT_STATE.VISITED;
+                            //oMouse.x = mo.x;
+                            //oMouse.y = mo.y;
+
                             lastNode = i + 1;
                             segment_last = segment_current;
                             segment_current = INVALID;
+                            //PathObjects.Add(mo);
                             return true;
+                        }
+                        else // Error! This is an invalid path
+                        {
+                            Console.WriteLine("Bad path encountered");
+                            
+                            segment_last = segment_current;
+                            segment_current = INVALID;
+
+                            for (int idx = pathNodes.Count - 1; idx > -1; idx--)
+                            {
+                                pn = pathNodes[idx];
+                                mo = MazeObjects[pn.x, pn.y];
+
+                                if (!mo.isJunction)
+                                {
+                                    if (!badNodes.Any(o => o.x == mo.x && o.y == mo.y))
+                                        badNodes.Add(pn);
+
+                                    pathNodes.RemoveAt(idx);
+                                }
+                            }
+
+                            //lastNode = pathNodes.Count - 1;
+                            break;
                         }
                     }
                     else // No further moves
                     {
-                        lastNode = pathNodes.Count - 1;
-                        return false;
+                        //lastNode = pathNodes.Count - 1;
+                        break;
                     }
                 }
             }
+            lastNode = pathNodes.Count - 1;
+            return false;
+        }
+
+        private static bool CheckNodeNext(PathNode pn, MazeObject mouse)
+        {
+            int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
+
+            for (int i = 0; i < pan_array.Length; i += 2)
+            {
+                if (pn.x == pan_array[i] && pn.y == pan_array[i + 1])
+                    return true;
+            }
+
             return false;
         }
 

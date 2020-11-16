@@ -234,11 +234,10 @@ namespace MouseAI.ML
 
             y = y.argmax();
             int index = y.asscalar<int>();
-
             bool result = dataSets.GetImageDatas().isLabelValid(index, guid);
 
             // ToDo: Debugging
-            Console.WriteLine("Prediction Valid: {0}", result);
+            Console.WriteLine("Prediction Valid: {0}  Index: {1}  Value: {2}", result, index, y);
 
             return index;
         }
