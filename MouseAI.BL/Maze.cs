@@ -435,12 +435,6 @@ namespace MouseAI
             mazeStats.End();
         }
 
-        public void UpdateMazeStatistics(bool isValid)
-        {
-            mazeStats.predictions++;
-            mazeStats.predicted += Convert.ToInt32(isValid);
-        }
-
         public bool ProcessRunMove()
         {
             Console.WriteLine("*** Processing Run Move ***");
@@ -451,7 +445,6 @@ namespace MouseAI
             mazeStats.predictions = neuralNet.GetPredictions();
             mazeStats.predicted = neuralNet.GetPredicted();
 
-            // ToDo: need to implement cheese path mode
             // Check if mouse can see the cheese
             if (!isCheesePath)
                 ScanObjects(x, y);
@@ -933,7 +926,8 @@ namespace MouseAI
 
         private static bool isNode(int x, int y)
         {
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
+            //return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
         }
 
         #endregion
@@ -1955,10 +1949,10 @@ namespace MouseAI
             return new Point(oMouse.x, oMouse.y);
         }
 
-        //public int GetMouseDirection()
-        //{
-        //    return (int)oMouse.direction;
-        //}
+        private static bool isDeadEnd(int x, int y)
+        {
+            return mazeObjects[x, y].isDeadEnd;
+        }
 
         public static bool IsInBounds(int x, int y)
         {

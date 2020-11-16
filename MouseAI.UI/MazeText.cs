@@ -190,6 +190,8 @@ namespace MouseAI.UI
 
             if (GetObjectChar(mazeObjects[x, y]) == MOUSE)
                 return MOUSE;
+            if (GetObjectChar(mazeObjects[x, y]) == DEADEND)
+                return DEADEND;
 
             MazeObject mo = visionObjects.FirstOrDefault(o => o.x == x && o.y == y);
 
