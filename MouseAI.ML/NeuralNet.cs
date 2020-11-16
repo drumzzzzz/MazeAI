@@ -49,6 +49,8 @@ namespace MouseAI.ML
         private DateTime dtEnd;
         private double[] score;
         private BaseModel model_loaded;
+        private int predicted = 0;
+        private int predictions = 0;
 
         #endregion
 
@@ -86,6 +88,7 @@ namespace MouseAI.ML
         public void InitDataSets(ImageDatas imageDatas)
         {
             dataSets = new DataSets(width, height, imageDatas, 0);
+            ResetPredictions();
         }
 
         public void BuildDataSets()
@@ -235,11 +238,29 @@ namespace MouseAI.ML
             y = y.argmax();
             int index = y.asscalar<int>();
             bool result = dataSets.GetImageDatas().isLabelValid(index, guid);
+            predicted += (Convert.ToInt32(result));
+            predictions++;
 
             // ToDo: Debugging
-            Console.WriteLine("Prediction Valid: {0}  Index: {1}  Value: {2}", result, index, y);
+            // Console.WriteLine("Prediction Valid: {0}  Index: {1}  Value: {2}", isValid, index, y);
 
             return index;
+        }
+
+        public int GetPredicted()
+        {
+            return predicted;
+        }
+
+        public int GetPredictions()
+        {
+            return predictions;
+        }
+
+        private void ResetPredictions()
+        {
+            predicted = 0;
+            predictions = 0;
         }
 
         #endregion

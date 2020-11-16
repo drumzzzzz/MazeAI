@@ -539,6 +539,7 @@ namespace MouseAI.UI
             {
                 maze.Reset();
                 maze.InitRunMove();
+                modelRun.tbxStatusColumns.Text = maze.GetMazeStatusColumns();
 
                 Console.WriteLine("Mouse move started ...");
 
@@ -563,7 +564,6 @@ namespace MouseAI.UI
 
                         if (await Task.Run(AIRun))
                         {
-
                             SetRunMode(RUN_MODE.STOP);
                         }
                         else
@@ -572,7 +572,13 @@ namespace MouseAI.UI
                         if (run_mode == RUN_MODE.STEP)
                             DisplayMazeText();
                     }
-                    UpdateMaze();
+
+                    if (UpdateMaze())
+                    {
+                        
+                        modelRun.tbxStatusValues.Text = maze.GetMazeStatusValues();
+                    }
+
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
                         Thread.Sleep((run_mode == RUN_MODE.RUN) ? RUN_DELAY : SEARCH_DELAY);
@@ -586,6 +592,8 @@ namespace MouseAI.UI
             Console.WriteLine("Search Stopped.");
 
             lvwMazes.Enabled = true;
+
+            maze.EndStatus();
 
             if (run_mode == RUN_MODE.EXIT)
                 RunExit();
@@ -961,12 +969,12 @@ namespace MouseAI.UI
             pbxMaze.Image = null;
         }
 
-        private void UpdateMaze()
+        private bool UpdateMaze()
         {
             Point p = maze.GetMousePosition();
             //if (p.X == mouse_last.X && p.Y == mouse_last.Y)
             if (p == mouse_last)
-                return;
+                return false;
 
             mouse_last = p;
 
@@ -974,8 +982,6 @@ namespace MouseAI.UI
 
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);
-
-            //int direction = maze.GetMouseDirection();
 
             canvas.DrawBitmap(Mouse_Bitmaps[(int)DIRECTION.SOUTH], (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
 
@@ -990,6 +996,7 @@ namespace MouseAI.UI
 
             if (settings.isMazeText)
                 DisplayMazeText();
+            return true;
         }
 
         #endregion
