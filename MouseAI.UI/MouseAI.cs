@@ -72,7 +72,6 @@ namespace MouseAI.UI
             STOP,
             PAUSE,
             STEP,
-            RESET,
             EXIT,
             BACK
         }
@@ -564,6 +563,7 @@ namespace MouseAI.UI
 
                         if (await Task.Run(AIRun))
                         {
+
                             SetRunMode(RUN_MODE.STOP);
                         }
                         else
@@ -592,7 +592,10 @@ namespace MouseAI.UI
             else if (run_mode == RUN_MODE.BACK)
                 RunBack();
             else
+            {
+                ResetSelectedItem();
                 SetRunMode(RUN_MODE.STOP);
+            }
         }
 
         private bool AIRun()
@@ -1151,7 +1154,7 @@ namespace MouseAI.UI
 
         private void UpdateItemState(bool isPath, double Acc)
         {
-            if (lvwMazes.SelectedItems.Count == 0 || lvwMazes.SelectedItems[0] == null)
+            if (!isMazeSelected())
                 return;
 
             ListViewItem item = lvwMazes.SelectedItems[0];
@@ -1162,7 +1165,7 @@ namespace MouseAI.UI
 
         private string GetSelectedItem()
         {
-            if (lvwMazes.SelectedItems.Count == 0 || lvwMazes.SelectedItems[0] == null)
+            if (!isMazeSelected())
                 return string.Empty;
 
             ListViewItem item = lvwMazes.SelectedItems[0];
@@ -1203,6 +1206,22 @@ namespace MouseAI.UI
             }
         }
 
+        private void ResetSelectedItem()
+        {
+            if (!isMazeSelected())
+                    return;
+
+            ListViewItem item = lvwMazes.SelectedItems[0];
+
+            int index = item.Index;
+
+            for (int i = 0; i < 2; i++)
+            {
+                lvwMazes.Items[index].Selected = !lvwMazes.Items[index].Selected;
+                lvwMazes.Refresh();
+            }
+        }
+
         private bool SelectItem(int index)
         {
             if (index >= 0 && index < lvwMazes.Items.Count)
@@ -1239,6 +1258,11 @@ namespace MouseAI.UI
                 Console.WriteLine("Maze selection error:{0}", e.Message);
                 return false;
             }
+        }
+
+        private bool isMazeSelected()
+        {
+            return (lvwMazes.SelectedItems.Count != 0 && lvwMazes.SelectedItems[0] != null);
         }
 
         #endregion
