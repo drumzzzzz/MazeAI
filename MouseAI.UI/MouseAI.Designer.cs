@@ -51,9 +51,9 @@
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.c2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.c3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
-            this.c3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
@@ -262,6 +262,10 @@
             this.c2.Text = "Path";
             this.c2.Width = 37;
             // 
+            // c3
+            // 
+            this.c3.Text = "Err";
+            // 
             // pbxPath
             // 
             this.pbxPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -285,10 +289,6 @@
             this.pbxMaze.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
-            // 
-            // c3
-            // 
-            this.c3.Text = "%Acc";
             // 
             // MouseAI
             // 

@@ -60,6 +60,15 @@ namespace MouseAI
             //direction = DIRECTION.SOUTH;
         }
 
+        public MazeObject(OBJECT_TYPE element_type, int x, int y,bool isVisited, DateTime dtLastVisit)
+        {
+            this.x = x;
+            this.y = y;
+            this.object_type = element_type;
+            this.isVisited = isVisited;
+            this.dtLastVisit = dtLastVisit;
+        }
+
         public MazeObject(int x, int y)
         {
             this.x = x;

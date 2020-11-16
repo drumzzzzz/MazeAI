@@ -530,7 +530,6 @@ namespace MouseAI.UI
         private async void RunModel()
         {
             mouse_last = new Point(-1, -1);
-            isCheese = false;
             bool isProcess = false;
 
             try
@@ -580,10 +579,7 @@ namespace MouseAI.UI
                 DisplayError("Run model error", e, false);
             }
 
-            if (isCheese)
-                Console.WriteLine("Mouse found the cheese!");
-            else
-                Console.WriteLine("Search Cancelled.");
+            Console.WriteLine("Search Stopped.");
 
             lvwMazes.Enabled = true;
 
@@ -747,7 +743,7 @@ namespace MouseAI.UI
 
                 if (maze.UpdateAccuracies(ids))
                 {
-                    UpdateItemAccuracies(maze.GetMazeModelAccuracies());
+                    UpdateItemAccuracies(maze.GetMazeModelErrors());
                 }
 
                 modelPredict.txtResults.Text = ids.GetResults();
