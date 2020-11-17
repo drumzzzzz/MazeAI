@@ -60,13 +60,13 @@ namespace MouseAI.UI
         private int maze_count;
         private bool isStep;
         
-
         private bool isCheese;
         private bool isThreadDone;
         private bool isThreadCancel;
         private bool isRunAll;
         private int runDelay;
         private const int RUN_DELAY = 300;
+        private bool isAnimate = true;
 
         private enum RUN_MODE
         {
@@ -537,9 +537,10 @@ namespace MouseAI.UI
             { 
                 maze.Reset();
                 maze.InitRunMove();
+                modelRun.tbxStatusColumns.Text = maze.GetMazeStatusColumns();
 
                 Console.WriteLine("Mouse move started ...");
-
+                int count = 0;
                 while (isRunMode())
                 {
                     if (run_mode == RUN_MODE.STEP)
@@ -578,7 +579,13 @@ namespace MouseAI.UI
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
                     {
-                        Thread.Sleep(runDelay <= 0 ? 1 : runDelay);
+                        Thread.Sleep(runDelay <= 0 ? 10 : runDelay);
+                        count++;
+                        if (count > 10)
+                        {
+                            Console.Clear();
+                            count = 0;
+                        }
                     }
                 }
             }
@@ -615,6 +622,7 @@ namespace MouseAI.UI
 
         private void UpdateStatus()
         {
+            modelRun.tbxStatusValues.Text = maze.GetMazeStatusValues();
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
         }
 
@@ -650,8 +658,16 @@ namespace MouseAI.UI
 
             nu.Value = runDelay;
 
+            modelRun.chkAnimation.CheckedChanged += chkAnimation_CheckedChanged;
+            modelRun.chkAnimation.Checked = isAnimate;
+
             modelRun.Show();
             UpdateModelRun();
+        }
+
+        private void chkAnimation_CheckedChanged(object sender, EventArgs e)
+        {
+            isAnimate = modelRun.chkAnimation.Checked;
         }
 
         private void nudRate_ValueChanged(object sender, EventArgs e)
@@ -1016,9 +1032,11 @@ namespace MouseAI.UI
         private bool UpdateMaze()
         {
             Point p = maze.GetMousePosition();
-            //if (p.X == mouse_last.X && p.Y == mouse_last.Y)
             if (p == mouse_last)
                 return false;
+
+            if (!isAnimate)
+                return true;
 
             mouse_last = p;
 

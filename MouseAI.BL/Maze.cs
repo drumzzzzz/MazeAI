@@ -451,6 +451,15 @@ namespace MouseAI
                 return true;
             }
 
+            if (isCheesePath)
+            {
+                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
+                if (ProcessCheeseMove(mouse, mazeobjects))
+                    CleanPathObjects();
+
+                return false;
+            }
+
             Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
             if (!ProcessVisionState(mouse, mazeobjects))
@@ -511,15 +520,11 @@ namespace MouseAI
             {
                 p = pn[i];
                 mo = mazeObjects[p.x, p.y];
-                if (mo.isDeadEnd || badNodes.Any(o=>o.x ==p.x && o.y == p.y))
-                {
-                    return false;
-                }
 
                 if (p.x == mouse.x && p.y == mouse.y)
                     isMouse = true;
 
-                if (isMouse)
+                if (isMouse && (!mo.isVisited && !mo.isDeadEnd && !badNodes.Any(o => o.x == p.x && o.y == p.y)))
                 {
                     // If visible and not a duplicate
                     if (visionObjects.Any(o => o.x == p.x && o.y == p.y) &&
@@ -542,14 +547,14 @@ namespace MouseAI
 
             mazeStats.fail++;
             
-            if (isCheesePath)
-            {
-                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
-                if (ProcessCheeseMove(mouse, mazeobjects))
-                    CleanPathObjects();
+            //if (isCheesePath)
+            //{
+            //    mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
+            //    if (ProcessCheeseMove(mouse, mazeobjects))
+            //        CleanPathObjects();
 
-                return;
-            }
+            //    return;
+            //}
 
             mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.WANDERING);
 
@@ -864,19 +869,6 @@ namespace MouseAI
                 }
             }
 
-            //if (mo_oldest == null) // #85
-            //{
-            //    //throw new Exception("Maze object is null!");
-            //    foreach (MazeObject m in mazeobjects_de.Where(m => m.object_state != OBJECT_STATE.MOUSE))
-            //    {
-            //        if (m.dtLastVisit < dtOldest)
-            //        {
-            //            mo_oldest = m;
-            //            dtOldest = mo_oldest.dtLastVisit;
-            //        }
-            //    }
-            //}
-
             if (mo_oldest == null)
                 throw new Exception("Maze object was null!");
 
@@ -885,10 +877,17 @@ namespace MouseAI
 
             if (!mouse.isJunction)
             {
-                if (mazeobjects_de == null)
-                    mouse.isDeadEnd = true;
-                else if (mazeobjects_de.Any(o => o.isDeadEnd))
-                    mouse.isDeadEnd = true;
+                mouse.isDeadEnd = true;
+                //if (mazeobjects_de == null)
+                //    mouse.isDeadEnd = true;
+                //else
+                //{
+                //    int dend_count = mazeobjects_de.Count(o => o.isDeadEnd);
+                //    if (dend_count > mazeobjects_de.Count - 1)
+                //        mouse.isDeadEnd = true;
+                //}
+                //else if (mazeobjects_de.Any(o => o.isDeadEnd))
+                //   mouse.isDeadEnd = true;
             }
 
             mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
