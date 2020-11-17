@@ -848,7 +848,6 @@ namespace MouseAI
             mouse.isVisited = true;
             mouse.object_state = OBJECT_STATE.VISITED;
             pathObjects.Add(mo);
-
         }
 
         private static void ProcessOldestPath(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
@@ -865,16 +864,32 @@ namespace MouseAI
                 }
             }
 
-            if (mo_oldest == null) // #85
-            {
-                throw new Exception("Maze object is null!");
-            }
+            //if (mo_oldest == null) // #85
+            //{
+            //    //throw new Exception("Maze object is null!");
+            //    foreach (MazeObject m in mazeobjects_de.Where(m => m.object_state != OBJECT_STATE.MOUSE))
+            //    {
+            //        if (m.dtLastVisit < dtOldest)
+            //        {
+            //            mo_oldest = m;
+            //            dtOldest = mo_oldest.dtLastVisit;
+            //        }
+            //    }
+            //}
+
+            if (mo_oldest == null)
+                throw new Exception("Maze object was null!");
 
             oMouse.x = mo_oldest.x;
             oMouse.y = mo_oldest.y;
 
             if (!mouse.isJunction)
-                mouse.isDeadEnd = true;
+            {
+                if (mazeobjects_de == null)
+                    mouse.isDeadEnd = true;
+                else if (mazeobjects_de.Any(o => o.isDeadEnd))
+                    mouse.isDeadEnd = true;
+            }
 
             mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
             mouse.isVisited = true;
