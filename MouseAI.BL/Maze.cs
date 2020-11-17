@@ -454,11 +454,11 @@ namespace MouseAI
             Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
             if (!ProcessVisionState(mouse, mazeobjects))
-                ProcessVisionMove(mazeobjects, mouse);
+                ProcessVisionMove(mazeobjects, mazeobjects_de, mouse);
             else
             {
                 mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
-                if (ProcessPathNode(mazeobjects, mouse))
+                if (ProcessPathNode(mazeobjects, mazeobjects_de, mouse))
                 {
                     mazeStats.good++;
                     return false;
@@ -471,7 +471,7 @@ namespace MouseAI
             return false;
         }
 
-        private bool ProcessVisionState(MazeObject mouse, List<MazeObject> mazeobjects)
+        private bool ProcessVisionState(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
         {
             if (mazeobjects.Count >= 4)
             {
@@ -534,7 +534,7 @@ namespace MouseAI
             return isMouse && count != 0;
         }
 
-        private void ProcessVisionMove(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
+        private void ProcessVisionMove(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
             // The mouse is confused because it is in an unrecognized portion of a maze due
             // to the predicted neural path memory not relating to anything it sees.
@@ -568,10 +568,10 @@ namespace MouseAI
             }
 
             if (mo != null)
-                UpdatePathObject(mazeobjects, mo, mouse);
+                UpdatePathObject(mazeobjects,mazeobjects_de, mo, mouse);
             else
             {
-                ProcessOldestPath(mazeobjects, mouse);
+                ProcessOldestPath(mazeobjects, mazeobjects_de, mouse);
                 if (mouse.isDeadEnd && !badNodes.Any(o => o.x == mouse.x && o.y == mouse.y))
                 {
                     badNodes.Add(new PathNode(mouse.x, mouse.y, false));
@@ -579,7 +579,7 @@ namespace MouseAI
             }
         }
 
-        private bool ProcessPathNode(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
+        private bool ProcessPathNode(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
             if (lastNode >= pathNodes.Count - 1)
                 return false;
@@ -598,7 +598,7 @@ namespace MouseAI
                         if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse)) // If mouse can move on the next node
                         {
                             mo = mazeObjects[pn.x, pn.y];
-                            UpdatePathObject(mazeobjects, mo, mouse);
+                            UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
                             lastNode = i + 1;
                             segment_current = INVALID;
                             return true;
@@ -781,9 +781,9 @@ namespace MouseAI
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
                                                             o.object_state != OBJECT_STATE.MOUSE);
             if (mo != null)
-                UpdatePathObject(mazeobjects, mo, mouse);
+                UpdatePathObject(mazeobjects, null, mo, mouse);
             else
-                ProcessOldestPath(mazeobjects, mouse);
+                ProcessOldestPath(mazeobjects, null, mouse);
         }
 
         private bool ProcessCheeseMove(MazeObject mouse, IEnumerable<MazeObject> mazeobjects)
@@ -826,16 +826,18 @@ namespace MouseAI
             return false;
         }
 
-        private void UpdatePathObject(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mo, MazeObject mouse)
+        private void UpdatePathObject(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mo, MazeObject mouse)
         {
             if (mazeobjects.Count >= 4)
             {
                 mouse.isJunction = true;
                 CleanPathObjects();
             }
-            else if (mazeobjects.Count == 2)
+            else if (mazeobjects_de != null && !mouse.isDeadEnd)
             {
-                int i = 0;
+                mouse.isDeadEnd = (mazeobjects.Count == 2 &&
+                                   (mazeobjects_de.Count - mazeobjects.Count == 1 ||
+                                    mazeobjects_de.Count - mazeobjects.Count == 2));
             }
 
             oMouse.x = mo.x;
@@ -849,7 +851,7 @@ namespace MouseAI
 
         }
 
-        private static void ProcessOldestPath(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
+        private static void ProcessOldestPath(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
             DateTime dtOldest = DateTime.UtcNow;
             MazeObject mo_oldest = null;
@@ -863,11 +865,9 @@ namespace MouseAI
                 }
             }
 
-            if (mo_oldest == null)
+            if (mo_oldest == null) // #85
             {
-                MazeObject mo = mazeobjects.FirstOrDefault(m => !m.isDeadEnd);
-                mo_oldest = mo ?? throw new Exception("Maze object was null!");
-                dtOldest = mo_oldest.dtLastVisit;
+                throw new Exception("Maze object is null!");
             }
 
             oMouse.x = mo_oldest.x;
@@ -1944,7 +1944,7 @@ namespace MouseAI
 
         private static bool CheckPathMove(int x, int y)
         {
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x,y));
         }
 
         public static OBJECT_TYPE GetObjectDataType(int x, int y)
