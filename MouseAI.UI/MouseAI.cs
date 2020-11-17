@@ -525,18 +525,13 @@ namespace MouseAI.UI
 
         #region Model Running
 
-        private bool isRunMode()
-        {
-            return (run_mode == RUN_MODE.STEP || run_mode == RUN_MODE.RUN || run_mode == RUN_MODE.PAUSE);
-        }
-
         private async void RunModel()
         {
             mouse_last = new Point(-1, -1);
             bool isProcess = false;
 
             try
-            {
+            { 
                 maze.Reset();
                 maze.InitRunMove();
                 modelRun.tbxStatusColumns.Text = maze.GetMazeStatusColumns();
@@ -575,8 +570,7 @@ namespace MouseAI.UI
 
                     if (UpdateMaze())
                     {
-                        
-                        modelRun.tbxStatusValues.Text = maze.GetMazeStatusValues();
+                        UpdateStatistics();
                     }
 
                     Application.DoEvents();
@@ -594,6 +588,7 @@ namespace MouseAI.UI
             lvwMazes.Enabled = true;
 
             maze.EndStatus();
+            UpdateStatistics();
 
             if (run_mode == RUN_MODE.EXIT)
                 RunExit();
@@ -601,9 +596,15 @@ namespace MouseAI.UI
                 RunBack();
             else
             {
-                ResetSelectedItem();
                 SetRunMode(RUN_MODE.STOP);
+                ResetSelectedItem();
             }
+        }
+
+        private void UpdateStatistics()
+        {
+            modelRun.tbxStatusValues.Text = maze.GetMazeStatusValues();
+            modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
         }
 
         private bool AIRun()
@@ -752,6 +753,11 @@ namespace MouseAI.UI
                 : string.Empty;
 
             SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOP);
+        }
+
+        private bool isRunMode()
+        {
+            return (run_mode == RUN_MODE.STEP || run_mode == RUN_MODE.RUN || run_mode == RUN_MODE.PAUSE);
         }
 
         #endregion

@@ -39,12 +39,14 @@
             this.tbxStatusColumns = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.tbxStatusValues = new System.Windows.Forms.TextBox();
+            this.tbxMouseStatus = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnExit
             // 
             this.btnExit.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(245, 215);
+            this.btnExit.Location = new System.Drawing.Point(243, 300);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(84, 26);
             this.btnExit.TabIndex = 21;
@@ -54,7 +56,7 @@
             // btnRun
             // 
             this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(14, 151);
+            this.btnRun.Location = new System.Drawing.Point(12, 236);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(84, 26);
             this.btnRun.TabIndex = 22;
@@ -84,7 +86,7 @@
             // btnStop
             // 
             this.btnStop.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(360, 151);
+            this.btnStop.Location = new System.Drawing.Point(358, 236);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(84, 26);
             this.btnStop.TabIndex = 25;
@@ -94,7 +96,7 @@
             // btnPause
             // 
             this.btnPause.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPause.Location = new System.Drawing.Point(245, 151);
+            this.btnPause.Location = new System.Drawing.Point(243, 236);
             this.btnPause.Name = "btnPause";
             this.btnPause.Size = new System.Drawing.Size(84, 26);
             this.btnPause.TabIndex = 26;
@@ -104,7 +106,7 @@
             // btnStep
             // 
             this.btnStep.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStep.Location = new System.Drawing.Point(132, 151);
+            this.btnStep.Location = new System.Drawing.Point(130, 236);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(84, 26);
             this.btnStep.TabIndex = 27;
@@ -114,7 +116,7 @@
             // btnBack
             // 
             this.btnBack.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnBack.Location = new System.Drawing.Point(132, 215);
+            this.btnBack.Location = new System.Drawing.Point(130, 300);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(84, 26);
             this.btnBack.TabIndex = 28;
@@ -136,11 +138,11 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(12, 88);
+            this.label1.Location = new System.Drawing.Point(11, 162);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(50, 16);
+            this.label1.Size = new System.Drawing.Size(50, 32);
             this.label1.TabIndex = 30;
-            this.label1.Text = "Status:";
+            this.label1.Text = "Mouse\r\nStatus:";
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // tbxStatusValues
@@ -155,12 +157,36 @@
             this.tbxStatusValues.TabIndex = 31;
             this.tbxStatusValues.WordWrap = false;
             // 
+            // tbxMouseStatus
+            // 
+            this.tbxMouseStatus.BackColor = System.Drawing.SystemColors.Window;
+            this.tbxMouseStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tbxMouseStatus.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbxMouseStatus.Location = new System.Drawing.Point(71, 168);
+            this.tbxMouseStatus.Name = "tbxMouseStatus";
+            this.tbxMouseStatus.ReadOnly = true;
+            this.tbxMouseStatus.Size = new System.Drawing.Size(166, 22);
+            this.tbxMouseStatus.TabIndex = 32;
+            this.tbxMouseStatus.WordWrap = false;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(16, 118);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(43, 16);
+            this.label2.TabIndex = 33;
+            this.label2.Text = "Stats:";
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(458, 262);
+            this.ClientSize = new System.Drawing.Size(477, 341);
             this.ControlBox = false;
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.tbxMouseStatus);
             this.Controls.Add(this.tbxStatusValues);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tbxStatusColumns);
@@ -197,5 +223,7 @@
         public System.Windows.Forms.TextBox tbxStatusColumns;
         private System.Windows.Forms.Label label1;
         public System.Windows.Forms.TextBox tbxStatusValues;
+        public System.Windows.Forms.TextBox tbxMouseStatus;
+        private System.Windows.Forms.Label label2;
     }
 }
