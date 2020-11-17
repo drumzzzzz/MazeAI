@@ -64,6 +64,8 @@ namespace MouseAI.UI
         private bool isCheese;
         private bool isThreadDone;
         private bool isThreadCancel;
+        private bool isRunAll;
+        private int runIndex;
 
         private enum RUN_MODE
         {
@@ -534,7 +536,6 @@ namespace MouseAI.UI
             { 
                 maze.Reset();
                 maze.InitRunMove();
-                modelRun.tbxStatusColumns.Text = maze.GetMazeStatusColumns();
 
                 Console.WriteLine("Mouse move started ...");
 
@@ -570,7 +571,7 @@ namespace MouseAI.UI
 
                     if (UpdateMaze())
                     {
-                        UpdateStatistics();
+                        UpdateStatus();
                     }
 
                     Application.DoEvents();
@@ -588,7 +589,7 @@ namespace MouseAI.UI
             lvwMazes.Enabled = true;
 
             maze.EndStatus();
-            UpdateStatistics();
+            UpdateStatus();
 
             if (run_mode == RUN_MODE.EXIT)
                 RunExit();
@@ -597,13 +598,20 @@ namespace MouseAI.UI
             else
             {
                 SetRunMode(RUN_MODE.STOP);
-                ResetSelectedItem();
+                
+                if (isRunAll && SelectNext())
+                {
+                    modelRun.btnRun.PerformClick();
+                }
+                else
+                {
+                    ResetSelectedItem();
+                }
             }
         }
 
-        private void UpdateStatistics()
+        private void UpdateStatus()
         {
-            modelRun.tbxStatusValues.Text = maze.GetMazeStatusValues();
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
         }
 
@@ -657,8 +665,15 @@ namespace MouseAI.UI
                     SetRunMode(RUN_MODE.RUN);
                     RunModel();
                     return;
+                case "btnRunAll":
+                    lvwMazes.Enabled = false;
+                    isRunAll = true;
+                    SetRunMode(RUN_MODE.RUN);
+                    RunModel();
+                    return;
                 case "btnStop":
                     isStep = false;
+                    isRunAll = false;
                     SetRunMode(RUN_MODE.STOP);
                     return;
                 case "btnPause":
@@ -706,12 +721,14 @@ namespace MouseAI.UI
                     return;
                 case RUN_MODE.READY:
                     mdl.btnRun.Enabled = true;
+                    mdl.btnRunAll.Enabled = true;
                     mdl.btnStep.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     mdl.btnBack.Enabled = true;
                     return;
                 case RUN_MODE.STOP:
                     mdl.btnRun.Enabled = true;
+                    mdl.btnRunAll.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     mdl.btnBack.Enabled = true;
                     return;
@@ -752,7 +769,8 @@ namespace MouseAI.UI
                 ? string.Format("{0} [{1}]", selected, guid)
                 : string.Empty;
 
-            SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOP);
+            if (!isRunAll) 
+                SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOP);
         }
 
         private bool isRunMode()
@@ -1154,6 +1172,22 @@ namespace MouseAI.UI
 
         #region Listview
 
+        private bool SelectNext()
+        {
+            int selectedIndex = lvwMazes.SelectedIndices[0];
+            selectedIndex++;
+
+            if (selectedIndex < lvwMazes.Items.Count)
+            {
+                lvwMazes.Items[selectedIndex].Selected = true;
+                lvwMazes.Items[selectedIndex].Focused = true;
+                lvwMazes.Refresh();
+                return true;
+            }
+
+            return false;
+        }
+
         private void UpdateItemAccuracies(IReadOnlyList<int> values)
         {
             int index = 0;
@@ -1183,6 +1217,15 @@ namespace MouseAI.UI
 
             ListViewItem item = lvwMazes.SelectedItems[0];
             return item.SubItems[0].Text;
+        }
+
+        private int GetSelectedIndex()
+        {
+            if (!isMazeSelected())
+                return -1;
+
+            ListViewItem item = lvwMazes.SelectedItems[0];
+            return item.Index;
         }
 
         private void AddMazeItems()
