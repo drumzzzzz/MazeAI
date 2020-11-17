@@ -436,7 +436,8 @@ namespace MouseAI
 
             Console.WriteLine("Can mouse see cheese? {0}", isCheesePath);
 
-            List<MazeObject> mazeobjects = CheckNode(x, y);
+            List<MazeObject> mazeobjects_de = CheckNode(x, y, true);
+            List<MazeObject> mazeobjects = mazeobjects_de.Where(o => !o.isDeadEnd).ToList();
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
 
             if (mouse == null)
@@ -624,6 +625,9 @@ namespace MouseAI
                 }
             }
             lastNode = pathNodes.Count - 1;
+            if (lastNode < 0)
+                lastNode = 0;
+
             return false;
         }
 
@@ -749,7 +753,7 @@ namespace MouseAI
             if (!isCheesePath)
                 ScanObjects(x, y);
 
-            List<MazeObject> mazeobjects = CheckNode(x, y);
+            List<MazeObject> mazeobjects = CheckNode(x, y, false);
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
 
             if (mouse == null)
@@ -777,13 +781,9 @@ namespace MouseAI
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
                                                             o.object_state != OBJECT_STATE.MOUSE);
             if (mo != null)
-            {
                 UpdatePathObject(mazeobjects, mo, mouse);
-            }
             else
-            {
                 ProcessOldestPath(mazeobjects, mouse);
-            }
         }
 
         private bool ProcessCheeseMove(MazeObject mouse, IEnumerable<MazeObject> mazeobjects)
@@ -833,6 +833,10 @@ namespace MouseAI
                 mouse.isJunction = true;
                 CleanPathObjects();
             }
+            else if (mazeobjects.Count == 2)
+            {
+                int i = 0;
+            }
 
             oMouse.x = mo.x;
             oMouse.y = mo.y;
@@ -842,9 +846,10 @@ namespace MouseAI
             mouse.isVisited = true;
             mouse.object_state = OBJECT_STATE.VISITED;
             pathObjects.Add(mo);
+
         }
 
-        private static void ProcessOldestPath(IEnumerable<MazeObject> mazeobjects, MazeObject mouse)
+        private static void ProcessOldestPath(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
         {
             DateTime dtOldest = DateTime.UtcNow;
             MazeObject mo_oldest = null;
@@ -859,7 +864,11 @@ namespace MouseAI
             }
 
             if (mo_oldest == null)
-                throw new Exception("Oldest maze object  was null");
+            {
+                MazeObject mo = mazeobjects.FirstOrDefault(m => !m.isDeadEnd);
+                mo_oldest = mo ?? throw new Exception("Maze object was null!");
+                dtOldest = mo_oldest.dtLastVisit;
+            }
 
             oMouse.x = mo_oldest.x;
             oMouse.y = mo_oldest.y;
@@ -872,7 +881,7 @@ namespace MouseAI
             mouse.object_state = OBJECT_STATE.VISITED;
         }
 
-        public List<MazeObject> CheckNode(int x, int y)
+        public List<MazeObject> CheckNode(int x, int y, bool isDeadends)
         {
             List<MazeObject> mazeobjects = new List<MazeObject>
             {
@@ -881,22 +890,24 @@ namespace MouseAI
 
             for (int x_idx = x - 1; x_idx < x + 2; x_idx += 2)
             {
-                if (isNode(x_idx, y))
+                if (isNode(x_idx, y, isDeadends))
                     mazeobjects.Add(mazeObjects[x_idx, y]);
             }
 
             for (int y_idx = y - 1; y_idx < y + 2; y_idx += 2)
             {
-                if(isNode(x, y_idx))
+                if(isNode(x, y_idx, isDeadends))
                     mazeobjects.Add(mazeObjects[x, y_idx]);
             }
 
             return mazeobjects;
         }
 
-        private static bool isNode(int x, int y)
+        private static bool isNode(int x, int y, bool isDeadEnds)
         {
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
+            if (!isDeadEnds)
+                return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
         }
 
         #endregion
@@ -1367,7 +1378,7 @@ namespace MouseAI
                 }
                 else if (pathObjects[i].isJunction)
                 {
-                    List<MazeObject> mo = CheckNode(pathObjects[i].x, pathObjects[i].y);
+                    List<MazeObject> mo = CheckNode(pathObjects[i].x, pathObjects[i].y, false);
 
                     if (mo == null)
                         throw new Exception("Objects is null!");

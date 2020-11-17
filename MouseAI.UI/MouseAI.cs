@@ -59,13 +59,14 @@ namespace MouseAI.UI
 
         private int maze_count;
         private bool isStep;
-        private const int RUN_DELAY = 100;
+        
 
         private bool isCheese;
         private bool isThreadDone;
         private bool isThreadCancel;
         private bool isRunAll;
-        private int runIndex;
+        private int runDelay;
+        private const int RUN_DELAY = 300;
 
         private enum RUN_MODE
         {
@@ -576,7 +577,9 @@ namespace MouseAI.UI
 
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
-                        Thread.Sleep((run_mode == RUN_MODE.RUN) ? RUN_DELAY : SEARCH_DELAY);
+                    {
+                        Thread.Sleep(runDelay <= 0 ? 1 : runDelay);
+                    }
                 }
             }
             catch (Exception e)
@@ -635,8 +638,25 @@ namespace MouseAI.UI
                 if (ctl is Button)
                     (ctl as Button).Click += modelRun_Click;
             }
+
+            NumericUpDown nu = modelRun.nudRate;
+
+            nu.ValueChanged += nudRate_ValueChanged;
+
+            if (runDelay == 0 || runDelay < nu.Minimum || runDelay > nu.Maximum)
+            {
+                runDelay = RUN_DELAY;
+            }
+
+            nu.Value = runDelay;
+
             modelRun.Show();
             UpdateModelRun();
+        }
+
+        private void nudRate_ValueChanged(object sender, EventArgs e)
+        {
+            runDelay = (int)modelRun.nudRate.Value;
         }
 
         private void modelRun_Click(object sender, EventArgs e)

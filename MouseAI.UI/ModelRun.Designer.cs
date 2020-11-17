@@ -150,22 +150,22 @@
             // nudRate
             // 
             this.nudRate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudRate.Location = new System.Drawing.Point(358, 89);
-            this.nudRate.Maximum = new decimal(new int[] {
-            5,
+            this.nudRate.Increment = new decimal(new int[] {
+            100,
             0,
             0,
             0});
-            this.nudRate.Minimum = new decimal(new int[] {
-            1,
+            this.nudRate.Location = new System.Drawing.Point(358, 89);
+            this.nudRate.Maximum = new decimal(new int[] {
+            10000,
             0,
             0,
             0});
             this.nudRate.Name = "nudRate";
-            this.nudRate.Size = new System.Drawing.Size(55, 22);
+            this.nudRate.Size = new System.Drawing.Size(84, 22);
             this.nudRate.TabIndex = 34;
             this.nudRate.Value = new decimal(new int[] {
-            3,
+            100,
             0,
             0,
             0});
@@ -174,11 +174,11 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(313, 91);
+            this.label3.Location = new System.Drawing.Point(277, 91);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(39, 16);
+            this.label3.Size = new System.Drawing.Size(75, 16);
             this.label3.TabIndex = 35;
-            this.label3.Text = "Rate:";
+            this.label3.Text = "Delay (ms):";
             // 
             // btnRunAll
             // 
@@ -194,7 +194,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(469, 272);
+            this.ClientSize = new System.Drawing.Size(465, 268);
             this.ControlBox = false;
             this.Controls.Add(this.btnRunAll);
             this.Controls.Add(this.label3);
@@ -234,8 +234,8 @@
         public System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Label label1;
         public System.Windows.Forms.TextBox tbxMouseStatus;
-        private System.Windows.Forms.NumericUpDown nudRate;
         private System.Windows.Forms.Label label3;
         public System.Windows.Forms.Button btnRunAll;
+        public System.Windows.Forms.NumericUpDown nudRate;
     }
 }
