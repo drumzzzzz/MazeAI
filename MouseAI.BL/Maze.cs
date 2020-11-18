@@ -93,6 +93,7 @@ namespace MouseAI
         private const int INVALID = -1;
         private static List<MazeObject> visionObjects;
         private MazeStatistic mazeStatistic;
+        private bool isRandomWander;
 
         #endregion
 
@@ -397,7 +398,7 @@ namespace MouseAI
 
         #region Neural Network Run Movement
 
-        public void InitRunMove()
+        public void InitRunMove(bool israndomwander)
         {
             if (!mazeModels.CheckPathNodes())
                 throw new Exception("Invalid maze model path nodes!");
@@ -409,6 +410,7 @@ namespace MouseAI
             badNodes.Clear();
             segmentPathObjects.Clear();
             lastNode = 0;
+            isRandomWander = israndomwander;
             neuralNet.InitDataSets(mazeModels.GetImageSegments());
             mazeStatistic = new MazeStatistic(mazeModel.guid, neuralNet.GetLogName());
         }
@@ -916,6 +918,11 @@ namespace MouseAI
             if (!isDeadEnds)
                 return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
             return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+        }
+
+        public string GetModelName()
+        {
+            return neuralNet.GetLogName();
         }
 
         #endregion

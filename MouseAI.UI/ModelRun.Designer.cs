@@ -42,11 +42,14 @@
             this.label2 = new System.Windows.Forms.Label();
             this.nudRate = new System.Windows.Forms.NumericUpDown();
             this.btnRunAll = new System.Windows.Forms.Button();
-            this.chkAnimation = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.pnlPlot = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label4 = new System.Windows.Forms.Label();
+            this.chkRandomWander = new System.Windows.Forms.CheckBox();
+            this.tbxModel = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnExit
@@ -75,7 +78,7 @@
             this.tbxMaze.Location = new System.Drawing.Point(71, 32);
             this.tbxMaze.Name = "tbxMaze";
             this.tbxMaze.ReadOnly = true;
-            this.tbxMaze.Size = new System.Drawing.Size(373, 22);
+            this.tbxMaze.Size = new System.Drawing.Size(82, 22);
             this.tbxMaze.TabIndex = 23;
             this.tbxMaze.WordWrap = false;
             // 
@@ -133,7 +136,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(11, 148);
+            this.label1.Location = new System.Drawing.Point(258, 139);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 32);
             this.label1.TabIndex = 30;
@@ -144,10 +147,10 @@
             this.tbxTime.BackColor = System.Drawing.SystemColors.Window;
             this.tbxTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxTime.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxTime.Location = new System.Drawing.Point(71, 102);
+            this.tbxTime.Location = new System.Drawing.Point(67, 145);
             this.tbxTime.Name = "tbxTime";
             this.tbxTime.ReadOnly = true;
-            this.tbxTime.Size = new System.Drawing.Size(122, 22);
+            this.tbxTime.Size = new System.Drawing.Size(82, 22);
             this.tbxTime.TabIndex = 31;
             this.tbxTime.WordWrap = false;
             // 
@@ -156,7 +159,7 @@
             this.tbxMouseStatus.BackColor = System.Drawing.SystemColors.Window;
             this.tbxMouseStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxMouseStatus.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxMouseStatus.Location = new System.Drawing.Point(71, 154);
+            this.tbxMouseStatus.Location = new System.Drawing.Point(318, 145);
             this.tbxMouseStatus.Name = "tbxMouseStatus";
             this.tbxMouseStatus.ReadOnly = true;
             this.tbxMouseStatus.Size = new System.Drawing.Size(122, 22);
@@ -167,7 +170,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(16, 104);
+            this.label2.Location = new System.Drawing.Point(17, 147);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(40, 16);
             this.label2.TabIndex = 33;
@@ -181,14 +184,14 @@
             0,
             0,
             0});
-            this.nudRate.Location = new System.Drawing.Point(320, 154);
+            this.nudRate.Location = new System.Drawing.Point(67, 82);
             this.nudRate.Maximum = new decimal(new int[] {
             10000,
             0,
             0,
             0});
             this.nudRate.Name = "nudRate";
-            this.nudRate.Size = new System.Drawing.Size(76, 22);
+            this.nudRate.Size = new System.Drawing.Size(82, 22);
             this.nudRate.TabIndex = 34;
             // 
             // btnRunAll
@@ -201,23 +204,11 @@
             this.btnRunAll.Text = "RUN ALL";
             this.btnRunAll.UseVisualStyleBackColor = true;
             // 
-            // chkAnimation
-            // 
-            this.chkAnimation.AutoSize = true;
-            this.chkAnimation.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.chkAnimation.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkAnimation.Location = new System.Drawing.Point(248, 104);
-            this.chkAnimation.Name = "chkAnimation";
-            this.chkAnimation.Size = new System.Drawing.Size(89, 20);
-            this.chkAnimation.TabIndex = 36;
-            this.chkAnimation.Text = "Animation:";
-            this.chkAnimation.UseVisualStyleBackColor = true;
-            // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(275, 156);
+            this.label3.Location = new System.Drawing.Point(18, 84);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(39, 16);
             this.label3.TabIndex = 37;
@@ -235,26 +226,60 @@
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.label4);
+            this.panel1.Controls.Add(this.chkRandomWander);
+            this.panel1.Controls.Add(this.tbxModel);
+            this.panel1.Controls.Add(this.label3);
+            this.panel1.Controls.Add(this.tbxMouseStatus);
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Controls.Add(this.nudRate);
+            this.panel1.Controls.Add(this.tbxTime);
             this.panel1.Location = new System.Drawing.Point(3, 12);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(462, 321);
             this.panel1.TabIndex = 39;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(191, 22);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(47, 16);
+            this.label4.TabIndex = 41;
+            this.label4.Text = "Model:";
+            // 
+            // chkRandomWander
+            // 
+            this.chkRandomWander.AutoSize = true;
+            this.chkRandomWander.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.chkRandomWander.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkRandomWander.Location = new System.Drawing.Point(249, 82);
+            this.chkRandomWander.Name = "chkRandomWander";
+            this.chkRandomWander.Size = new System.Drawing.Size(79, 20);
+            this.chkRandomWander.TabIndex = 0;
+            this.chkRandomWander.Text = "Random:";
+            this.chkRandomWander.UseVisualStyleBackColor = true;
+            // 
+            // tbxModel
+            // 
+            this.tbxModel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbxModel.Location = new System.Drawing.Point(244, 19);
+            this.tbxModel.Name = "tbxModel";
+            this.tbxModel.ReadOnly = true;
+            this.tbxModel.Size = new System.Drawing.Size(196, 22);
+            this.tbxModel.TabIndex = 40;
+            this.tbxModel.WordWrap = false;
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(913, 347);
+            this.ClientSize = new System.Drawing.Size(905, 339);
             this.ControlBox = false;
             this.Controls.Add(this.pnlPlot);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.chkAnimation);
             this.Controls.Add(this.btnRunAll);
-            this.Controls.Add(this.nudRate);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.tbxMouseStatus);
-            this.Controls.Add(this.tbxTime);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnStep);
             this.Controls.Add(this.btnPause);
@@ -271,8 +296,9 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Model Run";
             this.TopMost = true;
-            this.Shown += new System.EventHandler(this.ModelRun_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -295,8 +321,10 @@
         public System.Windows.Forms.NumericUpDown nudRate;
         public System.Windows.Forms.Button btnRunAll;
         private System.Windows.Forms.Label label3;
-        public System.Windows.Forms.CheckBox chkAnimation;
         private System.Windows.Forms.Panel pnlPlot;
         private System.Windows.Forms.Panel panel1;
+        public System.Windows.Forms.CheckBox chkRandomWander;
+        private System.Windows.Forms.Label label4;
+        public System.Windows.Forms.TextBox tbxModel;
     }
 }

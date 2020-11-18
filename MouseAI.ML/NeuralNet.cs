@@ -392,6 +392,7 @@ namespace MouseAI.ML
             model_loaded = BaseModel.ModelFromJson(config.Model);
             model_loaded.LoadWeight(filename + model_ext);
             model_loaded.Summary();
+            starttime = config.StartTime;
         }
 
         public void SaveFiles()

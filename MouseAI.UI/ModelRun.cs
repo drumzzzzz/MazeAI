@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ScottPlot;
-using ScottPlot.Config;
 
 namespace MouseAI.UI
 {
@@ -21,7 +15,6 @@ namespace MouseAI.UI
         private const int Y_MARGIN = 10;
         private const int X_POSITION = 5;
         private const int Y_POSITION = 5;
-        private List<Plottable> plottables;
 
         public ModelRun(string[] columns)
         {
@@ -49,10 +42,9 @@ namespace MouseAI.UI
             }
 
             double[] xs = DataGen.Consecutive(columns_length);
-            //double[] ys = DataGen.Consecutive(columns_length, 10, 0);
 
             plot.plt.Clear();
-            plot.plt.PlotBar(xs, data, valueColor: Color.RoyalBlue, fillColor:Color.RoyalBlue);
+            plot.plt.PlotBar(xs, data, fillColor:Color.Blue);
             plot.Render();
         }
 
@@ -73,11 +65,10 @@ namespace MouseAI.UI
                 plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
                 plot.Location = new Point(X_POSITION, Y_POSITION);
                 plot.AutoSize = false;
-                plot.plt.XLabel("Running Statistics");
+                plot.plt.XLabel("Run Statistics");
                 plot.plt.AxisAuto(horizontalMargin: .1, verticalMargin: 0);
                 pnlPlot.Controls.Add(plot);
                 plot.Render();
-                plottables = plot.plt.GetPlottables();
             }
             catch (Exception e)
             {
@@ -92,11 +83,6 @@ namespace MouseAI.UI
             {
                 btn.Enabled = false;
             }
-        }
-
-        private void ModelRun_Shown(object sender, EventArgs e)
-        {
-
         }
     }
 }

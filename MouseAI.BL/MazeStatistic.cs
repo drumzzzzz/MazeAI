@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MouseAI.BL
 {
@@ -17,7 +14,6 @@ namespace MouseAI.BL
         private double wander_moves;
         private DateTime dtStart { get; set; }
         private DateTime dtEnd { get; set; }
-        private string smouse_status { get; set; }
         private MazeStatistics.MOUSE_STATUS mouse_status;
         private bool isRunning;
 

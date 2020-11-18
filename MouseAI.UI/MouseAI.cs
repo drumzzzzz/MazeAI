@@ -67,9 +67,11 @@ namespace MouseAI.UI
         private bool isRunAll;
         private int runDelay;
         private const int RUN_DELAY = 100;
-        private bool isAnimate = true;
         private DateTime dtPlotTime;
         private const int PLOT_TIME = 250;
+        private DateTime dtRenderTime;
+        private const int RENDER_TIME = 5;
+        private bool isRandomWander = false;
 
         private enum RUN_MODE
         {
@@ -451,11 +453,11 @@ namespace MouseAI.UI
             }
 
             // ToDo: Debug remove!
-            if (ModelLoad())
-            {
-                SetRunMode(RUN_MODE.STEP);
-                ModelRun();
-            }
+            //if (ModelLoad())
+            //{
+            //    SetRunMode(RUN_MODE.STEP);
+            //    ModelRun();
+            //}
         }
 
         private bool LoadModel(string starttime)
@@ -539,10 +541,9 @@ namespace MouseAI.UI
             try
             { 
                 maze.Reset();
-                maze.InitRunMove();
+                maze.InitRunMove(isRandomWander);
 
                 Console.WriteLine("Mouse move started ...");
-                int count = 0;
                 while (isRunMode())
                 {
                     if (run_mode == RUN_MODE.STEP)
@@ -573,7 +574,7 @@ namespace MouseAI.UI
                             DisplayMazeText();
                     }
 
-                    if (UpdateMaze())
+                    if (UpdateMaze(run_mode != RUN_MODE.RUN))
                     {
                         UpdateStatus();
                     }
@@ -584,12 +585,6 @@ namespace MouseAI.UI
                     if (run_mode == RUN_MODE.RUN)
                     {
                         Thread.Sleep(runDelay <= 0 ? 10 : runDelay);
-                        count++;
-                        if (count > 10)
-                        {
-                            Console.Clear();
-                            count = 0;
-                        }
                     }
                 }
             }
@@ -672,17 +667,15 @@ namespace MouseAI.UI
             }
 
             nu.Value = runDelay;
-
-            modelRun.chkAnimation.CheckedChanged += chkAnimation_CheckedChanged;
-            modelRun.chkAnimation.Checked = isAnimate;
-
+            modelRun.chkRandomWander.CheckedChanged += chkRandomWander_CheckedChanged;
+            modelRun.chkRandomWander.Checked = isRandomWander;
             modelRun.Show();
             UpdateModelRun();
         }
 
-        private void chkAnimation_CheckedChanged(object sender, EventArgs e)
+        private void chkRandomWander_CheckedChanged(object sender, EventArgs e)
         {
-            isAnimate = modelRun.chkAnimation.Checked;
+            isRandomWander = modelRun.chkRandomWander.Checked;
         }
 
         private void nudRate_ValueChanged(object sender, EventArgs e)
@@ -763,6 +756,7 @@ namespace MouseAI.UI
             run_mode = _run_mode;
 
             mdl.ResetButtons();
+            modelRun.chkRandomWander.Enabled = false;
 
             switch (run_mode)
             {
@@ -776,12 +770,14 @@ namespace MouseAI.UI
                     mdl.btnStep.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     mdl.btnBack.Enabled = true;
+                    modelRun.chkRandomWander.Enabled = true;
                     return;
                 case RUN_MODE.STOP:
                     mdl.btnRun.Enabled = true;
                     mdl.btnRunAll.Enabled = true;
                     mdl.btnExit.Enabled = true;
                     mdl.btnBack.Enabled = true;
+                    modelRun.chkRandomWander.Enabled = true;
                     return;
                 case RUN_MODE.RUN:
                     mdl.btnPause.Enabled = true;
@@ -812,12 +808,15 @@ namespace MouseAI.UI
                 return;
 
             string selected = GetSelectedItem();
-            string guid = maze.GetMazeModelGUID();
 
-            bool isReady = (!string.IsNullOrEmpty(selected) && !string.IsNullOrEmpty(guid));
+            bool isReady = (!string.IsNullOrEmpty(selected));
 
             modelRun.tbxMaze.Text = (isReady)
-                ? string.Format("{0} [{1}]", selected, guid)
+                ? string.Format("{0}", selected)
+                : string.Empty;
+
+            modelRun.tbxModel.Text = (isReady)
+                ? string.Format("{0}", maze.GetModelName())
                 : string.Empty;
 
             if (!isRunAll) 
@@ -1031,7 +1030,7 @@ namespace MouseAI.UI
             }
             offscreen.Save();
             backimage = buffer.Snapshot();
-            UpdateMaze();
+            UpdateMaze(false);
         }
 
         private void ClearMaze()
@@ -1044,22 +1043,26 @@ namespace MouseAI.UI
             pbxMaze.Image = null;
         }
 
-        private bool UpdateMaze()
+        private bool UpdateMaze(bool isImmediate)
         {
+            if (!isImmediate)
+            {
+                DateTime dtCurrent = DateTime.UtcNow;
+
+                if (dtCurrent < dtRenderTime)
+                    return false;
+
+                dtRenderTime = dtCurrent.AddMilliseconds(RENDER_TIME);
+            }
+
             Point p = maze.GetMousePosition();
             if (p == mouse_last)
                 return false;
 
-            if (!isAnimate)
-                return true;
-
-            mouse_last = p;
-
-            Console.WriteLine("Mouse Update");
+            mouse_last = maze.GetMousePosition();
 
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);
-
             canvas.DrawBitmap(Mouse_Bitmaps[(int)DIRECTION.SOUTH], (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
 
             SKImage image = surface.Snapshot();
