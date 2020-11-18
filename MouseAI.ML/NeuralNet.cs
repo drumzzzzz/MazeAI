@@ -286,20 +286,16 @@ namespace MouseAI.ML
         {
             // Build model
             Sequential model = new Sequential();
-             
-            double dropout_increment = GetDropOutRate(config);
-            double droput_value;
 
             model.Add(new Flatten());
 
             for (int i = config.Layers; i > -1;i--)
             {
-                model.Add(new Dense(config.Nodes, activation: "relu"));
+                model.Add(new Dense(config.Nodes[i], activation: "relu"));
                 if (config.DropOutLayers != 0 && i < config.DropOutLayers)
                 {
-                    droput_value = config.DropOut - (dropout_increment * i);
-                    model.Add(new Dropout(droput_value));
-                    Console.WriteLine("Added dropout {0}", droput_value);
+                    model.Add(new Dropout(config.DropOut[i]));
+                    Console.WriteLine("Added dropout {0}", config.DropOut[i]);
                 }
             }
             
@@ -330,19 +326,16 @@ namespace MouseAI.ML
             model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
             model.Add(new Flatten());
 
-            double dropout_increment = GetDropOutRate(config);
-            double droput_value;
 
             Callback[] callbacks = GetCallbacks(config.isEarlyStop, logname);
 
             for (int i = config.Layers; i > -1; i--)
             {
-                model.Add(new Dense(config.Nodes, activation: "relu"));
+                model.Add(new Dense(config.Nodes[i], activation: "relu"));
                 if (config.DropOutLayers != 0 && i < config.DropOutLayers)
                 {
-                    droput_value = config.DropOut - (dropout_increment * i);
-                    model.Add(new Dropout(droput_value));
-                    Console.WriteLine("Added dropout {0}", droput_value);
+                    model.Add(new Dropout(config.DropOut[i]));
+                    Console.WriteLine("Added dropout {0}", config.DropOut[i]);
                 }
             }
 
@@ -357,19 +350,6 @@ namespace MouseAI.ML
                 validation_data: new[] { x_test, y_test }, callbacks: callbacks);
   
             return model;
-        }
-
-        private static double GetDropOutRate(Config config)
-        {
-            if (config.DropOutLayers <= 0)
-            {
-                config.DropOutLayers = 0;
-                return 0;
-            }
-            if (config.DropOutLayers > config.Layers)
-                    config.DropOutLayers = config.Layers;
-
-            return config.DropOut / config.DropOutLayers;
         }
 
         #endregion

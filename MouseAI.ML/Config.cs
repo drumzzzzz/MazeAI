@@ -11,12 +11,12 @@ namespace MouseAI.SH
         public int Epochs { get; set; }
         public int Batch { get; set; }
         public int Layers { get; set; }
-        public int Nodes { get; set; }
+        public int[] Nodes { get; set; }
         public bool isCNN { get; set; }
         public bool isNormalize { get; set; }
         public bool isEarlyStop { get; set; }
-        public double DropOut { get; set; }
         public int DropOutLayers { get; set; }
+        public double[] DropOut { get; set; }
         public int Seed { get; set; }
         public double Split { get; set; }
         public double LearnRate { get; set; }

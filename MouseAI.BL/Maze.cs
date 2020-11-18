@@ -466,7 +466,7 @@ namespace MouseAI
             Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
             if (!ProcessVisionState(mouse, mazeobjects))
-                ProcessVisionMove(mazeobjects, mazeobjects_de, mouse);
+                ProcessWanderMove(mazeobjects, mazeobjects_de, mouse);
             else
             {
                 mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
@@ -540,7 +540,7 @@ namespace MouseAI
             return isMouse && count != 0;
         }
 
-        private void ProcessVisionMove(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
+        private void ProcessWanderMove(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
             // The mouse is confused because it is in an unrecognized portion of a maze due
             // to the predicted neural path memory not relating to anything it sees.
@@ -553,13 +553,34 @@ namespace MouseAI
             List<MazeObject> mos = mazeobjects.Where(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE).ToList();
             MazeObject mo = null;
 
+            List<MazeObject> mos_selections = new List<MazeObject>();
+
             if (mos.Count != 0)
             {
                 for (int i=0;i<pan_array.Length;i+=2)
                 {
-                    mo = mos.FirstOrDefault(o => o.x == pan_array[i] && o.y == pan_array[i + 1]);
-                    if (mo != null)
-                        break;
+                    if (isRandomWander)
+                    {
+                        mo = mos.FirstOrDefault(o => o.x == pan_array[i] && o.y == pan_array[i + 1]);
+                        if (mo!=null)
+                            mos_selections.Add(mo);
+                    }
+                    else
+                    {
+                        mo = mos.FirstOrDefault(o => o.x == pan_array[i] && o.y == pan_array[i + 1]);
+                        if (mo != null)
+                            break;
+                    }
+                }
+            }
+
+            if (isRandomWander && mos_selections.Count != 0)
+            {
+                if (mos_selections.Count == 1)
+                    mo = mos_selections[0];
+                else
+                {
+                    mo = mos_selections[r.Next(0, mos_selections.Count)];
                 }
             }
 
@@ -872,20 +893,8 @@ namespace MouseAI
             oMouse.y = mo_oldest.y;
 
             if (!mouse.isJunction)
-            {
                 mouse.isDeadEnd = true;
-                //if (mazeobjects_de == null)
-                //    mouse.isDeadEnd = true;
-                //else
-                //{
-                //    int dend_count = mazeobjects_de.Count(o => o.isDeadEnd);
-                //    if (dend_count > mazeobjects_de.Count - 1)
-                //        mouse.isDeadEnd = true;
-                //}
-                //else if (mazeobjects_de.Any(o => o.isDeadEnd))
-                //   mouse.isDeadEnd = true;
-            }
-
+            
             mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
             mouse.isVisited = true;
             mouse.object_state = OBJECT_STATE.VISITED;
