@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MouseAI.ML;
+using ScottPlot;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -65,8 +66,10 @@ namespace MouseAI.UI
         private bool isThreadCancel;
         private bool isRunAll;
         private int runDelay;
-        private const int RUN_DELAY = 300;
+        private const int RUN_DELAY = 100;
         private bool isAnimate = true;
+        private DateTime dtPlotTime;
+        private const int PLOT_TIME = 250;
 
         private enum RUN_MODE
         {
@@ -448,11 +451,11 @@ namespace MouseAI.UI
             }
 
             // ToDo: Debug remove!
-            //if (ModelLoad())
-            //{
-            //    SetRunMode(RUN_MODE.STEP);
-            //    ModelRun();
-            //}
+            if (ModelLoad())
+            {
+                SetRunMode(RUN_MODE.STEP);
+                ModelRun();
+            }
         }
 
         private bool LoadModel(string starttime)
@@ -537,7 +540,6 @@ namespace MouseAI.UI
             { 
                 maze.Reset();
                 maze.InitRunMove();
-                modelRun.tbxStatusColumns.Text = maze.GetMazeStatusColumns();
 
                 Console.WriteLine("Mouse move started ...");
                 int count = 0;
@@ -575,6 +577,8 @@ namespace MouseAI.UI
                     {
                         UpdateStatus();
                     }
+
+                    UpdatePlot();
 
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
@@ -622,8 +626,19 @@ namespace MouseAI.UI
 
         private void UpdateStatus()
         {
-            modelRun.tbxStatusValues.Text = maze.GetMazeStatusValues();
+            modelRun.tbxTime.Text = maze.GetMazeStatisticTime();
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
+        }
+
+        private void UpdatePlot()
+        {
+            DateTime dtCurrent = DateTime.UtcNow;
+
+            if (dtCurrent >= dtPlotTime)
+            {
+                modelRun.UpdatePlot(maze.GetMazeStatisticData());
+                dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
+            }
         }
 
         private bool AIRun()
@@ -639,7 +654,7 @@ namespace MouseAI.UI
                 return;
             }
 
-            modelRun = new ModelRun();
+            modelRun = new ModelRun(maze.GetMazeStatisticPlotColumns());
 
             foreach (Control ctl in modelRun.Controls)
             {

@@ -92,7 +92,7 @@ namespace MouseAI
         private int segment_current;
         private const int INVALID = -1;
         private static List<MazeObject> visionObjects;
-        private MazeStatistics mazeStats;
+        private MazeStatistic mazeStatistic;
 
         #endregion
 
@@ -410,7 +410,7 @@ namespace MouseAI
             segmentPathObjects.Clear();
             lastNode = 0;
             neuralNet.InitDataSets(mazeModels.GetImageSegments());
-            mazeStats = new MazeStatistics(mazeModel.guid, neuralNet.GetLogName());
+            mazeStatistic = new MazeStatistic(mazeModel.guid, neuralNet.GetLogName());
         }
 
         public bool ProcessRunMove()
@@ -420,18 +420,19 @@ namespace MouseAI
             int y = oMouse.y;
 
             // Update maze statistics
-            mazeStats.predictions = neuralNet.GetPredictions();
-            mazeStats.predicted = neuralNet.GetPredicted();
+            mazeStatistic.SetPredictions(neuralNet.GetPredictions());
+            mazeStatistic.SetPredictedLabels(neuralNet.GetPredicted());
+            mazeStatistic.SetPredictedErrors(neuralNet.GetPredictedErrors());
 
             // Check if mouse can see the cheese
             if (!isCheesePath)
             {
                 ScanObjects(x, y);
-                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.LOOKING);
+                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.LOOKING);
             }
             else
             {
-                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
+                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
             }
 
             Console.WriteLine("Can mouse see cheese? {0}", isCheesePath);
@@ -447,13 +448,13 @@ namespace MouseAI
 
             if (mouse.x == cheese_x && mouse.y == cheese_y)
             {
-                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
+                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
                 return true;
             }
 
             if (isCheesePath)
             {
-                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
+                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
                 if (ProcessCheeseMove(mouse, mazeobjects))
                     CleanPathObjects();
 
@@ -466,10 +467,10 @@ namespace MouseAI
                 ProcessVisionMove(mazeobjects, mazeobjects_de, mouse);
             else
             {
-                mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
+                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
                 if (ProcessPathNode(mazeobjects, mazeobjects_de, mouse))
                 {
-                    mazeStats.good++;
+                    mazeStatistic.IncrementNeuralMoves();
                     return false;
                 }
             }
@@ -498,8 +499,6 @@ namespace MouseAI
                 Console.WriteLine("No stored segment state");
                 return true;
             }
-
-            mazeStats.predictions++;
 
             List<PathNode> pn = mazeModels.GetPathNodes(segment_current);
 
@@ -535,7 +534,7 @@ namespace MouseAI
                     }
                 }
             }
-            
+
             return isMouse && count != 0;
         }
 
@@ -545,18 +544,8 @@ namespace MouseAI
             // to the predicted neural path memory not relating to anything it sees.
             // Now the mouse needs to choose an optimal and/or random move
 
-            mazeStats.fail++;
-            
-            //if (isCheesePath)
-            //{
-            //    mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
-            //    if (ProcessCheeseMove(mouse, mazeobjects))
-            //        CleanPathObjects();
-
-            //    return;
-            //}
-
-            mazeStats.SetMouseStatus(MazeStatistics.MOUSE_STATUS.WANDERING);
+            mazeStatistic.IncrementWanderMoves();
+            mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.WANDERING);
 
             int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
             List<MazeObject> mos = mazeobjects.Where(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE).ToList();
@@ -720,24 +709,29 @@ namespace MouseAI
             return false;
         }
 
-        public string GetMazeStatusColumns()
+        public string[] GetMazeStatisticPlotColumns()
         {
-            return mazeStats.GetColumns();
+            return MazeStatistics.GetPlotColumns();
         }
 
-        public string GetMazeStatusValues()
+        public double[] GetMazeStatisticData()
         {
-            return mazeStats.GetValues();
+            return mazeStatistic.GetData();
+        }
+
+        public string GetMazeStatisticTime()
+        {
+            return mazeStatistic.GetTime();
         }
 
         public string GetMouseStatus()
         {
-            return mazeStats.GetMouseStatus();
+            return mazeStatistic.GetMouseStatus();
         }
 
         public void EndStatus()
         {
-            mazeStats.End();
+            mazeStatistic.End();
         }
 
         private static bool isMouseNode(MazeObject mouse, PathNode pn)

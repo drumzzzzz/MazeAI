@@ -257,6 +257,11 @@ namespace MouseAI.ML
             return predictions;
         }
 
+        public int GetPredictedErrors()
+        {
+            return predictions - predicted;
+        }
+
         private void ResetPredictions()
         {
             predicted = 0;
