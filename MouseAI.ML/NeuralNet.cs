@@ -286,18 +286,9 @@ namespace MouseAI.ML
         {
             // Build model
             Sequential model = new Sequential();
-
             model.Add(new Flatten());
 
-            for (int i = config.Layers; i > -1;i--)
-            {
-                model.Add(new Dense(config.Nodes[i], activation: "relu"));
-                if (config.DropOutLayers != 0 && i < config.DropOutLayers)
-                {
-                    model.Add(new Dropout(config.DropOut[i]));
-                    Console.WriteLine("Added dropout {0}", config.DropOut[i]);
-                }
-            }
+            AddNodes(model, config);
             
             model.Add(new Dense(num_classes, activation: "softmax"));
 
@@ -326,18 +317,9 @@ namespace MouseAI.ML
             model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
             model.Add(new Flatten());
 
-
             Callback[] callbacks = GetCallbacks(config.isEarlyStop, logname);
 
-            for (int i = config.Layers; i > -1; i--)
-            {
-                model.Add(new Dense(config.Nodes[i], activation: "relu"));
-                if (config.DropOutLayers != 0 && i < config.DropOutLayers)
-                {
-                    model.Add(new Dropout(config.DropOut[i]));
-                    Console.WriteLine("Added dropout {0}", config.DropOut[i]);
-                }
-            }
+            AddNodes(model, config);
 
             model.Add(new Dense(num_classes, activation: "softmax"));
 
@@ -350,6 +332,20 @@ namespace MouseAI.ML
                 validation_data: new[] { x_test, y_test }, callbacks: callbacks);
   
             return model;
+        }
+
+        private static void AddNodes(Sequential model, Config config)
+        {
+            for (int i = config.Layers - 1; i > -1; i--)
+            {
+                model.Add(new Dense(config.Nodes[i], activation: "relu"));
+                Console.WriteLine("Added nodes {0}", config.Nodes[i]);
+                if (config.DropOut[i] != 0.00)
+                {
+                    model.Add(new Dropout(config.DropOut[i]));
+                    Console.WriteLine("Added dropout {0}", config.DropOut[i]);
+                }
+            }
         }
 
         #endregion

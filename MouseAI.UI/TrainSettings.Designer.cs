@@ -38,37 +38,27 @@
             this.chkEarlyStop = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.nudLayers = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
-            this.nudNodes = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
             this.nudSeed = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
             this.nudSplit = new System.Windows.Forms.NumericUpDown();
-            this.label7 = new System.Windows.Forms.Label();
-            this.nudDropOut = new System.Windows.Forms.NumericUpDown();
-            this.label8 = new System.Windows.Forms.Label();
-            this.nudDropOutLayers = new System.Windows.Forms.NumericUpDown();
             this.chkCNN = new System.Windows.Forms.CheckBox();
             this.nudLearnRate = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
             this.nudLearnDecay = new System.Windows.Forms.NumericUpDown();
             this.label10 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.pnlLayers = new System.Windows.Forms.Panel();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudEpochs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBatch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLayers)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudNodes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSplit)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudDropOut)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudDropOutLayers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLearnRate)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLearnDecay)).BeginInit();
-            this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -78,7 +68,7 @@
             // btnTrain
             // 
             this.btnTrain.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTrain.Location = new System.Drawing.Point(557, 178);
+            this.btnTrain.Location = new System.Drawing.Point(198, 308);
             this.btnTrain.Name = "btnTrain";
             this.btnTrain.Size = new System.Drawing.Size(100, 40);
             this.btnTrain.TabIndex = 0;
@@ -89,7 +79,7 @@
             // btnCancel
             // 
             this.btnCancel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(557, 236);
+            this.btnCancel.Location = new System.Drawing.Point(379, 308);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 40);
             this.btnCancel.TabIndex = 1;
@@ -175,7 +165,7 @@
             this.chkEarlyStop.AutoSize = true;
             this.chkEarlyStop.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkEarlyStop.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkEarlyStop.Location = new System.Drawing.Point(169, 75);
+            this.chkEarlyStop.Location = new System.Drawing.Point(224, 71);
             this.chkEarlyStop.Name = "chkEarlyStop";
             this.chkEarlyStop.Size = new System.Drawing.Size(61, 36);
             this.chkEarlyStop.TabIndex = 7;
@@ -214,39 +204,7 @@
             0,
             0,
             0});
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(20, 83);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(45, 16);
-            this.label4.TabIndex = 11;
-            this.label4.Text = "Nodes";
-            // 
-            // nudNodes
-            // 
-            this.nudNodes.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudNodes.Location = new System.Drawing.Point(77, 81);
-            this.nudNodes.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-            this.nudNodes.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nudNodes.Name = "nudNodes";
-            this.nudNodes.Size = new System.Drawing.Size(71, 22);
-            this.nudNodes.TabIndex = 10;
-            this.nudNodes.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.nudLayers.ValueChanged += new System.EventHandler(this.nudLayers_ValueChanged);
             // 
             // label5
             // 
@@ -261,7 +219,7 @@
             // nudSeed
             // 
             this.nudSeed.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudSeed.Location = new System.Drawing.Point(210, 39);
+            this.nudSeed.Location = new System.Drawing.Point(265, 35);
             this.nudSeed.Name = "nudSeed";
             this.nudSeed.Size = new System.Drawing.Size(71, 22);
             this.nudSeed.TabIndex = 13;
@@ -270,7 +228,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(166, 42);
+            this.label6.Location = new System.Drawing.Point(221, 38);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(38, 16);
             this.label6.TabIndex = 16;
@@ -304,63 +262,6 @@
             0,
             0,
             131072});
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(19, 83);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(47, 16);
-            this.label7.TabIndex = 20;
-            this.label7.Text = "Layers";
-            // 
-            // nudDropOut
-            // 
-            this.nudDropOut.DecimalPlaces = 2;
-            this.nudDropOut.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudDropOut.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.nudDropOut.Location = new System.Drawing.Point(78, 39);
-            this.nudDropOut.Maximum = new decimal(new int[] {
-            99,
-            0,
-            0,
-            131072});
-            this.nudDropOut.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.nudDropOut.Name = "nudDropOut";
-            this.nudDropOut.Size = new System.Drawing.Size(71, 22);
-            this.nudDropOut.TabIndex = 19;
-            this.nudDropOut.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(19, 41);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(37, 16);
-            this.label8.TabIndex = 18;
-            this.label8.Text = "Level";
-            // 
-            // nudDropOutLayers
-            // 
-            this.nudDropOutLayers.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudDropOutLayers.Location = new System.Drawing.Point(78, 81);
-            this.nudDropOutLayers.Name = "nudDropOutLayers";
-            this.nudDropOutLayers.Size = new System.Drawing.Size(71, 22);
-            this.nudDropOutLayers.TabIndex = 17;
             // 
             // chkCNN
             // 
@@ -443,20 +344,6 @@
             this.label10.TabIndex = 24;
             this.label10.Text = "Decay";
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.nudDropOut);
-            this.groupBox1.Controls.Add(this.nudDropOutLayers);
-            this.groupBox1.Controls.Add(this.label8);
-            this.groupBox1.Controls.Add(this.label7);
-            this.groupBox1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(331, 161);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(175, 132);
-            this.groupBox1.TabIndex = 26;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Drop Out";
-            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.chkEarlyStop);
@@ -467,9 +354,9 @@
             this.groupBox2.Controls.Add(this.label6);
             this.groupBox2.Controls.Add(this.nudSeed);
             this.groupBox2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox2.Location = new System.Drawing.Point(12, 161);
+            this.groupBox2.Location = new System.Drawing.Point(331, 159);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(304, 132);
+            this.groupBox2.Size = new System.Drawing.Size(365, 134);
             this.groupBox2.TabIndex = 27;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Training";
@@ -483,25 +370,32 @@
             this.groupBox3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox3.Location = new System.Drawing.Point(512, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(184, 132);
+            this.groupBox3.Size = new System.Drawing.Size(184, 141);
             this.groupBox3.TabIndex = 27;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Learning";
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.pnlLayers);
             this.groupBox4.Controls.Add(this.chkCNN);
             this.groupBox4.Controls.Add(this.nudLayers);
             this.groupBox4.Controls.Add(this.label3);
-            this.groupBox4.Controls.Add(this.nudNodes);
-            this.groupBox4.Controls.Add(this.label4);
             this.groupBox4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox4.Location = new System.Drawing.Point(12, 12);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(304, 132);
+            this.groupBox4.Size = new System.Drawing.Size(304, 281);
             this.groupBox4.TabIndex = 27;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Network";
+            // 
+            // pnlLayers
+            // 
+            this.pnlLayers.Location = new System.Drawing.Point(3, 72);
+            this.pnlLayers.Margin = new System.Windows.Forms.Padding(0);
+            this.pnlLayers.Name = "pnlLayers";
+            this.pnlLayers.Size = new System.Drawing.Size(298, 207);
+            this.pnlLayers.TabIndex = 22;
             // 
             // groupBox5
             // 
@@ -511,7 +405,7 @@
             this.groupBox5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox5.Location = new System.Drawing.Point(331, 12);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(175, 132);
+            this.groupBox5.Size = new System.Drawing.Size(175, 141);
             this.groupBox5.TabIndex = 27;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Data Sets";
@@ -520,13 +414,12 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(739, 310);
+            this.ClientSize = new System.Drawing.Size(739, 361);
             this.ControlBox = false;
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnTrain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -537,15 +430,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudEpochs)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBatch)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLayers)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudNodes)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSplit)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudDropOut)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudDropOutLayers)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLearnRate)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudLearnDecay)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -568,26 +456,20 @@
         private System.Windows.Forms.CheckBox chkEarlyStop;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.NumericUpDown nudLayers;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.NumericUpDown nudNodes;
         public System.Windows.Forms.Button btnTrain;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown nudSeed;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown nudSplit;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.NumericUpDown nudDropOut;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.NumericUpDown nudDropOutLayers;
         private System.Windows.Forms.CheckBox chkCNN;
         private System.Windows.Forms.NumericUpDown nudLearnRate;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.NumericUpDown nudLearnDecay;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.Panel pnlLayers;
     }
 }

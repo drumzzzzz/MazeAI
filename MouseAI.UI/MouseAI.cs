@@ -135,7 +135,7 @@ namespace MouseAI.UI
                 SetMenuItems(false);
             }
 
-            RunTest();
+            //RunTest();
         }
 
         private bool CloseProject()

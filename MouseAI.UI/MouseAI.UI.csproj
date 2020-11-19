@@ -168,6 +168,12 @@
     <Compile Include="MouseAI.Designer.cs">
       <DependentUpon>MouseAI.cs</DependentUpon>
     </Compile>
+    <Compile Include="NeuralLayer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NeuralLayer.Designer.cs">
+      <DependentUpon>NeuralLayer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Progress.cs">
       <SubType>Form</SubType>
@@ -210,6 +216,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MouseAI.resx">
       <DependentUpon>MouseAI.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NeuralLayer.resx">
+      <DependentUpon>NeuralLayer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Progress.resx">
       <DependentUpon>Progress.cs</DependentUpon>
