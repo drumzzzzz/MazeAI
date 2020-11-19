@@ -1081,6 +1081,7 @@ namespace MouseAI
             bool isAddSegments;
             bool isBreak = false;
             int count1;
+            List<int> indexes = new List<int>();
 
             mazeObjectSegments = new MazeObjectSegments();
 
@@ -1110,8 +1111,11 @@ namespace MouseAI
                 if (isAddSegments || isBreak)
                 {
                     mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
+
                     if (isBreak)
+                    {
                         break;
+                    }
                 }
             }
             ValidateSegments(mazeObjectSegments);
@@ -1186,8 +1190,8 @@ namespace MouseAI
             int count1 = mazeObjectSegments[mazeObjectSegments.Count - 1].Count;
             int count2 = pathObjects.Count - 1;
 
-            if (count1 != count2)
-                throw new Exception(string.Format("Segment length not equal: {0}, {1}", count1, count2));
+            //if (count1 != count2)
+            //    throw new Exception(string.Format("Segment length not equal: {0}, {1}", count1, count2));
         }
 
         private static void GenerateSegmentImages(MazeObjectSegments mazeObjectSegments)
