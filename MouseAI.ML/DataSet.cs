@@ -210,8 +210,9 @@ namespace MouseAI.ML
 
                 count = id.Count;
                 sum = 0;
-                indexes = GetRandomList(1, count);
+                indexes = GetRandomList(1, count - 1);
                 indexes.Insert(0, 0);
+                indexes.Insert(1, count - 1);
                 train_count = (int)((count) * split);
 
                 for (int i = 0; i < train_count; i++)

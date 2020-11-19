@@ -62,9 +62,9 @@ namespace MouseAI
         private const string ARCHIVE_EXT = "zip";
         private const string PLOT_EXT = "png";
         private const char LOG_DELIMIT = ',';
-        private static readonly string[] LOG_COLUMN_VALUES = {"epoch", "accuracy", "loss", "val_accuracy", "val_loss"};
+        private static readonly string[] LOG_COLUMN_VALUES = { "epoch", "accuracy", "loss", "val_accuracy", "val_loss" };
         private static readonly int[] PLOT_COLUMNS_Y = { 1, 3 };
-        private static readonly Color[] PLOT_COLORS_Y = {Color.Empty, Color.Green, Color.Blue, Color.Green, Color.Blue};
+        private static readonly Color[] PLOT_COLORS_Y = { Color.Empty, Color.Green, Color.Blue, Color.Green, Color.Blue };
         private const int PLOT_COLUMN_X = 0;
         private const int PLOT_WIDTH = 300;
         private const int PLOT_HEIGHT = 300;
@@ -557,12 +557,12 @@ namespace MouseAI
 
             if (mos.Count != 0)
             {
-                for (int i=0;i<pan_array.Length;i+=2)
+                for (int i = 0; i < pan_array.Length; i += 2)
                 {
                     if (isRandomWander)
                     {
                         mo = mos.FirstOrDefault(o => o.x == pan_array[i] && o.y == pan_array[i + 1]);
-                        if (mo!=null)
+                        if (mo != null)
                             mos_selections.Add(mo);
                     }
                     else
@@ -585,7 +585,7 @@ namespace MouseAI
             }
 
             if (mo != null)
-                UpdatePathObject(mazeobjects,mazeobjects_de, mo, mouse);
+                UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
             else
             {
                 ProcessOldestPath(mazeobjects, mazeobjects_de, mouse);
@@ -665,7 +665,7 @@ namespace MouseAI
 
             visionObjects.Clear();
             visionObjects.AddRange(segmentPathObjects);
-            
+
             if (imagebytes == null)
             {
                 imagebytes = new List<byte[]>();
@@ -686,7 +686,7 @@ namespace MouseAI
         {
             if (imagebytes == null || imagebytes.Count == 0)
                 return;
-            
+
             segment_current = neuralNet.Predict(imagebytes, mazeModel.guid);
             imagebytes.Clear();
 
@@ -715,7 +715,7 @@ namespace MouseAI
             visualbmp.Save(memoryStream, ImageFormat.Bmp);
             byte[] bytes = memoryStream.ToArray();
             memoryStream.Close();
-            
+
             return bytes;
         }
 
@@ -894,7 +894,7 @@ namespace MouseAI
 
             if (!mouse.isJunction)
                 mouse.isDeadEnd = true;
-            
+
             mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
             mouse.isVisited = true;
             mouse.object_state = OBJECT_STATE.VISITED;
@@ -915,7 +915,7 @@ namespace MouseAI
 
             for (int y_idx = y - 1; y_idx < y + 2; y_idx += 2)
             {
-                if(isNode(x, y_idx, isDeadends))
+                if (isNode(x, y_idx, isDeadends))
                     mazeobjects.Add(mazeObjects[x, y_idx]);
             }
 
@@ -1151,7 +1151,7 @@ namespace MouseAI
                 if (!SearchObject(x, y_idx, pathobjects))
                     break;
             }
-            
+
             return pathobjects;
         }
 
@@ -1180,12 +1180,12 @@ namespace MouseAI
 
         private static void ValidateSegments(MazeObjectSegments mazeObjectSegments)
         {
-            for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
-            {
-                mazeObjectSegments[idx].RemoveAll(item => !pathObjects.Contains(item));
-                if (mazeObjectSegments[idx].Count == 0)
-                    mazeObjectSegments.RemoveAt(idx);
-            }
+            //for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
+            //{
+            //    mazeObjectSegments[idx].RemoveAll(item => !pathObjects.Contains(item));
+            //    if (mazeObjectSegments[idx].Count == 0)
+            //        mazeObjectSegments.RemoveAt(idx);
+            //}
 
             int count1 = mazeObjectSegments[mazeObjectSegments.Count - 1].Count;
             int count2 = pathObjects.Count - 1;
@@ -1229,7 +1229,7 @@ namespace MouseAI
 
             foreach (MazeObject mo in mos)
             {
-                mazeModel.pathnodes.Add(new PathNode(mo.x,mo.y,mo.isJunction));
+                mazeModel.pathnodes.Add(new PathNode(mo.x, mo.y, mo.isJunction));
             }
         }
 
@@ -1517,7 +1517,8 @@ namespace MouseAI
 
         private static byte GetByteColor(MazeObject mo)
         {
-            return mo.isDeadEnd ? (byte)GREY : (byte)BLACK;
+            //return mo.isDeadEnd ? (byte)GREY : (byte)BLACK;
+            return (byte)BLACK;
         }
 
         public List<int> GetMazeModelErrors()
@@ -1740,7 +1741,7 @@ namespace MouseAI
 
         public List<string> GetProjects()
         {
-            return FileIO.GetFiles(maze_dir,"*." + MAZE_EXT);
+            return FileIO.GetFiles(maze_dir, "*." + MAZE_EXT);
         }
 
         public string GetSaveName()
@@ -1879,8 +1880,8 @@ namespace MouseAI
             int removed_count = FileIO.DeleteFiles(projectfiles);
             int count = projectfiles.Count;
 
-            return removed_count != count 
-                ? string.Format("Error Removing {0} of {1} Project Files", count - removed_count, count) 
+            return removed_count != count
+                ? string.Format("Error Removing {0} of {1} Project Files", count - removed_count, count)
                 : string.Format("Removed {0} Project Files", removed_count);
         }
 
@@ -1972,7 +1973,7 @@ namespace MouseAI
 
         private static bool CheckPathMove(int x, int y)
         {
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x,y));
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
         }
 
         public static OBJECT_TYPE GetObjectDataType(int x, int y)
