@@ -79,7 +79,6 @@ namespace MouseAI
         private static string archive_dir;
         private string FileName;
         private string modelProjectGuid;
-
         private static readonly string[] IGNORE_VALUES = { "Config", "Model", "Guid", "StartTime" };
 
         // Model Running
@@ -412,7 +411,18 @@ namespace MouseAI
             lastNode = 0;
             isRandomWander = israndomwander;
             neuralNet.InitDataSets(mazeModels.GetImageSegments());
+            mazeStatistic = null;
             mazeStatistic = new MazeStatistic(mazeModel.guid, neuralNet.GetLogName());
+        }
+
+        public MazeStatistic GetMazeStatistic()
+        {
+            return mazeStatistic;
+        }
+
+        public bool isMazeStatistic()
+        {
+            return mazeStatistic != null;
         }
 
         public bool ProcessRunMove()

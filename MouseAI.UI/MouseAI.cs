@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MouseAI.BL;
 using MouseAI.ML;
 using ScottPlot;
 using SkiaSharp;
@@ -66,12 +67,14 @@ namespace MouseAI.UI
         private bool isThreadCancel;
         private bool isRunAll;
         private int runDelay;
-        private const int RUN_DELAY = 100;
+        private const int RUN_DELAY = 0;
         private DateTime dtPlotTime;
         private const int PLOT_TIME = 250;
         private DateTime dtRenderTime;
         private const int RENDER_TIME = 5;
-        private bool isRandomWander = false;
+        private bool isRandomWander;
+        private MazeStatistics mazeStatistics;
+        private int last_selected;
 
         private enum RUN_MODE
         {
@@ -587,6 +590,11 @@ namespace MouseAI.UI
                         Thread.Sleep(runDelay <= 0 ? 10 : runDelay);
                     }
                 }
+
+                if (isRunAll)
+                {
+                    mazeStatistics.Add(maze.GetMazeStatistic());
+                }
             }
             catch (Exception e)
             {
@@ -608,13 +616,16 @@ namespace MouseAI.UI
             {
                 SetRunMode(RUN_MODE.STOP);
                 
-                if (isRunAll && SelectNext())
+
+                if (isRunAll)
                 {
+                    SelectNext();
                     modelRun.btnRun.PerformClick();
                 }
                 else
                 {
                     ResetSelectedItem();
+                    //ResetSelectedItem();
                 }
             }
         }
@@ -712,6 +723,7 @@ namespace MouseAI.UI
                 case "btnRunAll":
                     lvwMazes.Enabled = false;
                     isRunAll = true;
+                    InitMazeStatistics();
                     SetRunMode(RUN_MODE.RUN);
                     RunModel();
                     return;
@@ -733,6 +745,14 @@ namespace MouseAI.UI
                     }
                     return;
             }
+        }
+
+        private void InitMazeStatistics()
+        {
+            if (mazeStatistics == null)
+                mazeStatistics = new MazeStatistics();
+            else
+                mazeStatistics.Clear();
         }
 
         private void RunExit()
@@ -1160,6 +1180,7 @@ namespace MouseAI.UI
         {
             try
             {
+                last_selected = -1;
                 maze = null;
                 maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
                 maze.LoadMazeModels(filename);
@@ -1235,6 +1256,7 @@ namespace MouseAI.UI
 
             if (selectedIndex < lvwMazes.Items.Count)
             {
+                lvwMazes.FocusedItem = lvwMazes.Items[selectedIndex];
                 lvwMazes.Items[selectedIndex].Selected = true;
                 lvwMazes.Items[selectedIndex].Focused = true;
                 lvwMazes.Refresh();
@@ -1275,15 +1297,6 @@ namespace MouseAI.UI
             return item.SubItems[0].Text;
         }
 
-        private int GetSelectedIndex()
-        {
-            if (!isMazeSelected())
-                return -1;
-
-            ListViewItem item = lvwMazes.SelectedItems[0];
-            return item.Index;
-        }
-
         private void AddMazeItems()
         {
             lvwMazes.Items.Clear();
@@ -1312,7 +1325,7 @@ namespace MouseAI.UI
             if (lvwMazes.FocusedItem == null)
                 return;
 
-            if (SelectMaze(lvwMazes.FocusedItem.Index))
+            if (lvwMazes.FocusedItem.Index != last_selected && SelectMaze(lvwMazes.FocusedItem.Index))
             {
                 UpdateModelRun();
             }
@@ -1363,6 +1376,7 @@ namespace MouseAI.UI
                     DisplayMazeSegments();
 
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetMazeModelGUID()));
+                last_selected = index;
                 return true;
             }
             catch (Exception e)
