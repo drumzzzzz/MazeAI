@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MouseAI.BL;
 using MouseAI.ML;
-using ScottPlot;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -73,7 +73,7 @@ namespace MouseAI.UI
         private DateTime dtRenderTime;
         private const int RENDER_TIME = 5;
         private bool isRandomWander;
-        private MazeStatistics mazeStatistics;
+        private readonly MazeStatistics mazeStatistics;
         private int last_selected;
 
         private enum RUN_MODE
@@ -121,6 +121,8 @@ namespace MouseAI.UI
                 Visible = false
             };
 
+            mazeStatistics = new MazeStatistics();
+
             LoadSettings();
             InitMazeGraphics();
             DisplayTitleMessage(string.Empty);
@@ -139,60 +141,6 @@ namespace MouseAI.UI
             }
 
             RunTest();
-        }
-
-        private bool CloseProject()
-        {
-            if (canvas == null)
-                return true;
-
-            try
-            {
-                settings.LastFileName = string.Empty;
-                settings.Guid = string.Empty;
-                UpdateSettings();
-
-                settings = Settings.Load();
-                if (settings == null)
-                    DisplayError(Settings.Error, true);
-
-                lvwMazes.Items.Clear();
-                maze = null;
-                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-
-                ClearMaze();
-                DrawPath();
-                return true;
-            }
-            catch (Exception e)
-            {
-                DisplayError("Error closing project", e, false);
-                return false;
-            }
-        }
-
-        private void LoadSettings()
-        {
-            if (!Settings.isSettings())
-            {
-                settings = Settings.Create();
-                if (settings == null)
-                    DisplayError(Settings.Error, true);
-            }
-
-            settings = Settings.Load();
-            if (settings == null)
-                DisplayError(Settings.Error, true);
-
-            SetOptionsItems();
-        }
-
-        private void UpdateSettings()
-        {
-            settings = Settings.Update(settings);
-
-            if (settings == null)
-                DisplayError(Settings.Error, true);
         }
 
         #endregion
@@ -541,11 +489,11 @@ namespace MouseAI.UI
             mouse_last = new Point(-1, -1);
             bool isProcess = false;
             
-
             try
             { 
                 maze.Reset();
                 maze.InitRunMove(isRandomWander);
+                modelRun.ClearMazePlot();
 
                 Console.WriteLine("Mouse move started ...");
                 while (isRunMode())
@@ -583,7 +531,7 @@ namespace MouseAI.UI
                         UpdateStatus();
                     }
 
-                    UpdateRunPlot();
+                    UpdateStatistic();
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
                     {
@@ -591,10 +539,7 @@ namespace MouseAI.UI
                     }
                 }
 
-                if (isRunAll)
-                {
-                    mazeStatistics.Add(maze.GetMazeStatistic());
-                }
+                UpdateStatistics();
             }
             catch (Exception e)
             {
@@ -617,7 +562,6 @@ namespace MouseAI.UI
                 SetRunMode(RUN_MODE.STOP);
                 if (isRunAll)
                 {
-                    UpdateRunAllPlot();
                     if (SelectNext())
                         modelRun.btnRun.PerformClick();
                 }
@@ -629,28 +573,6 @@ namespace MouseAI.UI
         {
             modelRun.tbxTime.Text = maze.GetMazeStatisticTime();
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
-        }
-
-        private void UpdateRunPlot()
-        {
-            DateTime dtCurrent = DateTime.UtcNow;
-
-            if (dtCurrent >= dtPlotTime)
-            {
-                modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
-                dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
-            }
-        }
-
-        private void UpdateRunAllPlot()
-        {
-            if (mazeStatistics == null || mazeStatistics.Count == 0)
-            {
-                Console.WriteLine("Maze statistics invalid for plotting!");
-                return;
-            }
-
-            modelRun.UpdatePlot(mazeStatistics.GetData(), true);
         }
 
         private bool AIRun()
@@ -731,7 +653,6 @@ namespace MouseAI.UI
                 case "btnRunAll":
                     lvwMazes.Enabled = false;
                     isRunAll = true;
-                    InitMazeStatistics();
                     SetRunMode(RUN_MODE.RUN);
                     RunModel();
                     return;
@@ -752,17 +673,6 @@ namespace MouseAI.UI
                         RunModel();
                     }
                     return;
-            }
-        }
-
-        private void InitMazeStatistics()
-        {
-            if (mazeStatistics == null)
-                mazeStatistics = new MazeStatistics();
-            else
-            {
-                mazeStatistics.Clear();
-                modelRun.ClearPlots();
             }
         }
 
@@ -851,6 +761,48 @@ namespace MouseAI.UI
         private bool isRunMode()
         {
             return (run_mode == RUN_MODE.STEP || run_mode == RUN_MODE.RUN || run_mode == RUN_MODE.PAUSE);
+        }
+
+        #endregion
+
+        #region Statistics
+
+        private void ClearStatistics()
+        {
+            mazeStatistics.Clear();
+        }
+
+        private void UpdateStatistic()
+        {
+            DateTime dtCurrent = DateTime.UtcNow;
+
+            if (dtCurrent >= dtPlotTime)
+            {
+                modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
+                dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
+            }
+        }
+
+        private void UpdateStatistics()
+        {
+            MazeStatistic ms = maze.GetMazeStatistic();
+
+            if (ms == null || mazeStatistics == null)
+            {
+                DisplayError("Error updating maze statistics!",false);
+                return;
+            }
+
+            int index = mazeStatistics.FindIndex(o =>
+                o.maze_guid.Equals(ms.maze_guid, StringComparison.OrdinalIgnoreCase));
+            if (index != -1)
+            {
+                mazeStatistics.RemoveAt(index);
+            }
+
+            mazeStatistics.Add(maze.GetMazeStatistic());
+
+            modelRun.UpdatePlot(mazeStatistics.GetData(), true);
         }
 
         #endregion
@@ -1154,6 +1106,7 @@ namespace MouseAI.UI
                 UpdateSettings();
                 DisplayTitleMessage(settings.LastFileName);
                 AddMazeItems();
+                ClearStatistics();
                 return true;
             }
             catch (Exception e)
@@ -1202,6 +1155,7 @@ namespace MouseAI.UI
                 UpdateSettings();
                 DisplayTitleMessage(settings.LastFileName);
                 DisplayTsMessage("Mazes Loaded");
+                ClearStatistics();
                 return true;
             }
             catch (Exception e)
@@ -1212,6 +1166,61 @@ namespace MouseAI.UI
                 DisplayError("Error Loading Project", e, true);
                 return false;
             }
+        }
+
+        private bool CloseProject()
+        {
+            if (canvas == null)
+                return true;
+
+            try
+            {
+                settings.LastFileName = string.Empty;
+                settings.Guid = string.Empty;
+                UpdateSettings();
+
+                settings = Settings.Load();
+                if (settings == null)
+                    DisplayError(Settings.Error, true);
+
+                lvwMazes.Items.Clear();
+                maze = null;
+                maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
+
+                ClearMaze();
+                DrawPath();
+                ClearStatistics();
+                return true;
+            }
+            catch (Exception e)
+            {
+                DisplayError("Error closing project", e, false);
+                return false;
+            }
+        }
+
+        private void LoadSettings()
+        {
+            if (!Settings.isSettings())
+            {
+                settings = Settings.Create();
+                if (settings == null)
+                    DisplayError(Settings.Error, true);
+            }
+
+            settings = Settings.Load();
+            if (settings == null)
+                DisplayError(Settings.Error, true);
+
+            SetOptionsItems();
+        }
+
+        private void UpdateSettings()
+        {
+            settings = Settings.Update(settings);
+
+            if (settings == null)
+                DisplayError(Settings.Error, true);
         }
 
         private void ManageMazes()

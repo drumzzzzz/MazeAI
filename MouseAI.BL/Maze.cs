@@ -432,7 +432,6 @@ namespace MouseAI
             int y = oMouse.y;
 
             // Update maze statistics
-            mazeStatistic.SetPredictions(neuralNet.GetPredictions());
             mazeStatistic.SetPredictedLabels(neuralNet.GetPredicted());
             mazeStatistic.SetPredictedErrors(neuralNet.GetPredictedErrors());
 
@@ -556,8 +555,8 @@ namespace MouseAI
             // to the predicted neural path memory not relating to anything it sees.
             // Now the mouse needs to choose an optimal and/or random move
 
-            mazeStatistic.IncrementWanderMoves();
-            mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.WANDERING);
+            mazeStatistic.IncrementSearchMoves();
+            mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SEARCHING);
 
             int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
             List<MazeObject> mos = mazeobjects.Where(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE).ToList();

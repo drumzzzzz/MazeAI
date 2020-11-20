@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ScottPlot;
 
@@ -10,8 +9,8 @@ namespace MouseAI.UI
     public partial class ModelRun : Form
     {
         private readonly List<Button> buttons;
-        private FormsPlot run_plot;
-        private FormsPlot runall_plot;
+        private FormsPlot maze_plot;
+        private FormsPlot total_plot;
         private int columns_length;
         private const int X_MARGIN = 10;
         private const int Y_MARGIN = 10;
@@ -35,9 +34,9 @@ namespace MouseAI.UI
             InitPlot(columns);
         }
 
-        public void UpdatePlot(double[] data, bool isRunAll)
+        public void UpdatePlot(double[] data, bool isTotal)
         {
-            if (run_plot == null || runall_plot == null || data.Length != columns_length)
+            if (maze_plot == null || total_plot == null || data.Length != columns_length)
             {
                 Console.WriteLine("Plot Error!");
                 return;
@@ -45,7 +44,7 @@ namespace MouseAI.UI
 
             double[] xs = DataGen.Consecutive(columns_length);
 
-            FormsPlot plot = (isRunAll) ? runall_plot : run_plot;
+            FormsPlot plot = (isTotal) ? total_plot : maze_plot;
 
             plot.plt.Clear();
             plot.plt.PlotBar(xs, data, fillColor:Color.Blue);
@@ -60,26 +59,26 @@ namespace MouseAI.UI
 
             try
             {
-                run_plot = GetPlot(xs, ys, columns, "Maze");
-                run_plot.Width = (pnlPlot.Width / 2)  - X_MARGIN - X_POSITION;
-                run_plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
-                run_plot.Location = new Point(X_POSITION, Y_POSITION);
+                maze_plot = GetPlot(xs, ys, columns, "Maze");
+                maze_plot.Width = (pnlPlot.Width / 2)  - X_MARGIN - X_POSITION;
+                maze_plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
+                maze_plot.Location = new Point(X_POSITION, Y_POSITION);
                 
-                runall_plot = GetPlot(xs, ys, columns, "All");
-                runall_plot.Width = (pnlPlot.Width / 2) - X_MARGIN - X_POSITION;
-                runall_plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
-                runall_plot.Location = new Point(X_POSITION + run_plot.Width, Y_POSITION);
+                total_plot = GetPlot(xs, ys, columns, "Total %");
+                total_plot.Width = (pnlPlot.Width / 2) - X_MARGIN - X_POSITION;
+                total_plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
+                total_plot.Location = new Point(X_POSITION + maze_plot.Width, Y_POSITION);
 
-                pnlPlot.Controls.Add(run_plot);
-                pnlPlot.Controls.Add(runall_plot);
+                pnlPlot.Controls.Add(maze_plot);
+                pnlPlot.Controls.Add(total_plot);
 
-                run_plot.Render();
-                runall_plot.Render();
+                maze_plot.Render();
+                total_plot.Render();
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error initializing plot: {0}", e.Message);
-                run_plot = null;
+                maze_plot = null;
             }
         }
 
@@ -101,12 +100,30 @@ namespace MouseAI.UI
 
         public void ClearPlots()
         {
-            if (run_plot == null || runall_plot == null)
+            if (maze_plot == null || total_plot == null)
                 return;
-            run_plot.plt.Clear();
-            runall_plot.plt.Clear();
-            run_plot.Render();
-            runall_plot.Render();
+            maze_plot.plt.Clear();
+            total_plot.plt.Clear();
+            maze_plot.Render();
+            total_plot.Render();
+        }
+
+        public void ClearMazePlot()
+        {
+            if (maze_plot == null)
+                return;
+
+            maze_plot.plt.Clear();
+            maze_plot.Render();
+        }
+
+        public void ClearTotalPlot()
+        {
+            if (total_plot == null)
+                return;
+
+            total_plot.plt.Clear();
+            total_plot.Render();
         }
 
         public void ResetButtons()

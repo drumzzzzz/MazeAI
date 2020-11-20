@@ -7,11 +7,10 @@ namespace MouseAI.BL
     {
         public string maze_guid { get; set; }
         public string model_name { get; set; }
-        private double predictions;
         private double predict_labels;
         private double predict_error;
         private double neural_moves;
-        private double wander_moves;
+        private double search_moves;
         private DateTime dtStart { get; set; }
         private DateTime dtEnd { get; set; }
         private MazeStatistics.MOUSE_STATUS mouse_status;
@@ -29,7 +28,7 @@ namespace MouseAI.BL
 
         public double[] GetData()
         {
-            return new []{ predictions, predict_labels, predict_error, neural_moves, wander_moves };
+            return new []{ predict_labels, predict_error, neural_moves, search_moves };
         }
 
         public void IncrementNeuralMoves()
@@ -37,14 +36,9 @@ namespace MouseAI.BL
             neural_moves++;
         }
 
-        public void IncrementWanderMoves()
+        public void IncrementSearchMoves()
         {
-            wander_moves++;
-        }
-
-        public void SetPredictions(int value)
-        {
-            predictions = value;
+            search_moves++;
         }
 
         public void SetPredictedLabels(int value)
@@ -68,8 +62,8 @@ namespace MouseAI.BL
             switch (mouse_status)
             {
                 case MazeStatistics.MOUSE_STATUS.NONE: return "Waiting";
-                case MazeStatistics.MOUSE_STATUS.RECALLING: return "Moving Neurally";
-                case MazeStatistics.MOUSE_STATUS.WANDERING: return "Wandering";
+                case MazeStatistics.MOUSE_STATUS.RECALLING: return "Neural Movement";
+                case MazeStatistics.MOUSE_STATUS.SEARCHING: return "Search Movement";
                 case MazeStatistics.MOUSE_STATUS.LOOKING: return "Looking";
                 case MazeStatistics.MOUSE_STATUS.FOUND: return "Found the cheese!";
                 default: return string.Empty;
@@ -90,20 +84,20 @@ namespace MouseAI.BL
 
     public class MazeStatistics : List<MazeStatistic>
     {
-        private const int COLUMNS = 5;
+        private const int COLUMNS = 4;
 
         public enum MOUSE_STATUS
         {
             NONE,
             RECALLING,
-            WANDERING,
+            SEARCHING,
             LOOKING,
             FOUND
         }
 
         private static readonly string[] Columns =
         {
-            "Prediction\nCount", "Predicted\nLabels", "Predicted\nErrors", "Neural\nMoves", "Wander\nMoves"
+            "Predicted\nLabels", "Predicted\nErrors", "Neural\nMoves", "Search\nMoves"
         };
 
         public static string[] GetPlotColumns()
@@ -124,16 +118,20 @@ namespace MouseAI.BL
                     values[i] += result[i];
                 }
             }
-            double total = values[3] + values[4];
-            values[3] = (100 * values[3]) / total;
-            values[4] = (100 * values[4]) / total;
 
-            
-            total = values[1] + values[2];
-            values[0] = (100 * values[0]) / total;
-            values[1] = (100 * values[1]) / total;
-            values[2] = (100 * values[2]) / total;
+            double total = values[0] + values[1];
+            values[0] = CalculatePercentage(values[0], total);
+            values[1] = CalculatePercentage(values[1], total);
+            total = values[2] + values[3];
+            values[2] = CalculatePercentage(values[2], total);
+            values[3] = CalculatePercentage(values[3], total);
+
             return values;
+        }
+
+        private static double CalculatePercentage(double value, double total)
+        {
+            return (100 * value) / total;
         }
     }
 }
