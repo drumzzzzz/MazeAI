@@ -46,7 +46,6 @@
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadLastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mazeTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -190,47 +189,38 @@
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugToolStripMenuItem.Text = "Debug";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // loadLastToolStripMenuItem
             // 
             this.loadLastToolStripMenuItem.Name = "loadLastToolStripMenuItem";
-            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadLastToolStripMenuItem.Text = "Load Last";
             this.loadLastToolStripMenuItem.Click += new System.EventHandler(this.loadLastToolStripMenuItem_Click);
             // 
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mazeTextToolStripMenuItem,
             this.mazeSegmentsToolStripMenuItem});
             this.toolsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(50, 31);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
-            // mazeTextToolStripMenuItem
-            // 
-            this.mazeTextToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.mazeTextToolStripMenuItem.Name = "mazeTextToolStripMenuItem";
-            this.mazeTextToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.mazeTextToolStripMenuItem.Text = "Maze Text";
-            this.mazeTextToolStripMenuItem.Click += new System.EventHandler(this.mazeTextToolStripMenuItem_Click);
-            // 
             // mazeSegmentsToolStripMenuItem
             // 
             this.mazeSegmentsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
-            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
             this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
             // 
@@ -342,7 +332,6 @@
         private System.Windows.Forms.ToolStripMenuItem manageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem mazeTextToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
         private System.Windows.Forms.ColumnHeader c3;
     }

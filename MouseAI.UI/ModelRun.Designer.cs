@@ -43,6 +43,9 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.tbxMouseStatus = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.rdoNone = new System.Windows.Forms.RadioButton();
+            this.rdoVisible = new System.Windows.Forms.RadioButton();
+            this.rdoAll = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).BeginInit();
             this.SuspendLayout();
             // 
@@ -52,14 +55,14 @@
             this.pnlPlot.Location = new System.Drawing.Point(364, 12);
             this.pnlPlot.Margin = new System.Windows.Forms.Padding(0);
             this.pnlPlot.Name = "pnlPlot";
-            this.pnlPlot.Size = new System.Drawing.Size(646, 310);
+            this.pnlPlot.Size = new System.Drawing.Size(646, 349);
             this.pnlPlot.TabIndex = 38;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(7, 89);
+            this.label2.Location = new System.Drawing.Point(11, 145);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(40, 16);
             this.label2.TabIndex = 49;
@@ -68,7 +71,7 @@
             // btnExit
             // 
             this.btnExit.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(236, 270);
+            this.btnExit.Location = new System.Drawing.Point(241, 319);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(100, 40);
             this.btnExit.TabIndex = 40;
@@ -96,7 +99,7 @@
             // btnRun
             // 
             this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(5, 153);
+            this.btnRun.Location = new System.Drawing.Point(10, 202);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(100, 40);
             this.btnRun.TabIndex = 41;
@@ -108,7 +111,7 @@
             this.tbxTime.BackColor = System.Drawing.SystemColors.Window;
             this.tbxTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxTime.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxTime.Location = new System.Drawing.Point(57, 87);
+            this.tbxTime.Location = new System.Drawing.Point(61, 143);
             this.tbxTime.Name = "tbxTime";
             this.tbxTime.ReadOnly = true;
             this.tbxTime.Size = new System.Drawing.Size(82, 22);
@@ -118,7 +121,7 @@
             // btnRunAll
             // 
             this.btnRunAll.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRunAll.Location = new System.Drawing.Point(120, 153);
+            this.btnRunAll.Location = new System.Drawing.Point(125, 202);
             this.btnRunAll.Name = "btnRunAll";
             this.btnRunAll.Size = new System.Drawing.Size(100, 40);
             this.btnRunAll.TabIndex = 51;
@@ -140,7 +143,7 @@
             // btnBack
             // 
             this.btnBack.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnBack.Location = new System.Drawing.Point(5, 270);
+            this.btnBack.Location = new System.Drawing.Point(10, 319);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(100, 40);
             this.btnBack.TabIndex = 45;
@@ -150,7 +153,7 @@
             // btnStep
             // 
             this.btnStep.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStep.Location = new System.Drawing.Point(120, 211);
+            this.btnStep.Location = new System.Drawing.Point(125, 260);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(100, 40);
             this.btnStep.TabIndex = 44;
@@ -170,7 +173,7 @@
             // btnPause
             // 
             this.btnPause.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPause.Location = new System.Drawing.Point(236, 211);
+            this.btnPause.Location = new System.Drawing.Point(241, 260);
             this.btnPause.Name = "btnPause";
             this.btnPause.Size = new System.Drawing.Size(100, 40);
             this.btnPause.TabIndex = 43;
@@ -180,7 +183,7 @@
             // btnStop
             // 
             this.btnStop.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(5, 211);
+            this.btnStop.Location = new System.Drawing.Point(10, 260);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(100, 40);
             this.btnStop.TabIndex = 42;
@@ -192,7 +195,7 @@
             this.tbxMouseStatus.BackColor = System.Drawing.SystemColors.Window;
             this.tbxMouseStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxMouseStatus.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxMouseStatus.Location = new System.Drawing.Point(205, 87);
+            this.tbxMouseStatus.Location = new System.Drawing.Point(209, 143);
             this.tbxMouseStatus.Name = "tbxMouseStatus";
             this.tbxMouseStatus.ReadOnly = true;
             this.tbxMouseStatus.Size = new System.Drawing.Size(122, 22);
@@ -203,18 +206,59 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(152, 81);
+            this.label1.Location = new System.Drawing.Point(156, 137);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 32);
             this.label1.TabIndex = 46;
             this.label1.Text = "Mouse\r\nStatus:";
             // 
+            // rdoNone
+            // 
+            this.rdoNone.AutoSize = true;
+            this.rdoNone.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoNone.Checked = true;
+            this.rdoNone.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoNone.Location = new System.Drawing.Point(14, 88);
+            this.rdoNone.Name = "rdoNone";
+            this.rdoNone.Size = new System.Drawing.Size(56, 20);
+            this.rdoNone.TabIndex = 53;
+            this.rdoNone.TabStop = true;
+            this.rdoNone.Text = "None";
+            this.rdoNone.UseVisualStyleBackColor = true;
+            // 
+            // rdoVisible
+            // 
+            this.rdoVisible.AutoSize = true;
+            this.rdoVisible.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoVisible.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoVisible.Location = new System.Drawing.Point(93, 88);
+            this.rdoVisible.Name = "rdoVisible";
+            this.rdoVisible.Size = new System.Drawing.Size(65, 20);
+            this.rdoVisible.TabIndex = 54;
+            this.rdoVisible.Text = "Visible";
+            this.rdoVisible.UseVisualStyleBackColor = true;
+            // 
+            // rdoAll
+            // 
+            this.rdoAll.AutoSize = true;
+            this.rdoAll.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoAll.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoAll.Location = new System.Drawing.Point(187, 88);
+            this.rdoAll.Name = "rdoAll";
+            this.rdoAll.Size = new System.Drawing.Size(41, 20);
+            this.rdoAll.TabIndex = 55;
+            this.rdoAll.Text = "All";
+            this.rdoAll.UseVisualStyleBackColor = true;
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1019, 331);
+            this.ClientSize = new System.Drawing.Size(1015, 370);
             this.ControlBox = false;
+            this.Controls.Add(this.rdoAll);
+            this.Controls.Add(this.rdoVisible);
+            this.Controls.Add(this.rdoNone);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.nudRate);
@@ -259,5 +303,8 @@
         public System.Windows.Forms.Button btnStop;
         public System.Windows.Forms.TextBox tbxMouseStatus;
         private System.Windows.Forms.Label label1;
+        public System.Windows.Forms.RadioButton rdoNone;
+        public System.Windows.Forms.RadioButton rdoVisible;
+        public System.Windows.Forms.RadioButton rdoAll;
     }
 }

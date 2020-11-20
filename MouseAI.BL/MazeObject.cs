@@ -32,7 +32,6 @@ namespace MouseAI
     {
         public OBJECT_TYPE object_type { get; set; }
         public OBJECT_STATE object_state { get; set; }
-        // public DIRECTION direction { get; set; }
         public int x { get; set; }
         public int y { get; set; }
         public bool isVisited { get; set; }
@@ -41,6 +40,7 @@ namespace MouseAI
         public bool isJunction { get; set; }
         public bool isPath { get; set; }
         public bool isVision { get; set; }
+        public bool isCheesePath { get; set; }
 
         public MazeObject Next { get; set; }
         public MazeObject Previous { get; set; }
@@ -55,22 +55,6 @@ namespace MouseAI
             isDeadEnd = false;
             isJunction = false;
             isVision = false;
-            this.x = x;
-            this.y = y;
-            //direction = DIRECTION.SOUTH;
-        }
-
-        public MazeObject(OBJECT_TYPE element_type, int x, int y,bool isVisited, DateTime dtLastVisit)
-        {
-            this.x = x;
-            this.y = y;
-            this.object_type = element_type;
-            this.isVisited = isVisited;
-            this.dtLastVisit = dtLastVisit;
-        }
-
-        public MazeObject(int x, int y)
-        {
             this.x = x;
             this.y = y;
         }

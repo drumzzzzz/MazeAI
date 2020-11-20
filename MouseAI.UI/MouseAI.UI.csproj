@@ -156,12 +156,6 @@
     <Compile Include="ModelPredict.Designer.cs">
       <DependentUpon>ModelPredict.cs</DependentUpon>
     </Compile>
-    <Compile Include="MazeText.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MazeText.Designer.cs">
-      <DependentUpon>MazeText.cs</DependentUpon>
-    </Compile>
     <Compile Include="MouseAI.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -210,9 +204,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ModelPredict.resx">
       <DependentUpon>ModelPredict.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MazeText.resx">
-      <DependentUpon>MazeText.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MouseAI.resx">
       <DependentUpon>MouseAI.cs</DependentUpon>
@@ -281,6 +272,12 @@
       <Project>{3a8ab4f8-deaa-4a8d-91ed-3ef53e4094e9}</Project>
       <Name>MouseAI.ML</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\visible.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\deadend.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets" Condition="Exists('..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets')" />

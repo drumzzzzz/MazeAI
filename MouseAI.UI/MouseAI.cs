@@ -23,7 +23,6 @@ namespace MouseAI.UI
 
         private Settings settings;
         private Thread trainThread;
-        private readonly MazeText mazeText;
         private ModelLoad modelLoad;
         private ModelRun modelRun;
         private ModelPredict modelPredict;
@@ -56,7 +55,10 @@ namespace MouseAI.UI
         private SKSurface surface;
         private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
-        private SKBitmap[] Mouse_Bitmaps;
+        private SKBitmap Mouse_Bitmap;
+        private SKBitmap Visible_Bitmap;
+        private SKBitmap DeadEnd_Bitmap;
+        
         private Point mouse_last;
 
         private int maze_count;
@@ -89,6 +91,15 @@ namespace MouseAI.UI
 
         private RUN_MODE run_mode;
 
+        private enum RUN_VISIBLE
+        {
+            NONE,
+            VISIBLE,
+            ALL
+        }
+
+        private RUN_VISIBLE run_visible;
+
         #endregion
 
         #region Initialization
@@ -111,11 +122,6 @@ namespace MouseAI.UI
                 DisplayError("Maze Initialization Error", e, true);
             }
 
-            mazeText = new MazeText(MAZE_WIDTH, MAZE_HEIGHT, maze)
-            {
-                Visible = false
-            };
-
             mazeSegments = new MazeSegments(MAZE_WIDTH, MAZE_HEIGHT, maze)
             {
                 Visible = false
@@ -133,7 +139,6 @@ namespace MouseAI.UI
             if (settings.isAutoRun && !string.IsNullOrEmpty(settings.LastFileName) && LoadMazes(settings.LastFileName, false))
             {
                 SetMenuItems(true);
-                SetMazeTextVisible();
             }
             else
             {
@@ -253,7 +258,6 @@ namespace MouseAI.UI
                 mazeSegments.ShowImages();
 
                 DrawPath();
-                DisplayMazeText();
             }
             else
                 DisplayError("Error Calculating Path!", false);
@@ -521,9 +525,6 @@ namespace MouseAI.UI
                         }
                         else
                             maze.ProcessVisionImage();
-
-                        if (run_mode == RUN_MODE.STEP)
-                            DisplayMazeText();
                     }
 
                     if (UpdateMaze(run_mode != RUN_MODE.RUN))
@@ -594,6 +595,8 @@ namespace MouseAI.UI
             {
                 if (ctl is Button)
                     (ctl as Button).Click += modelRun_Click;
+                else if (ctl is RadioButton)
+                    (ctl as RadioButton).CheckedChanged += radiobutton_CheckedChanged;
             }
 
             NumericUpDown nu = modelRun.nudRate;
@@ -610,6 +613,21 @@ namespace MouseAI.UI
             modelRun.chkRandomWander.Checked = isRandomWander;
             modelRun.Show();
             UpdateModelRun();
+        }
+
+        private void radiobutton_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton button = (RadioButton)sender;
+
+            if (button.Checked)
+            {
+                if (button.Name.Equals("rdoNone"))
+                    run_visible = RUN_VISIBLE.NONE;
+                else if (button.Name.Equals("rdoVisible"))
+                    run_visible = RUN_VISIBLE.VISIBLE;
+                else if (button.Name.Equals("rdoAll"))
+                    run_visible = RUN_VISIBLE.ALL;
+            }
         }
 
         private void chkRandomWander_CheckedChanged(object sender, EventArgs e)
@@ -958,30 +976,20 @@ namespace MouseAI.UI
             offscreen.Clear(SKColor.Parse("#003366"));
 
             SKImageInfo resizeInfo = new SKImageInfo(160, 160);
-            SKBitmap c = Resources.cheese.ToSKBitmap();
-            Cheese_Bitmap = c.Resize(resizeInfo, SKFilterQuality.Medium);
+            SKBitmap bmp = Resources.cheese.ToSKBitmap();
+            Cheese_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
+
             resizeInfo.Height = 51;
             resizeInfo.Width = 51;
 
-            Mouse_Bitmaps = new SKBitmap[4];
+            bmp = Resources.mouse_south.ToSKBitmap();
+            Mouse_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
 
-            SKBitmap[] mbmps =
-            {
-                Resources.mouse_north.ToSKBitmap(),
-                Resources.mouse_east.ToSKBitmap(),
-                Resources.mouse_south.ToSKBitmap(),
-                Resources.mouse_west.ToSKBitmap()
-            };
+            bmp = Resources.visible.ToSKBitmap();
+            Visible_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
 
-            Mouse_Bitmaps[(int)DIRECTION.NORTH] = Resources.mouse_north.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.EAST] = Resources.mouse_east.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.SOUTH] = Resources.mouse_south.ToSKBitmap();
-            Mouse_Bitmaps[(int)DIRECTION.WEST] = Resources.mouse_west.ToSKBitmap();
-
-            for (int i = 0; i < 4; i++)
-            {
-                Mouse_Bitmaps[i] = mbmps[i].Resize(resizeInfo, SKFilterQuality.Medium);
-            }
+            bmp = Resources.deadend.ToSKBitmap();
+            DeadEnd_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
 
             float x_pos, y_pos;
             OBJECT_TYPE ot;
@@ -1032,15 +1040,30 @@ namespace MouseAI.UI
                 dtRenderTime = dtCurrent.AddMilliseconds(RENDER_TIME);
             }
 
-            Point p = maze.GetMousePosition();
-            if (p == mouse_last)
+            Point mp = maze.GetMousePosition();
+            if (mp == mouse_last)
                 return false;
 
             mouse_last = maze.GetMousePosition();
 
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);
-            canvas.DrawBitmap(Mouse_Bitmaps[(int)DIRECTION.SOUTH], (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+            canvas.DrawBitmap(Mouse_Bitmap, (mp.X * MAZE_SCALE_WIDTH_PX), (mp.Y * MAZE_SCALE_HEIGHT_PX));
+
+            if (run_visible != RUN_VISIBLE.NONE)
+            {
+                maze.UpdatePointLists(mp, run_visible == RUN_VISIBLE.ALL);
+
+                foreach (Point p in maze.GetDeadEndPoints())
+                {
+                    canvas.DrawBitmap(DeadEnd_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+                }
+
+                foreach (Point p in maze.GetVisiblePoints())
+                {
+                    canvas.DrawBitmap(Visible_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+                }
+            }
 
             SKImage image = surface.Snapshot();
             MazeData = image.Encode();
@@ -1051,8 +1074,6 @@ namespace MouseAI.UI
                 pbxMaze.Image = new Bitmap(mStream, false);
             }
 
-            if (settings.isMazeText)
-                DisplayMazeText();
             return true;
         }
 
@@ -1384,8 +1405,6 @@ namespace MouseAI.UI
                 DrawMaze();
                 DrawPath();
 
-                if (settings.isMazeText)
-                    DisplayMazeText();
                 if (settings.isMazeSegments)
                     DisplayMazeSegments();
 
@@ -1413,25 +1432,12 @@ namespace MouseAI.UI
         {
             if (isOpened)
             {
-                SetMazeTextVisible();
                 SetMazeSegmentsVisible();
             }
             else
             {
-                mazeText.Visible = false;
                 mazeSegments.Visible = false;
             }
-        }
-
-        private void SetMazeTextVisible()
-        {
-            mazeText.Visible = (settings.isMazeText);
-            mazeText.txtMaze.Clear();
-        }
-
-        private void DisplayMazeText()
-        {
-            mazeText.DisplayMaze();
         }
 
         private void SetMazeSegmentsVisible()
@@ -1543,7 +1549,6 @@ namespace MouseAI.UI
             debugToolStripMenuItem.Checked = settings.isDebugConsole;
             autorunToolStripMenuItem.Checked = settings.isAutoRun;
             loadLastToolStripMenuItem.Checked = settings.isLoadLast;
-            mazeTextToolStripMenuItem.Checked = settings.isMazeText;
             mazeSegmentsToolStripMenuItem.Checked = settings.isMazeSegments;
         }
 
@@ -1566,18 +1571,6 @@ namespace MouseAI.UI
             loadLastToolStripMenuItem.Checked = !loadLastToolStripMenuItem.Checked;
             settings.isLoadLast = loadLastToolStripMenuItem.Checked;
             UpdateSettings();
-        }
-
-        private void mazeTextToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            mazeTextToolStripMenuItem.Checked = !mazeTextToolStripMenuItem.Checked;
-            settings.isMazeText = mazeTextToolStripMenuItem.Checked;
-            UpdateSettings();
-
-            if (!maze.isMazeModels())
-                return;
-
-            SetMazeTextVisible();
         }
 
         private void mazeSegmentsToolStripMenuItem_Click(object sender, EventArgs e)

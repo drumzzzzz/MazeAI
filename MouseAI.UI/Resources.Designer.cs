@@ -73,19 +73,9 @@ namespace MouseAI.UI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap mouse_east {
+        public static System.Drawing.Bitmap deadend {
             get {
-                object obj = ResourceManager.GetObject("mouse_east", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap mouse_north {
-            get {
-                object obj = ResourceManager.GetObject("mouse_north", resourceCulture);
+                object obj = ResourceManager.GetObject("deadend", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +93,9 @@ namespace MouseAI.UI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap mouse_west {
+        public static System.Drawing.Bitmap visible {
             get {
-                object obj = ResourceManager.GetObject("mouse_west", resourceCulture);
+                object obj = ResourceManager.GetObject("visible", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
