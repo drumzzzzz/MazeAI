@@ -574,6 +574,7 @@ namespace MouseAI.UI
         {
             modelRun.tbxTime.Text = maze.GetMazeStatisticTime();
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
+            modelRun.pbxVision.Image = maze.GetVisionImage();
         }
 
         private bool AIRun()
@@ -1073,6 +1074,8 @@ namespace MouseAI.UI
                 pbxMaze.Image?.Dispose();
                 pbxMaze.Image = new Bitmap(mStream, false);
             }
+
+
 
             return true;
         }

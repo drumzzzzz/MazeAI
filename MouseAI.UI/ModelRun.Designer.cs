@@ -46,7 +46,9 @@
             this.rdoNone = new System.Windows.Forms.RadioButton();
             this.rdoVisible = new System.Windows.Forms.RadioButton();
             this.rdoAll = new System.Windows.Forms.RadioButton();
+            this.pbxVision = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbxVision)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlPlot
@@ -71,7 +73,7 @@
             // btnExit
             // 
             this.btnExit.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(241, 319);
+            this.btnExit.Location = new System.Drawing.Point(125, 378);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(100, 40);
             this.btnExit.TabIndex = 40;
@@ -99,7 +101,7 @@
             // btnRun
             // 
             this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(10, 202);
+            this.btnRun.Location = new System.Drawing.Point(10, 260);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(100, 40);
             this.btnRun.TabIndex = 41;
@@ -121,7 +123,7 @@
             // btnRunAll
             // 
             this.btnRunAll.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRunAll.Location = new System.Drawing.Point(125, 202);
+            this.btnRunAll.Location = new System.Drawing.Point(125, 260);
             this.btnRunAll.Name = "btnRunAll";
             this.btnRunAll.Size = new System.Drawing.Size(100, 40);
             this.btnRunAll.TabIndex = 51;
@@ -143,7 +145,7 @@
             // btnBack
             // 
             this.btnBack.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnBack.Location = new System.Drawing.Point(10, 319);
+            this.btnBack.Location = new System.Drawing.Point(10, 378);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(100, 40);
             this.btnBack.TabIndex = 45;
@@ -153,7 +155,7 @@
             // btnStep
             // 
             this.btnStep.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStep.Location = new System.Drawing.Point(125, 260);
+            this.btnStep.Location = new System.Drawing.Point(240, 319);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(100, 40);
             this.btnStep.TabIndex = 44;
@@ -173,7 +175,7 @@
             // btnPause
             // 
             this.btnPause.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPause.Location = new System.Drawing.Point(241, 260);
+            this.btnPause.Location = new System.Drawing.Point(125, 319);
             this.btnPause.Name = "btnPause";
             this.btnPause.Size = new System.Drawing.Size(100, 40);
             this.btnPause.TabIndex = 43;
@@ -183,7 +185,7 @@
             // btnStop
             // 
             this.btnStop.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(10, 260);
+            this.btnStop.Location = new System.Drawing.Point(10, 319);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(100, 40);
             this.btnStop.TabIndex = 42;
@@ -195,7 +197,7 @@
             this.tbxMouseStatus.BackColor = System.Drawing.SystemColors.Window;
             this.tbxMouseStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxMouseStatus.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxMouseStatus.Location = new System.Drawing.Point(209, 143);
+            this.tbxMouseStatus.Location = new System.Drawing.Point(61, 200);
             this.tbxMouseStatus.Name = "tbxMouseStatus";
             this.tbxMouseStatus.ReadOnly = true;
             this.tbxMouseStatus.Size = new System.Drawing.Size(122, 22);
@@ -206,7 +208,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(156, 137);
+            this.label1.Location = new System.Drawing.Point(8, 194);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 32);
             this.label1.TabIndex = 46;
@@ -250,12 +252,23 @@
             this.rdoAll.Text = "All";
             this.rdoAll.UseVisualStyleBackColor = true;
             // 
+            // pbxVision
+            // 
+            this.pbxVision.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pbxVision.Location = new System.Drawing.Point(212, 134);
+            this.pbxVision.Name = "pbxVision";
+            this.pbxVision.Size = new System.Drawing.Size(128, 102);
+            this.pbxVision.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbxVision.TabIndex = 56;
+            this.pbxVision.TabStop = false;
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1015, 370);
+            this.ClientSize = new System.Drawing.Size(1011, 430);
             this.ControlBox = false;
+            this.Controls.Add(this.pbxVision);
             this.Controls.Add(this.rdoAll);
             this.Controls.Add(this.rdoVisible);
             this.Controls.Add(this.rdoNone);
@@ -282,6 +295,7 @@
             this.Text = "Model Run";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbxVision)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -306,5 +320,6 @@
         public System.Windows.Forms.RadioButton rdoNone;
         public System.Windows.Forms.RadioButton rdoVisible;
         public System.Windows.Forms.RadioButton rdoAll;
+        public System.Windows.Forms.PictureBox pbxVision;
     }
 }
