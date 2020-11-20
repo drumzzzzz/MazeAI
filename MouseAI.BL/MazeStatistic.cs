@@ -90,6 +90,8 @@ namespace MouseAI.BL
 
     public class MazeStatistics : List<MazeStatistic>
     {
+        private const int COLUMNS = 5;
+
         public enum MOUSE_STATUS
         {
             NONE,
@@ -107,6 +109,31 @@ namespace MouseAI.BL
         public static string[] GetPlotColumns()
         {
             return Columns;
+        }
+
+        public double[] GetData()
+        {
+            double[] values = new double[COLUMNS];
+            double[] result;
+
+            foreach (MazeStatistic ms in this)
+            {
+                result = ms.GetData();
+                for (int i = 0; i < COLUMNS; i++)
+                {
+                    values[i] += result[i];
+                }
+            }
+            double total = values[3] + values[4];
+            values[3] = (100 * values[3]) / total;
+            values[4] = (100 * values[4]) / total;
+
+            
+            total = values[1] + values[2];
+            values[0] = (100 * values[0]) / total;
+            values[1] = (100 * values[1]) / total;
+            values[2] = (100 * values[2]) / total;
+            return values;
         }
     }
 }

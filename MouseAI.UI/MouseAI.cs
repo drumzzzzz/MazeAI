@@ -138,7 +138,7 @@ namespace MouseAI.UI
                 SetMenuItems(false);
             }
 
-            //RunTest();
+            RunTest();
         }
 
         private bool CloseProject()
@@ -540,6 +540,7 @@ namespace MouseAI.UI
         {
             mouse_last = new Point(-1, -1);
             bool isProcess = false;
+            
 
             try
             { 
@@ -582,8 +583,7 @@ namespace MouseAI.UI
                         UpdateStatus();
                     }
 
-                    UpdatePlot();
-
+                    UpdateRunPlot();
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
                     {
@@ -615,18 +615,13 @@ namespace MouseAI.UI
             else
             {
                 SetRunMode(RUN_MODE.STOP);
-                
-
                 if (isRunAll)
                 {
-                    SelectNext();
-                    modelRun.btnRun.PerformClick();
+                    UpdateRunAllPlot();
+                    if (SelectNext())
+                        modelRun.btnRun.PerformClick();
                 }
-                else
-                {
-                    ResetSelectedItem();
-                    //ResetSelectedItem();
-                }
+                ResetSelectedItem();
             }
         }
 
@@ -636,15 +631,26 @@ namespace MouseAI.UI
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
         }
 
-        private void UpdatePlot()
+        private void UpdateRunPlot()
         {
             DateTime dtCurrent = DateTime.UtcNow;
 
             if (dtCurrent >= dtPlotTime)
             {
-                modelRun.UpdatePlot(maze.GetMazeStatisticData());
+                modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
                 dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
             }
+        }
+
+        private void UpdateRunAllPlot()
+        {
+            if (mazeStatistics == null || mazeStatistics.Count == 0)
+            {
+                Console.WriteLine("Maze statistics invalid for plotting!");
+                return;
+            }
+
+            modelRun.UpdatePlot(mazeStatistics.GetData(), true);
         }
 
         private bool AIRun()
@@ -718,6 +724,8 @@ namespace MouseAI.UI
                 case "btnRun":
                     lvwMazes.Enabled = false;
                     SetRunMode(RUN_MODE.RUN);
+                    if (!isRunAll)
+                        modelRun.ClearPlots();
                     RunModel();
                     return;
                 case "btnRunAll":
@@ -752,7 +760,10 @@ namespace MouseAI.UI
             if (mazeStatistics == null)
                 mazeStatistics = new MazeStatistics();
             else
+            {
                 mazeStatistics.Clear();
+                modelRun.ClearPlots();
+            }
         }
 
         private void RunExit()
@@ -831,13 +842,7 @@ namespace MouseAI.UI
 
             bool isReady = (!string.IsNullOrEmpty(selected));
 
-            modelRun.tbxMaze.Text = (isReady)
-                ? string.Format("{0}", selected)
-                : string.Empty;
-
-            modelRun.tbxModel.Text = (isReady)
-                ? string.Format("{0}", maze.GetModelName())
-                : string.Empty;
+            modelRun.Text = string.Format("Maze: {0} Model: {1}", selected, maze.GetModelName());
 
             if (!isRunAll) 
                 SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOP);
