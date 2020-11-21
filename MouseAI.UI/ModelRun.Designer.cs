@@ -43,11 +43,12 @@
             this.label1 = new System.Windows.Forms.Label();
             this.pbxVision = new System.Windows.Forms.PictureBox();
             this.chkDebug = new System.Windows.Forms.CheckBox();
-            this.rdoAll = new System.Windows.Forms.RadioButton();
+            this.rdoPaths = new System.Windows.Forms.RadioButton();
             this.rdoVisible = new System.Windows.Forms.RadioButton();
             this.rdoNone = new System.Windows.Forms.RadioButton();
             this.nudRate = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
+            this.rdoNeural = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.pbxVision)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).BeginInit();
             this.SuspendLayout();
@@ -118,7 +119,7 @@
             this.chkRandomWander.AutoSize = true;
             this.chkRandomWander.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkRandomWander.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkRandomWander.Location = new System.Drawing.Point(14, 71);
+            this.chkRandomWander.Location = new System.Drawing.Point(174, 24);
             this.chkRandomWander.Name = "chkRandomWander";
             this.chkRandomWander.Size = new System.Drawing.Size(75, 36);
             this.chkRandomWander.TabIndex = 39;
@@ -202,35 +203,39 @@
             this.chkDebug.AutoSize = true;
             this.chkDebug.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkDebug.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkDebug.Location = new System.Drawing.Point(155, 71);
+            this.chkDebug.Location = new System.Drawing.Point(261, 24);
             this.chkDebug.Name = "chkDebug";
             this.chkDebug.Size = new System.Drawing.Size(70, 36);
             this.chkDebug.TabIndex = 57;
             this.chkDebug.Text = "Debug\r\nOutput:";
             this.chkDebug.UseVisualStyleBackColor = true;
             // 
-            // rdoAll
+            // rdoPaths
             // 
-            this.rdoAll.AutoSize = true;
-            this.rdoAll.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.rdoAll.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoAll.Location = new System.Drawing.Point(287, 31);
-            this.rdoAll.Name = "rdoAll";
-            this.rdoAll.Size = new System.Drawing.Size(41, 20);
-            this.rdoAll.TabIndex = 62;
-            this.rdoAll.Text = "All";
-            this.rdoAll.UseVisualStyleBackColor = true;
+            this.rdoPaths.AutoSize = true;
+            this.rdoPaths.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoPaths.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoPaths.Location = new System.Drawing.Point(250, 80);
+            this.rdoPaths.Margin = new System.Windows.Forms.Padding(0);
+            this.rdoPaths.Name = "rdoPaths";
+            this.rdoPaths.Size = new System.Drawing.Size(60, 20);
+            this.rdoPaths.TabIndex = 62;
+            this.rdoPaths.Text = "Paths";
+            this.rdoPaths.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoPaths.UseVisualStyleBackColor = true;
             // 
             // rdoVisible
             // 
             this.rdoVisible.AutoSize = true;
             this.rdoVisible.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoVisible.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoVisible.Location = new System.Drawing.Point(212, 31);
+            this.rdoVisible.Location = new System.Drawing.Point(96, 80);
+            this.rdoVisible.Margin = new System.Windows.Forms.Padding(0);
             this.rdoVisible.Name = "rdoVisible";
             this.rdoVisible.Size = new System.Drawing.Size(65, 20);
             this.rdoVisible.TabIndex = 61;
             this.rdoVisible.Text = "Visible";
+            this.rdoVisible.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoVisible.UseVisualStyleBackColor = true;
             // 
             // rdoNone
@@ -239,12 +244,14 @@
             this.rdoNone.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoNone.Checked = true;
             this.rdoNone.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoNone.Location = new System.Drawing.Point(150, 31);
+            this.rdoNone.Location = new System.Drawing.Point(32, 80);
+            this.rdoNone.Margin = new System.Windows.Forms.Padding(0);
             this.rdoNone.Name = "rdoNone";
             this.rdoNone.Size = new System.Drawing.Size(56, 20);
             this.rdoNone.TabIndex = 60;
             this.rdoNone.TabStop = true;
             this.rdoNone.Text = "None";
+            this.rdoNone.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoNone.UseVisualStyleBackColor = true;
             // 
             // nudRate
@@ -275,25 +282,40 @@
             this.label3.TabIndex = 59;
             this.label3.Text = "Rate:";
             // 
+            // rdoNeural
+            // 
+            this.rdoNeural.AutoSize = true;
+            this.rdoNeural.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoNeural.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoNeural.Location = new System.Drawing.Point(174, 80);
+            this.rdoNeural.Margin = new System.Windows.Forms.Padding(0);
+            this.rdoNeural.Name = "rdoNeural";
+            this.rdoNeural.Size = new System.Drawing.Size(63, 20);
+            this.rdoNeural.TabIndex = 63;
+            this.rdoNeural.Text = "Neural";
+            this.rdoNeural.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoNeural.UseVisualStyleBackColor = true;
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1016, 400);
+            this.ClientSize = new System.Drawing.Size(1012, 396);
             this.ControlBox = false;
-            this.Controls.Add(this.rdoAll);
+            this.Controls.Add(this.rdoNeural);
+            this.Controls.Add(this.chkDebug);
+            this.Controls.Add(this.rdoPaths);
+            this.Controls.Add(this.chkRandomWander);
             this.Controls.Add(this.rdoVisible);
             this.Controls.Add(this.rdoNone);
             this.Controls.Add(this.nudRate);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.chkDebug);
             this.Controls.Add(this.pbxVision);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnRun);
             this.Controls.Add(this.tbxTime);
             this.Controls.Add(this.btnRunAll);
-            this.Controls.Add(this.chkRandomWander);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnStep);
             this.Controls.Add(this.btnPause);
@@ -331,10 +353,11 @@
         private System.Windows.Forms.Label label1;
         public System.Windows.Forms.PictureBox pbxVision;
         public System.Windows.Forms.CheckBox chkDebug;
-        public System.Windows.Forms.RadioButton rdoAll;
+        public System.Windows.Forms.RadioButton rdoPaths;
         public System.Windows.Forms.RadioButton rdoVisible;
         public System.Windows.Forms.RadioButton rdoNone;
         public System.Windows.Forms.NumericUpDown nudRate;
         private System.Windows.Forms.Label label3;
+        public System.Windows.Forms.RadioButton rdoNeural;
     }
 }

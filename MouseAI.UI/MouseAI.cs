@@ -92,14 +92,9 @@ namespace MouseAI.UI
 
         private RUN_MODE run_mode;
 
-        private enum RUN_VISIBLE
-        {
-            NONE,
-            VISIBLE,
-            ALL
-        }
 
-        private RUN_VISIBLE run_visible;
+
+        private Maze.RUN_VISIBLE run_visible;
 
         #endregion
 
@@ -630,12 +625,14 @@ namespace MouseAI.UI
 
             if (button.Checked)
             {
-                if (button.Name.Equals("rdoNone"))
-                    run_visible = RUN_VISIBLE.NONE;
-                else if (button.Name.Equals("rdoVisible"))
-                    run_visible = RUN_VISIBLE.VISIBLE;
-                else if (button.Name.Equals("rdoAll"))
-                    run_visible = RUN_VISIBLE.ALL;
+                if (button.Name.Equals("rdoVisible"))
+                    run_visible = Maze.RUN_VISIBLE.VISIBLE;
+                else if (button.Name.Equals("rdoNeural"))
+                    run_visible = Maze.RUN_VISIBLE.NEURAL;
+                else if (button.Name.Equals("rdoPaths"))
+                    run_visible = Maze.RUN_VISIBLE.PATHS;
+                else
+                    run_visible = Maze.RUN_VISIBLE.NONE;
             }
         }
 
@@ -1023,16 +1020,6 @@ namespace MouseAI.UI
             UpdateMaze(false);
         }
 
-        private void ClearMaze()
-        {
-            if (canvas == null || pbxMaze.Image == null)
-                return;
-
-            canvas.Clear(SKColor.Parse("#003366"));
-            pbxMaze.Image.Dispose();
-            pbxMaze.Image = null;
-        }
-
         private bool UpdateMaze(bool isImmediate)
         {
             if (!isImmediate)
@@ -1055,9 +1042,9 @@ namespace MouseAI.UI
             canvas.DrawImage(backimage, 0, 0);
             canvas.DrawBitmap(Mouse_Bitmap, (mp.X * MAZE_SCALE_WIDTH_PX), (mp.Y * MAZE_SCALE_HEIGHT_PX));
 
-            if (run_visible != RUN_VISIBLE.NONE)
+            if (run_visible != Maze.RUN_VISIBLE.NONE)
             {
-                maze.UpdatePointLists(mp, run_visible == RUN_VISIBLE.ALL);
+                maze.UpdatePointLists(mp, run_visible);
 
                 foreach (Point p in maze.GetDeadEndPoints())
                 {
@@ -1078,10 +1065,17 @@ namespace MouseAI.UI
                 pbxMaze.Image?.Dispose();
                 pbxMaze.Image = new Bitmap(mStream, false);
             }
-
-
-
             return true;
+        }
+
+        private void ClearMaze()
+        {
+            if (canvas == null || pbxMaze.Image == null)
+                return;
+
+            canvas.Clear(SKColor.Parse("#003366"));
+            pbxMaze.Image.Dispose();
+            pbxMaze.Image = null;
         }
 
         #endregion
@@ -1638,6 +1632,5 @@ namespace MouseAI.UI
         }
 
         #endregion
-
     }
 }

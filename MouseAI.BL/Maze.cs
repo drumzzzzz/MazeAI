@@ -100,6 +100,14 @@ namespace MouseAI
         private readonly List<Point> pnVisible;
         private readonly List<Point> pnDeadends;
 
+        public enum RUN_VISIBLE
+        {
+            NONE,
+            VISIBLE,
+            NEURAL,
+            PATHS
+        }
+
         #endregion
 
         #region Initialization
@@ -303,7 +311,7 @@ namespace MouseAI
             MazeModel _mm = mazeModels.CheckPaths();
             if (_mm != null)
             {
-                throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?",
+                throw new Exception(String.Format("MazePath data for model not found:{0}\nHas the path been built?",
                     _mm.guid));
             }
 
@@ -323,7 +331,7 @@ namespace MouseAI
 
         public void LoadModel(string modelName)
         {
-            if (string.IsNullOrEmpty(modelName))
+            if (String.IsNullOrEmpty(modelName))
                 throw new Exception("Invalid Model Name!");
 
             neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT,
@@ -380,13 +388,13 @@ namespace MouseAI
 
         public ImageDatas Predict(string starttime)
         {
-            if (string.IsNullOrEmpty(starttime))
+            if (String.IsNullOrEmpty(starttime))
                 throw new Exception("Invalid Prediction Model");
 
             Config cfg = (Config) FileIO.DeSerializeXml(typeof(Config),
                 Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT));
 
-            if (cfg == null || string.IsNullOrEmpty(cfg.Model))
+            if (cfg == null || String.IsNullOrEmpty(cfg.Model))
                 throw new Exception("Could not open config file");
 
             ImageDatas imageSegments = mazeModels.GetImageSegments();
@@ -452,9 +460,7 @@ namespace MouseAI
                 mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.LOOKING);
             }
             else
-            {
                 mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
-            }
 
             if (isDebug)
                 Console.WriteLine("Can mouse see cheese? {0}", isCheesePath);
@@ -490,6 +496,7 @@ namespace MouseAI
 
             // Process the mouses neural vision state:
             // If false: Process a tree search move - return if also false as the mouse is reverting a dead end    
+
             if (!ProcessVisionState(mouse, mazeobjects) && !ProcessSearchMove(mazeobjects, mazeobjects_de, mouse))
             {
                 return false;
@@ -498,8 +505,8 @@ namespace MouseAI
             // Process the mouses neural path memory - return if false as the mouse is still following a path memory 
             if (ProcessPathNode(mazeobjects, mazeobjects_de, mouse))
             {
-                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
                 mazeStatistic.IncrementNeuralMoves();
+                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
                 return false;
             }
 
@@ -569,7 +576,6 @@ namespace MouseAI
             // to the predicted neural path memory not relating to anything it sees.
             // Now the mouse needs to choose an optimal or random move
 
-            mazeStatistic.IncrementSearchMoves();
             mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SEARCHING);
 
             int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
@@ -611,16 +617,45 @@ namespace MouseAI
             if (mo != null)
             {
                 UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
+                mazeStatistic.IncrementSearchMoves();
                 return true;
             }
 
-            ProcessOldestPath(mazeobjects, mouse);
+            ProcessOldestPathNodes(mazeobjects, mouse);
             if (mouse.isDeadEnd && !badNodes.Any(o => o.x == mouse.x && o.y == mouse.y))
             {
                 badNodes.Add(new PathNode(mouse.x, mouse.y, false));
             }
 
             return false;
+        }
+
+        private static void ProcessOldestPathNodes(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
+        {
+            DateTime dtOldest = DateTime.UtcNow;
+            MazeObject mo_oldest = null;
+
+            foreach (MazeObject m in mazeobjects.Where(m => m.object_state != OBJECT_STATE.MOUSE))
+            {
+                if (m.dtLastVisit < dtOldest)
+                {
+                    mo_oldest = m;
+                    dtOldest = mo_oldest.dtLastVisit;
+                }
+            }
+
+            if (mo_oldest == null)
+                throw new Exception("Maze object was null!");
+
+            mouseObject.x = mo_oldest.x;
+            mouseObject.y = mo_oldest.y;
+
+            if (!mouse.isJunction)
+                mouse.isDeadEnd = true;
+
+            mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
+            mouse.isVisited = true;
+            mouse.object_state = OBJECT_STATE.VISITED;
         }
 
         private bool ProcessPathNode(IReadOnlyCollection<MazeObject> mazeobjects,
@@ -735,29 +770,31 @@ namespace MouseAI
             }
         }
 
-        public void UpdatePointLists(Point mp, bool isAll)
+        public void UpdatePointLists(Point mp, RUN_VISIBLE run_visible)
         {
             pnDeadends.Clear();
             pnVisible.Clear();
-            Point _mp = new Point();
-
-            foreach (MazeObject mo in mazeObjects)
+            
+            if (run_visible == RUN_VISIBLE.PATHS)
             {
-                if (isAll && mo.isDeadEnd)
-                    pnDeadends.Add(new Point(mo.x, mo.y));
-
-                else if (mo.isCheesePath || (isAll && mo.isVision))
+                foreach (MazeObject mo in mazeObjects)
                 {
-                    _mp.X = mo.x;
-                    _mp.Y = mo.y;
-                    if (_mp != mp)
-                        pnVisible.Add(new Point(mo.x, mo.y));
+                    UpdatePointList(mp, mo, run_visible);
                 }
+
+                return;
+            }
+            else if (run_visible == RUN_VISIBLE.NEURAL)
+            {
+                foreach (MazeObject mo in segmentPathObjects)
+                {
+                    UpdatePointList(mp, mo, run_visible);
+                }
+
+                return;
             }
 
-            if (isAll)
-                return;
-
+            Point _mp = new Point();
             if (searchObjects != null && searchObjects.Count != 0)
             {
                 foreach (MazeObject mo in searchObjects)
@@ -767,6 +804,19 @@ namespace MouseAI
                     if (_mp != mp)
                         pnVisible.Add(new Point(mo.x, mo.y));
                 }
+            }
+        }
+
+        private void UpdatePointList(Point mp, MazeObject mo, RUN_VISIBLE run_visible)
+        {
+            if (mo.isDeadEnd)
+                pnDeadends.Add(new Point(mo.x, mo.y));
+
+            else if (mo.isCheesePath || mo.isVision)
+            {
+                Point _mp = new Point(mo.x, mo.y);
+                if (_mp != mp)
+                    pnVisible.Add(new Point(mo.x, mo.y));
             }
         }
 
@@ -942,6 +992,7 @@ namespace MouseAI
                 mouse.isJunction = true;
                 CleanPathObjects();
             }
+            // ToDo: bug - dead end flagging 
             else if (mazeobjects_de != null && !mouse.isDeadEnd)
             {
                 mouse.isDeadEnd = (mazeobjects.Count == 2 &&
@@ -1617,7 +1668,7 @@ namespace MouseAI
 
         public List<string> GetProjectModels()
         {
-            if (string.IsNullOrEmpty(mazeModels.Guid))
+            if (String.IsNullOrEmpty(mazeModels.Guid))
                 return null;
 
             IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
@@ -1732,7 +1783,7 @@ namespace MouseAI
 
         private static void ProcessValues(string line, IReadOnlyDictionary<int, double[]> dvalues, int index)
         {
-            if (string.IsNullOrEmpty(line))
+            if (String.IsNullOrEmpty(line))
                 throw new Exception("Invalid log data");
 
             string[] line_values = line.Split(LOG_DELIMIT);
@@ -1767,7 +1818,7 @@ namespace MouseAI
         {
             string filename = log_dir + DIR + starttime + "." + PLOT_EXT;
 
-            return (FileIO.CheckFileName(filename)) ? filename : string.Empty;
+            return (FileIO.CheckFileName(filename)) ? filename : String.Empty;
         }
 
         #endregion
@@ -1832,10 +1883,10 @@ namespace MouseAI
 
         public bool LoadMazeModels(string filename)
         {
-            if (string.IsNullOrEmpty(filename))
+            if (String.IsNullOrEmpty(filename))
                 filename = FileIO.OpenFile_Dialog(maze_dir, MAZE_EXT);
 
-            if (string.IsNullOrEmpty(filename))
+            if (String.IsNullOrEmpty(filename))
                 return false;
 
             if (!File.Exists(filename))
@@ -1851,7 +1902,7 @@ namespace MouseAI
             foreach (MazeModel mm in mms.GetMazeModels())
             {
                 if (mazeDb.ReadMazes(mm.guid) == null)
-                    throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
+                    throw new Exception(String.Format("DB Stats Missing for GUID '{0}'", mm.guid));
             }
 
             mazeModels.Clear();
@@ -1889,8 +1940,8 @@ namespace MouseAI
 
         public string GetProjectLast(string guid)
         {
-            if (string.IsNullOrEmpty(guid))
-                return string.Empty;
+            if (String.IsNullOrEmpty(guid))
+                return String.Empty;
 
             try
             {
@@ -1899,7 +1950,7 @@ namespace MouseAI
             catch (Exception e)
             {
                 Console.WriteLine("Error reading last project model: {0}", e.Message);
-                return string.Empty;
+                return String.Empty;
             }
         }
 
@@ -1913,7 +1964,7 @@ namespace MouseAI
             {
                 MazeModels mms = (MazeModels) FileIO.DeSerializeXml(typeof(MazeModels), maze_dir + @"\" + projectname);
 
-                if (mms == null || string.IsNullOrEmpty(mms.Guid))
+                if (mms == null || String.IsNullOrEmpty(mms.Guid))
                     throw new Exception("Failed to retrieve project id");
 
                 List<MazeModel> mazemodels = mms.GetMazeModels();
@@ -1929,7 +1980,7 @@ namespace MouseAI
             catch (Exception e)
             {
                 Console.WriteLine("Error Archiving Project:{0}", e.Message);
-                return string.Empty;
+                return String.Empty;
             }
         }
 
@@ -2004,8 +2055,8 @@ namespace MouseAI
             int count = projectfiles.Count;
 
             return removed_count != count
-                ? string.Format("Error Removing {0} of {1} Project Files", count - removed_count, count)
-                : string.Format("Removed {0} Project Files", removed_count);
+                ? String.Format("Error Removing {0} of {1} Project Files", count - removed_count, count)
+                : String.Format("Removed {0} Project Files", removed_count);
         }
 
         private static string RemoveProjectRecord(string guid)
@@ -2080,7 +2131,7 @@ namespace MouseAI
 
         public string GetFileName()
         {
-            return string.IsNullOrEmpty(FileName) ? string.Empty : FileName;
+            return String.IsNullOrEmpty(FileName) ? String.Empty : FileName;
         }
 
         #endregion
