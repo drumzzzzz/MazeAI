@@ -1165,7 +1165,8 @@ namespace MouseAI.UI
                 last_selected = -1;
                 maze = null;
                 maze = new Maze(MAZE_WIDTH, MAZE_HEIGHT);
-                maze.LoadMazeModels(filename);
+                if (!maze.LoadMazeModels(filename))
+                    return false;
 
                 if (!maze.isMazeModels())
                 {

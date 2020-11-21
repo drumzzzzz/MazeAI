@@ -479,10 +479,12 @@ namespace MouseAI
                 return false;
             }
 
+            mouse.count++;
+
             Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
             if (!ProcessVisionState(mouse, mazeobjects))
-                ProcessWanderMove(mazeobjects, mazeobjects_de, mouse);
+                ProcessSearchMove(mazeobjects, mazeobjects_de, mouse);
             else
             {
                 mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
@@ -556,7 +558,7 @@ namespace MouseAI
             return isMouse && count != 0;
         }
 
-        private void ProcessWanderMove(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
+        private void ProcessSearchMove(IReadOnlyCollection<MazeObject> mazeobjects, IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
             // The mouse is confused because it is in an unrecognized portion of a maze due
             // to the predicted neural path memory not relating to anything it sees.
@@ -677,17 +679,19 @@ namespace MouseAI
             }
 
             searchObjects = SearchObjects(mouse.x, mouse.y).Distinct().ToList();
+            segmentPathObjects.AddRange(searchObjects.Except(segmentPathObjects));
 
-            foreach (MazeObject mo in searchObjects)
+            if (mouse.count > 1)
             {
-                if (!segmentPathObjects.Any(o => o.x == mo.x && o.y == mo.y))
+                for (int i = 0; i < segmentPathObjects.Count; i++)
                 {
-                    segmentPathObjects.Add(mo);
+                    if (segmentPathObjects[i].object_state == OBJECT_STATE.MOUSE)
+                    {
+                        segmentPathObjects.RemoveRange(i + 1, segmentPathObjects.Count - 1 - i);
+                        break;
+                    }
                 }
             }
-
-            visionObjects.Clear();
-            visionObjects.AddRange(segmentPathObjects);
 
             if (imagebytes == null)
             {
@@ -697,6 +701,8 @@ namespace MouseAI
 
             if (segmentPathObjects.Count != segmentCountLast)
             {
+                visionObjects.Clear();
+                visionObjects.AddRange(segmentPathObjects);
                 imagebytes.Clear();
                 imagebytes_last.Clear();
                 imagebytes.Add(GenerateVisualImage(segmentPathObjects));
@@ -1799,12 +1805,15 @@ namespace MouseAI
             FileIO.SerializeXml(mazeModels, filename);
         }
 
-        public void LoadMazeModels(string filename)
+        public bool LoadMazeModels(string filename)
         {
             if (string.IsNullOrEmpty(filename))
                 filename = FileIO.OpenFile_Dialog(maze_dir, MAZE_EXT);
 
-            if (string.IsNullOrEmpty(filename) || !File.Exists(filename))
+            if (string.IsNullOrEmpty(filename))
+                return false;
+
+            if (!File.Exists(filename))
                 throw new Exception("Error Loading File");
 
             MazeModels mms = (MazeModels)FileIO.DeSerializeXml(typeof(MazeModels), filename);
@@ -1824,6 +1833,8 @@ namespace MouseAI
             mazeModels = mms;
 
             FileName = filename;
+
+            return true;
         }
 
         public List<string> GetProjects()
@@ -1926,13 +1937,13 @@ namespace MouseAI
         {
             List<string> projectmodels = GetProjectModels(guid);
 
+            List<string> files = new List<string>
+            {
+                maze_dir + DIR + projectname
+            };
+
             if (projectmodels.Count != 0)
             {
-                List<string> files = new List<string>
-                {
-                    maze_dir + DIR + projectname
-                };
-
                 foreach (string pm in projectmodels)
                 {
                     files.Add(Utils.GetFileWithExtension(log_dir, pm, LOG_EXT));
@@ -1940,26 +1951,25 @@ namespace MouseAI
                     files.Add(Utils.GetFileWithExtension(model_dir, pm, CONFIG_EXT));
                     files.Add(Utils.GetFileWithExtension(model_dir, pm, MODELS_EXT));
                 }
-
-                string archive_name = Utils.GetFileWithExtension(archive_dir, Utils.GetDateTime_Formatted(), ARCHIVE_EXT);
-
-                Console.WriteLine("Archiving {0} Files to {1}", files.Count, archive_name);
-
-                if (!FileIO.CreateZipArchive(archive_name, files, out string result))
-                {
-                    throw new Exception(result);
-                }
-
-                sb.Clear();
-                sb.Append(result);
-                sb.Append(Environment.NewLine);
-                sb.Append(RemoveProjectFiles(files));
-                sb.Append(Environment.NewLine);
-                sb.Append(RemoveProjectRecord(guid));
-
-                return sb.ToString();
             }
-            return string.Empty;
+
+            string archive_name = Utils.GetFileWithExtension(archive_dir, Utils.GetDateTime_Formatted(), ARCHIVE_EXT);
+
+            Console.WriteLine("Archiving {0} Files to {1}", files.Count, archive_name);
+
+            if (!FileIO.CreateZipArchive(archive_name, files, out string result))
+            {
+                throw new Exception(result);
+            }
+
+            sb.Clear();
+            sb.Append(result);
+            sb.Append(Environment.NewLine);
+            sb.Append(RemoveProjectFiles(files));
+            sb.Append(Environment.NewLine);
+            sb.Append(RemoveProjectRecord(guid));
+
+            return sb.ToString();
         }
 
         private static string RemoveProjectFiles(List<string> projectfiles)

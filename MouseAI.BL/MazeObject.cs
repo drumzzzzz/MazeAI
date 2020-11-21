@@ -41,9 +41,7 @@ namespace MouseAI
         public bool isPath { get; set; }
         public bool isVision { get; set; }
         public bool isCheesePath { get; set; }
-
-        public MazeObject Next { get; set; }
-        public MazeObject Previous { get; set; }
+        public int count { get; set; }
         public DateTime dtLastVisit { get; set; }
 
         public MazeObject(OBJECT_TYPE element_type, int x, int y)
@@ -55,6 +53,7 @@ namespace MouseAI
             isDeadEnd = false;
             isJunction = false;
             isVision = false;
+            count = 0;
             this.x = x;
             this.y = y;
         }
