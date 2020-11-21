@@ -609,9 +609,7 @@ namespace MouseAI
                 if (mos_selections.Count == 1)
                     mo = mos_selections[0];
                 else
-                {
                     mo = mos_selections[r.Next(0, mos_selections.Count)];
-                }
             }
 
             if (mo != null)
@@ -621,41 +619,13 @@ namespace MouseAI
                 return true;
             }
 
-            ProcessOldestPathNodes(mazeobjects, mouse);
+            ProcessOldestPath(mazeobjects, mouse);
             if (mouse.isDeadEnd && !badNodes.Any(o => o.x == mouse.x && o.y == mouse.y))
             {
                 badNodes.Add(new PathNode(mouse.x, mouse.y, false));
             }
 
             return false;
-        }
-
-        private static void ProcessOldestPathNodes(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
-        {
-            DateTime dtOldest = DateTime.UtcNow;
-            MazeObject mo_oldest = null;
-
-            foreach (MazeObject m in mazeobjects.Where(m => m.object_state != OBJECT_STATE.MOUSE))
-            {
-                if (m.dtLastVisit < dtOldest)
-                {
-                    mo_oldest = m;
-                    dtOldest = mo_oldest.dtLastVisit;
-                }
-            }
-
-            if (mo_oldest == null)
-                throw new Exception("Maze object was null!");
-
-            mouseObject.x = mo_oldest.x;
-            mouseObject.y = mo_oldest.y;
-
-            if (!mouse.isJunction)
-                mouse.isDeadEnd = true;
-
-            mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
-            mouse.isVisited = true;
-            mouse.object_state = OBJECT_STATE.VISITED;
         }
 
         private bool ProcessPathNode(IReadOnlyCollection<MazeObject> mazeobjects,
@@ -677,7 +647,7 @@ namespace MouseAI
                     {
                         PathNode pn = pathNodes[i + 1]; // Get the node
 
-                        if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse)) // If mouse can move on the next node
+                        if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse) && !isVisited(pn.x, pn.y)) // If mouse can move on the next node
                         {
                             mo = mazeObjects[pn.x, pn.y];
                             UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
@@ -998,6 +968,11 @@ namespace MouseAI
                 mouse.isDeadEnd = (mazeobjects.Count == 2 &&
                                    (mazeobjects_de.Count - mazeobjects.Count == 1 ||
                                     mazeobjects_de.Count - mazeobjects.Count == 2));
+
+                if (mouse.isDeadEnd)
+                {
+                    Console.WriteLine("Mouse flagged as deadend!");
+                }
             }
 
             mouseObject.x = mo.x;
@@ -2104,6 +2079,11 @@ namespace MouseAI
         private static bool isDeadEnd(int x, int y)
         {
             return mazeObjects[x, y].isDeadEnd;
+        }
+
+        private static bool isVisited(int x, int y)
+        {
+            return mazeObjects[x, y].isVisited;
         }
 
         public static bool IsInBounds(int x, int y)
