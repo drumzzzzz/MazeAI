@@ -15,7 +15,6 @@ using System.Configuration;
 using System.Reflection;
 using Keras.Callbacks;
 using Keras.PreProcessing.Image;
-using MouseAI.SH;
 using MouseAI.PL;
 
 #endregion
@@ -219,7 +218,7 @@ namespace MouseAI.ML
             return idf;
         }
 
-        public int Predict(List<byte[]> image, string guid)
+        public int Predict(List<byte[]> image, string guid, bool isDebug)
         {
             if (model_loaded == null || dataSets == null)
                 throw new Exception("Neural Network not initialized!");
@@ -237,12 +236,9 @@ namespace MouseAI.ML
 
             y = y.argmax();
             int index = y.asscalar<int>();
-            bool result = dataSets.GetImageDatas().isLabelValid(index, guid);
+            bool result = dataSets.GetImageDatas().isLabelValid(index, guid, isDebug);
             predicted += (Convert.ToInt32(result));
             predictions++;
-
-            // ToDo: Debugging
-            // Console.WriteLine("Prediction Valid: {0}  Index: {1}  Value: {2}", isValid, index, y);
 
             return index;
         }
@@ -250,11 +246,6 @@ namespace MouseAI.ML
         public int GetPredicted()
         {
             return predicted;
-        }
-
-        public int GetPredictions()
-        {
-            return predictions;
         }
 
         public int GetPredictedErrors()

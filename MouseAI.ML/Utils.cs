@@ -2,7 +2,7 @@
 using System;
 using System.Net;
 
-namespace MouseAI.SH
+namespace MouseAI.ML
 {
     public class Utils
     {

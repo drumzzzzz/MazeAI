@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MouseAI.SH
+namespace MouseAI.ML
 {
     public class Config
     {

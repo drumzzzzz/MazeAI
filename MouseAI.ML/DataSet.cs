@@ -56,22 +56,22 @@ namespace MouseAI.ML
             return string.IsNullOrEmpty(results) ? string.Empty : results;
         }
 
-        public bool isLabelValid(int predicted, string expected)
+        public bool isLabelValid(int predicted, string expected, bool isDebug)
         {
             if (predicted < 0 || predicted > Count)
             {
-                Console.WriteLine("Predicted out of range index: {0} size: {1}", predicted, Count);
-                return false;
+                throw new Exception(string.Format("Predicted was out of range index: {0} size: {1}", predicted, Count));
             }
 
             ImageData id = this.FirstOrDefault(o => o.Index == predicted);
             if (id == null)
             {
-                Console.WriteLine("Prediction failed for index: {0}", predicted);
-                return false;
+                throw new Exception(string.Format("Prediction failed for image data index: {0}", predicted));
             }
 
-            Console.WriteLine("Predicted:{0} Expected:{1}", id.Label, expected);
+            if (isDebug)
+                Console.WriteLine("Predicted:{0} Expected:{1}", id.Label, expected);
+
             return (id.Label.Equals(expected, StringComparison.OrdinalIgnoreCase));
         }
 

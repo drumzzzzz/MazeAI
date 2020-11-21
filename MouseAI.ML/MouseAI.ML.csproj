@@ -79,7 +79,6 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="DataSet.cs" />
-    <Compile Include="Log.cs" />
     <Compile Include="NeuralNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />

@@ -74,7 +74,8 @@ namespace MouseAI.UI
         private const int PLOT_TIME = 250;
         private DateTime dtRenderTime;
         private const int RENDER_TIME = 5;
-        private bool isRandomWander;
+        private bool isRandomSearch;
+        private bool isDebug = true;
         private readonly MazeStatistics mazeStatistics;
         private int last_selected;
 
@@ -369,7 +370,7 @@ namespace MouseAI.UI
             }
 
             msMain.Enabled = false;
-            modelLoad = new ModelLoad(starttimes, maze.GetProjectModel());
+            modelLoad = new ModelLoad(starttimes, maze.GetProjectModelName());
             modelLoad.Show();
             modelLoad.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
             modelLoad.btnCancel.Click += btnExit_Click;
@@ -496,10 +497,10 @@ namespace MouseAI.UI
             try
             { 
                 maze.Reset();
-                maze.InitRunMove(isRandomWander);
+                maze.InitRunMove(isRandomSearch);
                 modelRun.ClearMazePlot();
 
-                Console.WriteLine("Mouse move started ...");
+                Console.WriteLine("Mouse processing started ...");
                 while (isRunMode())
                 {
                     if (run_mode == RUN_MODE.STEP)
@@ -547,7 +548,7 @@ namespace MouseAI.UI
                 DisplayError("Run model error", e, false);
             }
 
-            Console.WriteLine("Search Stopped.");
+            Console.WriteLine("Mouse processing ended.");
 
             lvwMazes.Enabled = true;
 
@@ -579,7 +580,7 @@ namespace MouseAI.UI
 
         private bool AIRun()
         {
-            return maze.ProcessRunMove();
+            return maze.ProcessRunMove(isDebug);
         }
 
         private void ModelRun()
@@ -611,9 +612,16 @@ namespace MouseAI.UI
 
             nu.Value = runDelay;
             modelRun.chkRandomWander.CheckedChanged += chkRandomWander_CheckedChanged;
-            modelRun.chkRandomWander.Checked = isRandomWander;
+            modelRun.chkRandomWander.Checked = isRandomSearch;
+            modelRun.chkDebug.CheckedChanged += chkDebug_CheckedChanged;
+            modelRun.chkDebug.Checked = isDebug;
             modelRun.Show();
             UpdateModelRun();
+        }
+
+        private void chkDebug_CheckedChanged(object sender, EventArgs e)
+        {
+            isDebug = modelRun.chkDebug.Checked;
         }
 
         private void radiobutton_CheckedChanged(object sender, EventArgs e)
@@ -633,7 +641,7 @@ namespace MouseAI.UI
 
         private void chkRandomWander_CheckedChanged(object sender, EventArgs e)
         {
-            isRandomWander = modelRun.chkRandomWander.Checked;
+            isRandomSearch = modelRun.chkRandomWander.Checked;
         }
 
         private void nudRate_ValueChanged(object sender, EventArgs e)
@@ -851,11 +859,7 @@ namespace MouseAI.UI
                 if (ids == null)
                     throw new Exception("Prediction result error!");
 
-                if (maze.UpdateAccuracies(ids))
-                {
-                    UpdateItemAccuracies(maze.GetMazeModelErrors());
-                }
-
+                maze.UpdateAccuracies(ids);
                 modelPredict.txtResults.Text = ids.GetResults();
                 modelPredict.SetImages(ids);
             }
@@ -1305,17 +1309,6 @@ namespace MouseAI.UI
             return false;
         }
 
-        private void UpdateItemAccuracies(IReadOnlyList<int> values)
-        {
-            int index = 0;
-            foreach (ListViewItem item in lvwMazes.Items)
-            {
-                item.SubItems[2].Text = values[index++].ToString();
-                if (index >= values.Count)
-                    break;
-            }
-        }
-
         private void UpdateItemState(bool isPath, double Acc)
         {
             if (!isMazeSelected())
@@ -1323,7 +1316,6 @@ namespace MouseAI.UI
 
             ListViewItem item = lvwMazes.SelectedItems[0];
             item.SubItems[1].Text = (isPath) ? "Y" : "N";
-            item.SubItems[2].Text = Acc.ToString("#.##");
             lvwMazes.Refresh();
         }
 
