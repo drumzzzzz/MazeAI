@@ -62,10 +62,12 @@ namespace MouseAI.BL
             switch (mouse_status)
             {
                 case MazeStatistics.MOUSE_STATUS.NONE: return "Waiting";
-                case MazeStatistics.MOUSE_STATUS.RECALLING: return "Neural Movement";
-                case MazeStatistics.MOUSE_STATUS.SEARCHING: return "Search Movement";
+                case MazeStatistics.MOUSE_STATUS.RECALLING: return "Moving neurally";
+                case MazeStatistics.MOUSE_STATUS.SEARCHING: return "Searching";
                 case MazeStatistics.MOUSE_STATUS.LOOKING: return "Looking";
-                case MazeStatistics.MOUSE_STATUS.FOUND: return "Found the cheese!";
+                case MazeStatistics.MOUSE_STATUS.FOUND: return "Can see the cheese!";
+                case MazeStatistics.MOUSE_STATUS.DONE: return "Arrived at the cheese!";
+                case MazeStatistics.MOUSE_STATUS.REVERTING: return "Leaving a dead end";
                 default: return string.Empty;
             }
         }
@@ -92,12 +94,14 @@ namespace MouseAI.BL
             RECALLING,
             SEARCHING,
             LOOKING,
-            FOUND
+            FOUND,
+            DONE,
+            REVERTING
         }
 
         private static readonly string[] Columns =
         {
-            "Predicted\nLabels", "Predicted\nErrors", "Neural\nMoves", "Search\nMoves"
+            "Predicted\nLabels", "Predicted\nErrors", "Neural\nMemory", "Tree\nSearches"
         };
 
         public static string[] GetPlotColumns()

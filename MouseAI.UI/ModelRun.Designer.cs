@@ -41,7 +41,6 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.tbxMouseStatus = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.pbxVision = new System.Windows.Forms.PictureBox();
             this.chkDebug = new System.Windows.Forms.CheckBox();
             this.rdoPaths = new System.Windows.Forms.RadioButton();
             this.rdoVisible = new System.Windows.Forms.RadioButton();
@@ -49,7 +48,6 @@
             this.nudRate = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.rdoNeural = new System.Windows.Forms.RadioButton();
-            ((System.ComponentModel.ISupportInitialize)(this.pbxVision)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).BeginInit();
             this.SuspendLayout();
             // 
@@ -59,14 +57,14 @@
             this.pnlPlot.Location = new System.Drawing.Point(364, 12);
             this.pnlPlot.Margin = new System.Windows.Forms.Padding(0);
             this.pnlPlot.Name = "pnlPlot";
-            this.pnlPlot.Size = new System.Drawing.Size(646, 378);
+            this.pnlPlot.Size = new System.Drawing.Size(646, 318);
             this.pnlPlot.TabIndex = 38;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(11, 128);
+            this.label2.Location = new System.Drawing.Point(14, 126);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(40, 16);
             this.label2.TabIndex = 49;
@@ -75,7 +73,7 @@
             // btnExit
             // 
             this.btnExit.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(125, 350);
+            this.btnExit.Location = new System.Drawing.Point(128, 290);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(100, 40);
             this.btnExit.TabIndex = 40;
@@ -85,7 +83,7 @@
             // btnRun
             // 
             this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(10, 232);
+            this.btnRun.Location = new System.Drawing.Point(13, 172);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(100, 40);
             this.btnRun.TabIndex = 41;
@@ -97,17 +95,17 @@
             this.tbxTime.BackColor = System.Drawing.SystemColors.Window;
             this.tbxTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxTime.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxTime.Location = new System.Drawing.Point(61, 126);
+            this.tbxTime.Location = new System.Drawing.Point(64, 124);
             this.tbxTime.Name = "tbxTime";
             this.tbxTime.ReadOnly = true;
-            this.tbxTime.Size = new System.Drawing.Size(122, 22);
+            this.tbxTime.Size = new System.Drawing.Size(100, 22);
             this.tbxTime.TabIndex = 47;
             this.tbxTime.WordWrap = false;
             // 
             // btnRunAll
             // 
             this.btnRunAll.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRunAll.Location = new System.Drawing.Point(125, 232);
+            this.btnRunAll.Location = new System.Drawing.Point(128, 172);
             this.btnRunAll.Name = "btnRunAll";
             this.btnRunAll.Size = new System.Drawing.Size(100, 40);
             this.btnRunAll.TabIndex = 51;
@@ -119,7 +117,7 @@
             this.chkRandomWander.AutoSize = true;
             this.chkRandomWander.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkRandomWander.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkRandomWander.Location = new System.Drawing.Point(174, 24);
+            this.chkRandomWander.Location = new System.Drawing.Point(169, 24);
             this.chkRandomWander.Name = "chkRandomWander";
             this.chkRandomWander.Size = new System.Drawing.Size(75, 36);
             this.chkRandomWander.TabIndex = 39;
@@ -129,7 +127,7 @@
             // btnBack
             // 
             this.btnBack.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnBack.Location = new System.Drawing.Point(10, 350);
+            this.btnBack.Location = new System.Drawing.Point(13, 290);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(100, 40);
             this.btnBack.TabIndex = 45;
@@ -139,7 +137,7 @@
             // btnStep
             // 
             this.btnStep.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStep.Location = new System.Drawing.Point(240, 291);
+            this.btnStep.Location = new System.Drawing.Point(243, 231);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(100, 40);
             this.btnStep.TabIndex = 44;
@@ -149,7 +147,7 @@
             // btnPause
             // 
             this.btnPause.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPause.Location = new System.Drawing.Point(125, 291);
+            this.btnPause.Location = new System.Drawing.Point(128, 231);
             this.btnPause.Name = "btnPause";
             this.btnPause.Size = new System.Drawing.Size(100, 40);
             this.btnPause.TabIndex = 43;
@@ -159,7 +157,7 @@
             // btnStop
             // 
             this.btnStop.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(10, 291);
+            this.btnStop.Location = new System.Drawing.Point(13, 231);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(100, 40);
             this.btnStop.TabIndex = 42;
@@ -171,7 +169,7 @@
             this.tbxMouseStatus.BackColor = System.Drawing.SystemColors.Window;
             this.tbxMouseStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxMouseStatus.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxMouseStatus.Location = new System.Drawing.Point(61, 183);
+            this.tbxMouseStatus.Location = new System.Drawing.Point(231, 124);
             this.tbxMouseStatus.Name = "tbxMouseStatus";
             this.tbxMouseStatus.ReadOnly = true;
             this.tbxMouseStatus.Size = new System.Drawing.Size(122, 22);
@@ -182,21 +180,11 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(8, 177);
+            this.label1.Location = new System.Drawing.Point(178, 118);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 32);
             this.label1.TabIndex = 46;
             this.label1.Text = "Mouse\r\nStatus:";
-            // 
-            // pbxVision
-            // 
-            this.pbxVision.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pbxVision.Location = new System.Drawing.Point(212, 126);
-            this.pbxVision.Name = "pbxVision";
-            this.pbxVision.Size = new System.Drawing.Size(128, 79);
-            this.pbxVision.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbxVision.TabIndex = 56;
-            this.pbxVision.TabStop = false;
             // 
             // chkDebug
             // 
@@ -300,7 +288,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1012, 396);
+            this.ClientSize = new System.Drawing.Size(1022, 340);
             this.ControlBox = false;
             this.Controls.Add(this.rdoNeural);
             this.Controls.Add(this.chkDebug);
@@ -310,7 +298,6 @@
             this.Controls.Add(this.rdoNone);
             this.Controls.Add(this.nudRate);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.pbxVision);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnRun);
@@ -330,7 +317,6 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Model Run";
             this.TopMost = true;
-            ((System.ComponentModel.ISupportInitialize)(this.pbxVision)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -351,7 +337,6 @@
         public System.Windows.Forms.Button btnStop;
         public System.Windows.Forms.TextBox tbxMouseStatus;
         private System.Windows.Forms.Label label1;
-        public System.Windows.Forms.PictureBox pbxVision;
         public System.Windows.Forms.CheckBox chkDebug;
         public System.Windows.Forms.RadioButton rdoPaths;
         public System.Windows.Forms.RadioButton rdoVisible;

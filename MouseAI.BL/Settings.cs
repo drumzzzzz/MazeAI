@@ -21,6 +21,7 @@ namespace MouseAI
         public bool isAutoRun { get; set; }
         public bool isDebugConsole { get; set; }
         public bool isMazeSegments { get; set; }
+        public string PythonPath { get; set; }
 
         public static bool isSettings()
         {

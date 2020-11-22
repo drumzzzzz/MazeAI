@@ -176,6 +176,12 @@
       <DependentUpon>Progress.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PythonSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PythonSettings.Designer.cs">
+      <DependentUpon>PythonSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -223,6 +229,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="PythonSettings.resx">
+      <DependentUpon>PythonSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -278,6 +287,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\deadend.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SQLite.Interop.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets" Condition="Exists('..\packages\SkiaSharp.2.80.2\build\net462\SkiaSharp.targets')" />

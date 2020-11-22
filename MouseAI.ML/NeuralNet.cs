@@ -12,9 +12,11 @@ using K = Keras.Backend;
 using Numpy;
 using Python.Runtime;
 using System.Configuration;
+using System.Linq;
 using System.Reflection;
 using Keras.Callbacks;
 using Keras.PreProcessing.Image;
+using Microsoft.Win32;
 using MouseAI.PL;
 
 #endregion
@@ -51,6 +53,15 @@ namespace MouseAI.ML
         private int predicted = 0;
         private int predictions = 0;
 
+        private static readonly string[] PYTHON_PATHS =
+            {@"Python38\", @"Python38\Lib\", @"Python38\DLLs\", @"Python38\Lib\site-packages"};
+        private const string SOFTWARE = "SOFTWARE";
+
+        // C:\Users\USER\AppData\Local\Programs\Python\Python38\python38.zip;
+        // C:\Users\USER\AppData\Local\Programs\Python\Python38\Lib\;
+        // C:\Users\USER\AppData\Local\Programs\Python\Python38\DLLs\;
+        // C:\Users\USER\AppData\Local\Programs\Python\Python38\Lib\site-packages"
+
         #endregion
 
         #region Initialization
@@ -66,16 +77,42 @@ namespace MouseAI.ML
             this.config_ext = config_ext;
             this.plot_ext = plot_ext;
 
-            string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
-            if (!string.IsNullOrEmpty(paths))
-            {
-                string AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                PythonEngine.PythonPath = paths += AppDir + ";";
-            }
+            //string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
+            //if (!string.IsNullOrEmpty(paths))
+            //{
+            //    string AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            //    PythonEngine.PythonPath = paths += AppDir + ";";
+            //}
 
             K.DisableEager();
             K.ClearSession();
             K.ResetUids();
+        }
+
+        public static string CheckPythonPath()
+        {
+            string result = PythonEngine.PythonPath;
+
+            return string.Empty;
+        }
+
+        private static string GetPythonPath()
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(SOFTWARE) ?? Registry.LocalMachine.OpenSubKey(SOFTWARE);
+            if (key == null)
+                return null;
+
+            RegistryKey pythonkey = key.OpenSubKey(@"Python\PythonCore") ?? key.OpenSubKey(@"Wow6432Node\Python\PythonCore");
+            if (pythonkey == null)
+                return null;
+
+            RegistryKey installPathKey = pythonkey.OpenSubKey(@"3.8\InstallPath");
+            return installPathKey == null ? null : (string)installPathKey.GetValue("ExecutablePath");
+        }
+
+        public static string[] GetPythonPaths()
+        {
+            return PYTHON_PATHS;
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, int seed)

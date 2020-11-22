@@ -78,6 +78,7 @@ namespace MouseAI.UI
         private bool isDebug = true;
         private readonly MazeStatistics mazeStatistics;
         private int last_selected;
+        private string python_path;
 
         private enum RUN_MODE
         {
@@ -132,6 +133,17 @@ namespace MouseAI.UI
 
         private void MazeAI_Shown(object sender, EventArgs e)
         {
+            try
+            {
+                string result = maze.CheckPythonPath();
+                if (!string.IsNullOrEmpty(result))
+                    throw new Exception(result);
+            }
+            catch (Exception ex)
+            {
+                DisplayError("Python Error", ex, true);
+            }
+
             if (settings.isAutoRun && !string.IsNullOrEmpty(settings.LastFileName) && LoadMazes(settings.LastFileName, false))
             {
                 SetMenuItems(true);
@@ -140,8 +152,7 @@ namespace MouseAI.UI
             {
                 SetMenuItems(false);
             }
-
-            RunTest();
+            //RunTest();
         }
 
         #endregion
@@ -169,7 +180,6 @@ namespace MouseAI.UI
 
         private void DisplayProgress(string message)
         {
-            Console.Clear();
             Enabled = false;
 
             progress = new Progress(message, false)
@@ -305,7 +315,10 @@ namespace MouseAI.UI
             try
             {
                 Console.Clear();
-                maze.Train(settings.Guid);
+
+
+
+                maze.Train(settings.Guid, python_path);
                 isThreadDone = true;
 
                 if (DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
@@ -376,18 +389,26 @@ namespace MouseAI.UI
 
         private void btnRun_Click(object sender, EventArgs e)
         {
-            if (ModelLoad())
-            {
+            DisplayProgress("Loading Model");
+
+            bool result = ModelLoad();
+
+            CloseProgress();
+
+            if (result)
                 ModelRun();
-            }
         }
 
         private void btnPredict_Click(object sender, EventArgs e)
         {
-            if (ModelLoad())
-            {
+            DisplayProgress("Loading Model");
+
+            bool result = ModelLoad();
+
+            CloseProgress();
+
+            if (result)
                 PredictModel();
-            }
         }
 
         private void ModelLoad_Shown(object sender, EventArgs e)
@@ -415,7 +436,7 @@ namespace MouseAI.UI
         {
             try
             {
-                maze.LoadModel(starttime);
+                maze.LoadModel(starttime, python_path);
                 maze.SetProjectLast(maze.GetModelProjectGuid(), starttime);
                 return true;
             }
@@ -523,7 +544,7 @@ namespace MouseAI.UI
                             maze.ProcessVisionImage();
                     }
 
-                    if (UpdateMaze(run_mode != RUN_MODE.RUN))
+                    if (UpdateMaze(run_mode != RUN_MODE.RUN, true))
                     {
                         UpdateStatus();
                     }
@@ -570,7 +591,6 @@ namespace MouseAI.UI
         {
             modelRun.tbxTime.Text = maze.GetMazeStatisticTime();
             modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
-            modelRun.pbxVision.Image = maze.GetVisionImage();
         }
 
         private bool AIRun()
@@ -1017,10 +1037,10 @@ namespace MouseAI.UI
             }
             offscreen.Save();
             backimage = buffer.Snapshot();
-            UpdateMaze(false);
+            UpdateMaze(true, false);
         }
 
-        private bool UpdateMaze(bool isImmediate)
+        private bool UpdateMaze(bool isImmediate, bool isVisible)
         {
             if (!isImmediate)
             {
@@ -1042,7 +1062,7 @@ namespace MouseAI.UI
             canvas.DrawImage(backimage, 0, 0);
             canvas.DrawBitmap(Mouse_Bitmap, (mp.X * MAZE_SCALE_WIDTH_PX), (mp.Y * MAZE_SCALE_HEIGHT_PX));
 
-            if (run_visible != Maze.RUN_VISIBLE.NONE)
+            if (isVisible && run_visible != Maze.RUN_VISIBLE.NONE)
             {
                 maze.UpdatePointLists(mp, run_visible);
 
@@ -1081,6 +1101,13 @@ namespace MouseAI.UI
         #endregion
 
         #region File Related
+
+        private bool CheckPaths()
+        {
+            maze.CheckPythonPath();
+
+            return true;
+        }
 
         private bool NewMazes()
         {

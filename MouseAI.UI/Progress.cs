@@ -5,12 +5,12 @@ namespace MouseAI.UI
 {
     public partial class Progress : Form
     {
-        public Progress(string name, bool isCancelVisible)
+        public Progress(string message, bool isCancelVisible)
         {
             InitializeComponent();
 
             btnProgressCancel.Visible = isCancelVisible;
-            Name = name;
+            Text = message;
         }
 
         public void SetCancel(bool isCancel)

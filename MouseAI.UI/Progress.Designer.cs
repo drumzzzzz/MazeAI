@@ -34,7 +34,7 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(37, 26);
+            this.progressBar1.Location = new System.Drawing.Point(33, 12);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(327, 23);
             this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
@@ -43,7 +43,7 @@
             // btnProgressCancel
             // 
             this.btnProgressCancel.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnProgressCancel.Location = new System.Drawing.Point(147, 76);
+            this.btnProgressCancel.Location = new System.Drawing.Point(148, 55);
             this.btnProgressCancel.Name = "btnProgressCancel";
             this.btnProgressCancel.Size = new System.Drawing.Size(75, 23);
             this.btnProgressCancel.TabIndex = 1;
@@ -54,7 +54,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(397, 125);
+            this.ClientSize = new System.Drawing.Size(393, 93);
             this.ControlBox = false;
             this.Controls.Add(this.btnProgressCancel);
             this.Controls.Add(this.progressBar1);
