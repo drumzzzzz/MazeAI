@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Keras;
 using Keras.Layers;
 using Keras.Models;
@@ -11,11 +10,8 @@ using Keras.Utils;
 using K = Keras.Backend;
 using Numpy;
 using Python.Runtime;
-using System.Configuration;
-using System.Linq;
-using System.Reflection;
+using System.Text;
 using Keras.Callbacks;
-using Keras.PreProcessing.Image;
 using Microsoft.Win32;
 using MouseAI.PL;
 
@@ -53,14 +49,10 @@ namespace MouseAI.ML
         private int predicted = 0;
         private int predictions = 0;
 
-        private static readonly string[] PYTHON_PATHS =
-            {@"Python38\", @"Python38\Lib\", @"Python38\DLLs\", @"Python38\Lib\site-packages"};
+        private static readonly string[] PACKAGES = {"keras","numpy"};
+        private const string SITE_PACKAGES = @"site-packages\";
         private const string SOFTWARE = "SOFTWARE";
-
-        // C:\Users\USER\AppData\Local\Programs\Python\Python38\python38.zip;
-        // C:\Users\USER\AppData\Local\Programs\Python\Python38\Lib\;
-        // C:\Users\USER\AppData\Local\Programs\Python\Python38\DLLs\;
-        // C:\Users\USER\AppData\Local\Programs\Python\Python38\Lib\site-packages"
+        private const string PYTHON_VERSION = "Python 3.8";
 
         #endregion
 
@@ -77,13 +69,6 @@ namespace MouseAI.ML
             this.config_ext = config_ext;
             this.plot_ext = plot_ext;
 
-            //string paths = ConfigurationManager.AppSettings.Get("PythonPaths");
-            //if (!string.IsNullOrEmpty(paths))
-            //{
-            //    string AppDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            //    PythonEngine.PythonPath = paths += AppDir + ";";
-            //}
-
             K.DisableEager();
             K.ClearSession();
             K.ResetUids();
@@ -91,9 +76,83 @@ namespace MouseAI.ML
 
         public static string CheckPythonPath()
         {
-            string result = PythonEngine.PythonPath;
+            string result = CheckPath();
+
+            if (result == null)
+            {
+                Console.WriteLine("{0} Path not found, trying registry search", PYTHON_VERSION);
+                result = GetPythonPath();
+
+                if (string.IsNullOrEmpty(result))
+                {
+                    throw new Exception(string.Format("{0} does not appear to be installed on system", PYTHON_VERSION));
+                }
+
+                throw new Exception(string.Format("{0} appears to be installed, however it cannot be found.\n" +
+                                                  "The systems path variable may need to be set and restarted.",
+                    PYTHON_VERSION));
+            }
+            else if (result != string.Empty)
+            {
+                throw new Exception(string.Format("{0} appears to be installed,\n" +
+                                                  "however packages {1} could not be found.", PYTHON_VERSION, result));
+            }
+            else
+            {
+                Console.WriteLine("{0} the installation and packages were found!", PYTHON_VERSION);
+            }
 
             return string.Empty;
+        }
+
+        private static string CheckPath()
+        {
+            StringBuilder sb = new StringBuilder();
+            try
+            {
+                string results = PythonEngine.PythonPath;
+
+                if (string.IsNullOrEmpty(results))
+                    throw new Exception();
+
+                string result = GetPythonPath();
+
+                result = result.Substring(0, result.LastIndexOf(@"\", StringComparison.Ordinal));
+                if (!FileIO.CheckDriveDirectory(result))
+                    throw new Exception(string.Format("Could not find {0} directory.", PYTHON_VERSION));
+
+                string[] paths = results.Split(';');
+                string path;
+                bool[] found = new bool[PACKAGES.Length];
+
+                for (int i = 0; i < paths.Length; i++)
+                {
+                    path = paths[i].Trim();
+                    if (!path.EndsWith(@"\"))
+                        path += @"\";
+                    
+                    for (int j = 0; j < PACKAGES.Length; j++)
+                    {
+                        if (!found[j])
+                        {
+                            found[j] = FileIO.CheckDriveDirectory(path + SITE_PACKAGES + PACKAGES[j]);
+                        }
+                    }
+                }
+
+                for (int i=0; i<PACKAGES.Length;i++)
+                {
+                    if (!found[i])
+                        sb.Append(string.Format("{0} ", PACKAGES[i]));
+                }
+
+                return sb.ToString();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("{0}", e.Message);
+                return null;
+            }
         }
 
         private static string GetPythonPath()
@@ -108,11 +167,6 @@ namespace MouseAI.ML
 
             RegistryKey installPathKey = pythonkey.OpenSubKey(@"3.8\InstallPath");
             return installPathKey == null ? null : (string)installPathKey.GetValue("ExecutablePath");
-        }
-
-        public static string[] GetPythonPaths()
-        {
-            return PYTHON_PATHS;
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, int seed)

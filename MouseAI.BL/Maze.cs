@@ -8,8 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Win32;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
@@ -305,12 +303,6 @@ namespace MouseAI
 
         public void Train(string guid, string path)
         {
-            string result = NeuralNet.CheckPythonPath();
-            if (result != string.Empty)
-            {
-                throw new Exception("Python Error");
-            }
-
             if (config == null)
                 throw new Exception("Invalid Config!");
 
@@ -320,7 +312,7 @@ namespace MouseAI
             MazeModel _mm = mazeModels.CheckPaths();
             if (_mm != null)
             {
-                throw new Exception(String.Format("MazePath data for model not found:{0}\nHas the path been built?",
+                throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?",
                     _mm.guid));
             }
 
@@ -1937,10 +1929,9 @@ namespace MouseAI
             }
         }
 
-        public string CheckPythonPath()
+        public void CheckPythonPath()
         {
-            string result = NeuralNet.CheckPythonPath();
-            return result;
+            NeuralNet.CheckPythonPath();
         }
 
         #endregion

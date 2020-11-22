@@ -135,13 +135,11 @@ namespace MouseAI.UI
         {
             try
             {
-                string result = maze.CheckPythonPath();
-                if (!string.IsNullOrEmpty(result))
-                    throw new Exception(result);
+                maze.CheckPythonPath();
             }
             catch (Exception ex)
             {
-                DisplayError("Python Error", ex, true);
+                DisplayError(string.Format("{0}\nThis program requires Python and library packages.\nSee Http:\\ for more information", ex.Message), true);
             }
 
             if (settings.isAutoRun && !string.IsNullOrEmpty(settings.LastFileName) && LoadMazes(settings.LastFileName, false))
