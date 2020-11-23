@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -79,7 +78,6 @@ namespace MouseAI.UI
         private bool isDebug = true;
         private readonly MazeStatistics mazeStatistics;
         private int last_selected;
-        private string python_path;
 
         private enum RUN_MODE
         {
@@ -311,10 +309,7 @@ namespace MouseAI.UI
             try
             {
                 Console.Clear();
-
-
-
-                maze.Train(settings.Guid, python_path);
+                maze.Train(settings.Guid);
                 isThreadDone = true;
 
                 if (DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
@@ -432,7 +427,7 @@ namespace MouseAI.UI
         {
             try
             {
-                maze.LoadModel(starttime, python_path);
+                maze.LoadModel(starttime);
                 maze.SetProjectLast(maze.GetModelProjectGuid(), starttime);
                 return true;
             }
