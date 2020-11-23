@@ -11,6 +11,7 @@ using System.Text;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
+using Newtonsoft.Json.Linq;
 using ScottPlot;
 
 #endregion
@@ -50,6 +51,8 @@ namespace MouseAI
         private static int cheese_x;
         private static int cheese_y;
         private bool isCheesePath;
+        private bool isSmellPath;
+        private const int SMELL_DISTANCE = 10;
 
         private const string MAZE_DIR = "mazes";
         private const string MAZE_EXT = "mze";
@@ -100,6 +103,7 @@ namespace MouseAI
 
         private readonly List<Point> pnVisible;
         private readonly List<Point> pnDeadends;
+        private readonly List<Point> pnSmell;
 
         public enum RUN_VISIBLE
         {
@@ -133,6 +137,7 @@ namespace MouseAI
             segmentPathObjects = new MazeObjects();
             pnVisible = new List<Point>();
             pnDeadends = new List<Point>();
+            pnSmell = new List<Point>();
 
             for (int i = 0; i < scanObjects.Length; i++)
             {
@@ -198,7 +203,56 @@ namespace MouseAI
             mazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
             cheese_x = cx;
             cheese_y = cy;
+            InitSmell();
+
+
             return true;
+        }
+
+        private void InitSmell()
+        {
+            List<MazeObject> nodes = new List<MazeObject>();
+            List<MazeObject> newnodes = new List<MazeObject>();
+            MazeObject node;
+            int[] pan_array;
+            int count = 1;
+            int lastnode = 0;
+            int x, y;
+
+            nodes.Add(mazeObjects[cheese_x, cheese_y]);
+
+            while (count < SMELL_DISTANCE)
+            {
+                for (int i = lastnode; i < nodes.Count; i++)
+                {
+                    node = nodes[i];
+                    pan_array = GetXYPanArray(node.x, node.y);
+
+                    for (int j = 0; j < pan_array.Length; j += 2)
+                    {
+                        x = pan_array[j];
+                        y = pan_array[j + 1];
+                        if (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE &&
+                            !nodes.Any(o => o.x == x && o.y == y) && 
+                            !newnodes.Any(o => o.x == x && o.y == y))
+                        {
+                            mazeObjects[x, y].smell_level = count;
+                            newnodes.Add(mazeObjects[x, y]);
+                        }
+                    }
+                }
+                count++;
+                lastnode = nodes.Count - 1;
+                nodes.AddRange(newnodes);
+                newnodes.Clear();
+            }
+            nodes.RemoveAt(0);
+            pnSmell.Clear();
+
+            foreach (MazeObject mo in nodes)
+            {
+                pnSmell.Add(new Point(mo.x, mo.y));
+            }
         }
 
         public bool AddCharacters_Random()
@@ -857,6 +911,11 @@ namespace MouseAI
             }
 
             return false;
+        }
+
+        public List<Point> GetSmellPoints()
+        {
+            return pnSmell;
         }
 
         public List<Point> GetVisiblePoints()

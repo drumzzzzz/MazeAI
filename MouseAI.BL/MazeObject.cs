@@ -41,6 +41,7 @@ namespace MouseAI
         public bool isPath { get; set; }
         public bool isVision { get; set; }
         public bool isCheesePath { get; set; }
+        public int smell_level { get; set; }
         public int count { get; set; }
         public DateTime dtLastVisit { get; set; }
 

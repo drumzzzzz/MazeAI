@@ -58,7 +58,8 @@ namespace MouseAI.UI
         private SKBitmap Mouse_Bitmap;
         private SKBitmap Visible_Bitmap;
         private SKBitmap DeadEnd_Bitmap;
-        
+        private SKBitmap Smell_Bitmap;
+
         private Point mouse_last;
 
         private int maze_count;
@@ -92,9 +93,6 @@ namespace MouseAI.UI
         }
 
         private RUN_MODE run_mode;
-
-
-
         private Maze.RUN_VISIBLE run_visible;
 
         #endregion
@@ -1011,6 +1009,9 @@ namespace MouseAI.UI
             bmp = Resources.deadend.ToSKBitmap();
             DeadEnd_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
 
+            bmp = Resources.smell.ToSKBitmap();
+            Smell_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
+
             float x_pos, y_pos;
             OBJECT_TYPE ot;
 
@@ -1073,6 +1074,11 @@ namespace MouseAI.UI
                 {
                     canvas.DrawBitmap(Visible_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
                 }
+
+                foreach (Point p in maze.GetSmellPoints())
+                {
+                    canvas.DrawBitmap(Smell_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+                }
             }
 
             SKImage image = surface.Snapshot();
@@ -1099,13 +1105,6 @@ namespace MouseAI.UI
         #endregion
 
         #region File Related
-
-        private bool CheckPaths()
-        {
-            maze.CheckPythonPath();
-
-            return true;
-        }
 
         private bool NewMazes()
         {
