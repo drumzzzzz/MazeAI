@@ -44,8 +44,8 @@ namespace MouseAI
 
         private static int maze_width;
         private static int maze_height;
-        private int mouse_x;
-        private int mouse_y;
+        private static int mouse_x;
+        private static int mouse_y;
         private static int cheese_x;
         private static int cheese_y;
         private bool isCheesePath;
@@ -664,7 +664,7 @@ namespace MouseAI
                     isMouse = true;
 
                 // If we've found the mouse and this is a valid path node 
-                else if (isMouse && !mo.isVisited && !mo.isDeadEnd && !badNodes.Any(o => o.x == p.x && o.y == p.y))
+                if (isMouse && !mo.isVisited && !mo.isDeadEnd && !badNodes.Any(o => o.x == p.x && o.y == p.y))
                 {
                     // If visible and not a duplicate
                     if (visionObjects.Any(o => o.x == p.x && o.y == p.y) &&
@@ -1148,28 +1148,86 @@ namespace MouseAI
 
         #endregion
 
-        #region Segments
+        #region Path Segment Building
 
         public void CalculateSegments()
         {
-            MazeObject so = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            MazeObject mouse = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            MazeObject cheese = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
 
-            if (so == null)
+            if (mouse == null || cheese == null)
             {
-                throw new Exception("Couldn't find the mouse!");
+                throw new Exception("Couldn't find maze object(s)!");
             }
 
             MazeObjects pathobjects = new MazeObjects(pathObjects.Where(o => o.isPath && !o.isDeadEnd)
                 .OrderBy(d => d.dtLastVisit).ToList());
-            MazeObjects segmentObjects = new MazeObjects();
-            int index = 0;
-            bool isFirstJunction = false;
-            bool isAddSegments;
-            bool isBreak = false;
-            int count1;
 
             MazeObjectSegments mazeObjectSegments = new MazeObjectSegments();
 
+            CalculateForwardSegments(mazeObjectSegments, pathobjects);
+            //CalculateReverseSegments(mazeObjectSegments, pathobjects);
+            ValidateSegments(mazeObjectSegments);
+            GenerateSegmentImages(mazeObjectSegments);
+            GeneratePathNodes(pathobjects);
+        }
+
+        private static void CalculateReverseSegments(MazeObjectSegments mazeObjectSegments, MazeObjects pathobjects)
+        {
+            MazeObjects segmentObjects = new MazeObjects();
+            MazeObject so;
+            int index = pathobjects.Count - 1;
+            bool isFirstJunction = false;
+            bool isBreak = false;
+            bool isAddSegments;
+
+            int count1;
+            while (true)
+            {
+                isAddSegments = false;
+                so = pathobjects[index--];
+
+                segmentObjects.Add(so);
+                segmentObjects.AddRange(SearchObjects(so.x, so.y).Distinct());
+
+                if (so.x == mouse_x && so.y == mouse_y)
+                {
+                    segmentObjects.RemoveAt(segmentObjects.Count - 1);
+                    isBreak = true;
+                }
+                else if (!so.isJunction && !isFirstJunction)
+                {
+                    count1 = mazeObjectSegments.Count;
+                    isAddSegments = (count1 == 0 || mazeObjectSegments[count1 - 1].Count !=
+                                     segmentObjects.Distinct().ToList().Count);
+                }
+                else if (so.isJunction)
+                {
+                    isAddSegments = isFirstJunction = true;
+                }
+
+                if (isAddSegments || isBreak)
+                {
+                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
+
+                    if (isBreak)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        private static void CalculateForwardSegments(MazeObjectSegments mazeObjectSegments, MazeObjects pathobjects)
+        {
+            MazeObjects segmentObjects = new MazeObjects();
+            MazeObject so;
+            int index = 0;
+            bool isFirstJunction = false;
+            bool isBreak = false;
+            bool isAddSegments;
+            
+            int count1;
             while (true)
             {
                 isAddSegments = false;
@@ -1203,10 +1261,6 @@ namespace MouseAI
                     }
                 }
             }
-
-            ValidateSegments(mazeObjectSegments);
-            GenerateSegmentImages(mazeObjectSegments);
-            GeneratePathNodes(pathobjects);
         }
 
         private static MazeObjects SearchObjects(int x, int y)
