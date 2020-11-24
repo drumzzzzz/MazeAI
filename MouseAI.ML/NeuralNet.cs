@@ -30,7 +30,6 @@ namespace MouseAI.ML
         private readonly string log_dir;
         private readonly string log_ext;
         private readonly string config_ext;
-        private readonly string plot_ext;
         private string starttime;
         private string log_file;
         private Config config;
@@ -46,8 +45,8 @@ namespace MouseAI.ML
         private DateTime dtEnd;
         private double[] score;
         private BaseModel model_loaded;
-        private int predicted = 0;
-        private int predictions = 0;
+        private int predicted;
+        private int predictions;
 
         private static readonly string[] PACKAGES = {"keras","numpy"};
         private const string SITE_PACKAGES = @"site-packages\";
@@ -58,7 +57,7 @@ namespace MouseAI.ML
 
         #region Initialization
 
-        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext, string config_ext, string plot_ext)
+        public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext, string config_ext)
         {
             this.width = width;
             this.height = height;
@@ -67,7 +66,6 @@ namespace MouseAI.ML
             this.model_dir = model_dir;
             this.model_ext = model_ext;
             this.config_ext = config_ext;
-            this.plot_ext = plot_ext;
 
             K.DisableEager();
             K.ClearSession();
@@ -171,12 +169,18 @@ namespace MouseAI.ML
 
         public void InitDataSets(ImageDatas imageDatas, double split, int seed)
         {
+            if (imageDatas == null)
+                throw new Exception("Invalid Image Datas!");
+
             dataSets = new DataSets(width, height, imageDatas, split, seed);
             BuildDataSets();
         }
 
         public void InitDataSets(ImageDatas imageDatas)
         {
+            if (imageDatas == null)
+                throw new Exception("Invalid Image Datas!");
+
             dataSets = new DataSets(width, height, imageDatas, 0);
             ResetPredictions();
         }
@@ -440,7 +444,6 @@ namespace MouseAI.ML
             K.ClearSession();
             K.ResetUids();
 
-            //string filename = model_dir + @"\" + stime + ".";
             string filename = Utils.GetFileWithoutExtension(model_dir, stime);
             config = (Config)FileIO.DeSerializeXml(typeof(Config), filename + config_ext);
 
@@ -461,7 +464,6 @@ namespace MouseAI.ML
             config.StartTime = starttime;
             config.Model = model.ToJson();
 
-            //string filename = model_dir + @"\" + starttime + ".";
             string filename = Utils.GetFileWithoutExtension(model_dir, starttime);
             FileIO.SerializeXml(config, filename + config_ext);
             model.SaveWeight(filename + model_ext);
@@ -503,5 +505,6 @@ namespace MouseAI.ML
         }
 
         #endregion
+
     }
 }

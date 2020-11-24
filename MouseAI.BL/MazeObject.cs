@@ -63,10 +63,9 @@ namespace MouseAI
     public class MazeObjects : List<MazeObject>
     {
         public MazeObjects()
-        {
-        }
+        { }
 
-        public MazeObjects(List<MazeObject> mazeObjects)
+        public MazeObjects(IEnumerable<MazeObject> mazeObjects)
         {
             AddRange(mazeObjects);
         }
@@ -74,7 +73,5 @@ namespace MouseAI
 
     public class MazeObjectSegments : List<MazeObjects>
     {
-        public MazeObjectSegments()
-        { }
     }
 }
