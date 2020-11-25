@@ -43,6 +43,8 @@ namespace MouseAI.UI
         private const float LINE_WIDTH = 1;
         private const string TITLE = "MOUSE AI";
         private const int SEARCH_DELAY = 1;
+        private const int BITMAP_WIDTH = 533;
+        private const int BITMAP_HEIGHT = 533;
 
         private SKColor BlockColor;
         private SKColor SpaceColor;
@@ -55,10 +57,11 @@ namespace MouseAI.UI
         private SKSurface surface;
         private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
-        private SKBitmap Mouse_Bitmap;
+        private readonly SKBitmap[] Mouse_Bitmap = new SKBitmap[4];
         private SKBitmap Visible_Bitmap;
         private SKBitmap DeadEnd_Bitmap;
         private SKBitmap Smell_Bitmap;
+        private Bitmap NoPaths_Bitmap;
         private Point mouse_last;
 
         private int maze_count;
@@ -200,12 +203,16 @@ namespace MouseAI.UI
 
         #region Path Solving
 
-        private async void SolvePaths()
+        private async void SolvePaths(bool isNewMazes)
         {
             if (!maze.isMazeModels())
                 return;
 
-            if (MessageBox.Show("Calculate and solve maze paths?\nthis will clear any current build"
+            if (isNewMazes && MessageBox.Show("Calculate and solve maze paths?\n"
+                    , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
+                return;
+
+            if (!isNewMazes && MessageBox.Show("Calculate and solve maze paths?\nthis will clear any current build"
                     , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
                 return;
 
@@ -931,18 +938,11 @@ namespace MouseAI.UI
                     blue: 0,
                     alpha: 255);
 
-
             SpaceColor = new SKColor(
                 red: 102,
                 green: 153,
                 blue: 153,
                 alpha: 255);
-
-            //SpaceColor = new SKColor(
-            //    red: 255,
-            //    green: 255,
-            //    blue: 255,
-            //    alpha: 255);
 
             BlockPaint = new SKPaint
             {
@@ -961,15 +961,22 @@ namespace MouseAI.UI
                 IsAntialias = true,
                 Style = SKPaintStyle.Fill,
             };
+
+            NoPaths_Bitmap = Resources.nopaths;
         }
 
         private void DrawPath()
         {
             string guid = maze.GetMazeModelGUID();
-            if (string.IsNullOrEmpty(guid))
+
+            if (pbxPath.Image != null)
             {
                 pbxPath.Image.Dispose();
                 pbxPath.Image = null;
+            }
+
+            if (string.IsNullOrEmpty(guid))
+            {
                 return;
             }
 
@@ -980,6 +987,10 @@ namespace MouseAI.UI
                 pbxPath.Image = new Bitmap(bmp);
                 maze.SetTested(true);
                 UpdateItemState(maze.GetTested(), maze.GetAccuracy());
+            }
+            else
+            {
+                pbxPath.Image = Resources.nopaths;
             }
         }
 
@@ -997,23 +1008,21 @@ namespace MouseAI.UI
             offscreen = buffer.Canvas;
             offscreen.Clear(SKColor.Parse("#003366"));
 
-            SKBitmap bmp = Resources.cheese.ToSKBitmap();
+            
             SKImageInfo resizeInfo = new SKImageInfo(1, 1)
             {
-                Width = (bmp.Width / (MAZE_SCALE_WIDTH_PX + 2)) * 3,
-                Height = (bmp.Height / (MAZE_SCALE_HEIGHT_PX + 2)) * 3
+                Width = (BITMAP_WIDTH / (MAZE_SCALE_WIDTH_PX + 2)) * 3,
+                Height = (BITMAP_HEIGHT / (MAZE_SCALE_HEIGHT_PX + 2)) * 3
             };
 
-            Cheese_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-
-            bmp = Resources.mouse_south.ToSKBitmap();
-            Mouse_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-            bmp = Resources.visible.ToSKBitmap();
-            Visible_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-            bmp = Resources.deadend.ToSKBitmap();
-            DeadEnd_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-            bmp = Resources.smell.ToSKBitmap();
-            Smell_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
+            Cheese_Bitmap = GetBitmap(Resources.cheese, resizeInfo);
+            Visible_Bitmap = GetBitmap(Resources.visible, resizeInfo);
+            DeadEnd_Bitmap = GetBitmap(Resources.deadend, resizeInfo);
+            Smell_Bitmap = GetBitmap(Resources.smell, resizeInfo);
+            Mouse_Bitmap[(int)DIRECTION.SOUTH] = GetBitmap(Resources.mouse_south, resizeInfo);
+            Mouse_Bitmap[(int)DIRECTION.NORTH] = GetBitmap(Resources.mouse_north, resizeInfo);
+            Mouse_Bitmap[(int)DIRECTION.WEST] = GetBitmap(Resources.mouse_west, resizeInfo);
+            Mouse_Bitmap[(int)DIRECTION.EAST] = GetBitmap(Resources.mouse_east, resizeInfo);
 
             float x_pos, y_pos;
             OBJECT_TYPE ot;
@@ -1042,6 +1051,12 @@ namespace MouseAI.UI
             UpdateMaze(true, false);
         }
 
+        private SKBitmap GetBitmap(Bitmap resource, SKImageInfo resizeInfo)
+        {
+            SKBitmap bmp = resource.ToSKBitmap();
+            return bmp.Resize(resizeInfo, SKFilterQuality.Medium);
+        }
+
         private bool UpdateMaze(bool isImmediate, bool isVisible)
         {
             if (!isImmediate)
@@ -1062,7 +1077,7 @@ namespace MouseAI.UI
 
             canvas.Clear(SKColor.Parse("#003366"));
             canvas.DrawImage(backimage, 0, 0);
-            canvas.DrawBitmap(Mouse_Bitmap, (mp.X * MAZE_SCALE_WIDTH_PX), (mp.Y * MAZE_SCALE_HEIGHT_PX));
+            canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()], (mp.X * MAZE_SCALE_WIDTH_PX), (mp.Y * MAZE_SCALE_HEIGHT_PX));
 
             if (isVisible && run_visible != Maze.RUN_VISIBLE.NONE)
             {
@@ -1103,6 +1118,11 @@ namespace MouseAI.UI
             canvas.Clear(SKColor.Parse("#003366"));
             pbxMaze.Image.Dispose();
             pbxMaze.Image = null;
+        }
+
+        private void pbxMaze_MouseClick(object sender, MouseEventArgs e)
+        {
+            tsCoords.Text = string.Format("(X:{0} Y:{1})", e.X / MAZE_SCALE_WIDTH_PX, e.Y / MAZE_SCALE_HEIGHT_PX);
         }
 
         #endregion
@@ -1152,8 +1172,6 @@ namespace MouseAI.UI
                 settings.LastFileName = maze.GetFileName();
                 settings.Guid = maze.GetModelProjectGuid();
                 UpdateSettings();
-                DisplayTitleMessage(settings.LastFileName);
-                AddMazeItems();
                 ClearStatistics();
                 return true;
             }
@@ -1530,8 +1548,9 @@ namespace MouseAI.UI
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (NewMazes())
+            if (NewMazes() && LoadMazes(settings.LastFileName, false))
             {
+                SolvePaths(true);
                 SetMenuItems(true);
             }
         }
@@ -1606,7 +1625,7 @@ namespace MouseAI.UI
 
         private void pathsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SolvePaths();
+            SolvePaths(false);
         }
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)

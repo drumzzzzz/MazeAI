@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MouseAI));
             this.stpStatus = new System.Windows.Forms.StatusStrip();
             this.tsStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tsCoords = new System.Windows.Forms.ToolStripStatusLabel();
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,7 +50,6 @@
             this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.c2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.pbxMaze = new System.Windows.Forms.PictureBox();
             this.stpStatus.SuspendLayout();
@@ -61,7 +61,8 @@
             // stpStatus
             // 
             this.stpStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsStatus});
+            this.tsStatus,
+            this.tsCoords});
             this.stpStatus.Location = new System.Drawing.Point(0, 685);
             this.stpStatus.Name = "stpStatus";
             this.stpStatus.Size = new System.Drawing.Size(894, 40);
@@ -82,6 +83,13 @@
             this.tsStatus.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             this.tsStatus.Size = new System.Drawing.Size(400, 35);
             this.tsStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tsCoords
+            // 
+            this.tsCoords.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsCoords.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tsCoords.Name = "tsCoords";
+            this.tsCoords.Size = new System.Drawing.Size(0, 35);
             // 
             // msMain
             // 
@@ -227,8 +235,7 @@
             // 
             this.lvwMazes.AutoArrange = false;
             this.lvwMazes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.c1,
-            this.c2});
+            this.c1});
             this.lvwMazes.FullRowSelect = true;
             this.lvwMazes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lvwMazes.HideSelection = false;
@@ -243,17 +250,13 @@
             // 
             // c1
             // 
-            this.c1.Text = "#";
-            // 
-            // c2
-            // 
-            this.c2.Text = "Path";
-            this.c2.Width = 37;
+            this.c1.Text = "Maze";
+            this.c1.Width = 99;
             // 
             // pbxPath
             // 
             this.pbxPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pbxPath.BackColor = System.Drawing.Color.White;
+            this.pbxPath.BackColor = System.Drawing.Color.LightGray;
             this.pbxPath.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbxPath.Location = new System.Drawing.Point(797, 541);
             this.pbxPath.Margin = new System.Windows.Forms.Padding(0);
@@ -273,6 +276,7 @@
             this.pbxMaze.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbxMaze.TabIndex = 4;
             this.pbxMaze.TabStop = false;
+            this.pbxMaze.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbxMaze_MouseClick);
             // 
             // MouseAI
             // 
@@ -318,7 +322,6 @@
         public System.Windows.Forms.ToolStripStatusLabel tsStatus;
         private System.Windows.Forms.ListView lvwMazes;
         private System.Windows.Forms.ColumnHeader c1;
-        private System.Windows.Forms.ColumnHeader c2;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.PictureBox pbxPath;
         private System.Windows.Forms.PictureBox pbxMaze;
@@ -327,6 +330,7 @@
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripStatusLabel tsCoords;
     }
 }
 

@@ -46,6 +46,7 @@ namespace MouseAI
         private static int maze_height;
         private static int mouse_x;
         private static int mouse_y;
+        private static DIRECTION mouse_direction;
         private static int cheese_x;
         private static int cheese_y;
         private bool isCheesePath;
@@ -135,7 +136,7 @@ namespace MouseAI
             pnVisible = new List<Point>();
             pnDeadends = new List<Point>();
             pnSmell = new List<Point>();
-
+            
             for (int i = 0; i < scanObjects.Length; i++)
             {
                 scanObjects[i] = new List<MazeObject>();
@@ -186,7 +187,7 @@ namespace MouseAI
 
             mouse_x = mx;
             mouse_y = my;
-
+            mouse_direction = DIRECTION.SOUTH;
             mazeObjects[mx, my].object_state = OBJECT_STATE.MOUSE;
 
             mouseObject = new MazeObject(OBJECT_TYPE.SPACE, mx, my)
@@ -201,7 +202,6 @@ namespace MouseAI
             cheese_x = cx;
             cheese_y = cy;
             InitSmell();
-
 
             return true;
         }
@@ -270,7 +270,7 @@ namespace MouseAI
 
             mouse_x = x;
             mouse_y = y;
-
+            mouse_direction = DIRECTION.SOUTH;
             mazeObjects[x, y].object_state = OBJECT_STATE.MOUSE;
 
             mouseObject = new MazeObject(OBJECT_TYPE.BLOCK, x, y)
@@ -319,6 +319,11 @@ namespace MouseAI
             if (dir == DIRECTION.WEST)
                 return DIRECTION.EAST;
             return dir == DIRECTION.NORTH ? DIRECTION.SOUTH : DIRECTION.NORTH;
+        }
+
+        public int GetMouseDirection()
+        {
+            return (int)mouse_direction;
         }
 
         public void Reset()
@@ -524,7 +529,10 @@ namespace MouseAI
             if (CheckForCheese(mouse, mazeobjects))
                 return true;
             if (isCheesePath)
+            {
+                UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
                 return false;
+            }
 
             mouse.count++;
 
@@ -539,6 +547,7 @@ namespace MouseAI
                 if (!ProcessVisionState(mouse, mazeobjects) &&
                     !ProcessSearchMove(mazeobjects, mazeobjects_de, mouse))
                 {
+                    UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
                     return false;
                 }
 
@@ -549,6 +558,7 @@ namespace MouseAI
                 {
                     mazeStatistic.IncrementNeuralMoves();
                     mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
+                    UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
                     return false;
                 }
             }
@@ -557,7 +567,20 @@ namespace MouseAI
             isFirstTime = false;
             CreateVisionImage(mouse);
             UpdateVisionState();
+            UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
             return false;
+        }
+
+        private void UpdateMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
+        {
+            if (x_curr < x_last)
+                mouse_direction = DIRECTION.WEST;
+            else if (x_curr > x_last)
+                mouse_direction = DIRECTION.EAST;
+            else if (y_curr < y_last)
+                mouse_direction = DIRECTION.NORTH;
+            else
+                mouse_direction = DIRECTION.SOUTH;    
         }
 
         #endregion

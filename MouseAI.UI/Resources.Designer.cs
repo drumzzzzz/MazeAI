@@ -83,9 +83,49 @@ namespace MouseAI.UI {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap mouse_east {
+            get {
+                object obj = ResourceManager.GetObject("mouse_east", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap mouse_north {
+            get {
+                object obj = ResourceManager.GetObject("mouse_north", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap mouse_south {
             get {
                 object obj = ResourceManager.GetObject("mouse_south", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap mouse_west {
+            get {
+                object obj = ResourceManager.GetObject("mouse_west", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap nopaths {
+            get {
+                object obj = ResourceManager.GetObject("nopaths", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

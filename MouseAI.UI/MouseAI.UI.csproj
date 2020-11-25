@@ -290,6 +290,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\smell.png" />
+    <None Include="Resources\NoPaths.png" />
     <Content Include="SQLite.Interop.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
