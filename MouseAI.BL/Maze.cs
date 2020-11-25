@@ -664,11 +664,12 @@ namespace MouseAI
                     isMouse = true;
 
                 // If we've found the mouse and this is a valid path node 
-                if (isMouse && !mo.isVisited && !mo.isDeadEnd && !badNodes.Any(o => o.x == p.x && o.y == p.y))
+                //if (isMouse && !mo.isVisited && !mo.isDeadEnd && !badNodes.Any(o => o.x == p.x && o.y == p.y))
+                if (isMouse && !mo.isVisited && !mo.isDeadEnd && CheckNode(p))
                 {
                     // If visible and not a duplicate
-                    if (visionObjects.Any(o => o.x == p.x && o.y == p.y) &&
-                        !pathNodes.Any(o => o.x == p.x && o.y == p.y))
+                    //if (visionObjects.Any(o => o.x == p.x && o.y == p.y) &&
+                    //    !pathNodes.Any(o => o.x == p.x && o.y == p.y))
                     {
                         pathNodes.Add(p);
                         count++;
@@ -677,6 +678,13 @@ namespace MouseAI
             }
             // Return if mouse was found and any neural vision nodes have been added to the list
             return (isMouse && count != 0);
+        }
+
+        private bool CheckNode(PathNode p)
+        {
+            return !badNodes.Any(o => o.x == p.x && o.y == p.y) &&
+                   !pathNodes.Any(o => o.x == p.x && o.y == p.y) &&
+                   visionObjects.Any(o => o.x == p.x && o.y == p.y);
         }
 
         private bool ProcessNeuralVisionPath(IReadOnlyCollection<MazeObject> mazeobjects,

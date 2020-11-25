@@ -71,7 +71,8 @@ namespace MouseAI.UI
 
                 pnlPlot.Controls.Add(maze_plot);
                 pnlPlot.Controls.Add(total_plot);
-
+                maze_plot.plt.Style(Style.Blue2);
+                total_plot.plt.Style(Style.Blue2);
                 maze_plot.Render();
                 total_plot.Render();
             }

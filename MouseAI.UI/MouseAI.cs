@@ -31,9 +31,10 @@ namespace MouseAI.UI
         private Progress progress;
         private MazeNew mazeNew;
         private MazeManage mazeManage;
+        private readonly MazeStatistics mazeStatistics;
 
-        private const int MAZE_WIDTH = 41;
-        private const int MAZE_HEIGHT = 25;
+        private const int MAZE_WIDTH = 31;
+        private const int MAZE_HEIGHT = 31;
         private const int MAZE_SCALE_WIDTH_PX = 28;
         private const int MAZE_SCALE_HEIGHT_PX = 28;
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
@@ -58,12 +59,10 @@ namespace MouseAI.UI
         private SKBitmap Visible_Bitmap;
         private SKBitmap DeadEnd_Bitmap;
         private SKBitmap Smell_Bitmap;
-
         private Point mouse_last;
 
         private int maze_count;
         private bool isStep;
-        
         private bool isCheese;
         private bool isThreadDone;
         private bool isThreadCancel;
@@ -76,7 +75,6 @@ namespace MouseAI.UI
         private const int RENDER_TIME = 5;
         private bool isRandomSearch;
         private bool isDebug = true;
-        private readonly MazeStatistics mazeStatistics;
         private int last_selected;
 
         private enum RUN_MODE
@@ -121,7 +119,6 @@ namespace MouseAI.UI
             };
 
             mazeStatistics = new MazeStatistics();
-
             LoadSettings();
             InitMazeGraphics();
             DisplayTitleMessage(string.Empty);
@@ -232,8 +229,11 @@ namespace MouseAI.UI
                     maze.SaveUpdatedMazeModels(settings.LastFileName);
                 }
                 string message = string.Format("Path Solving {0}", (isThreadCancel) ? "Cancelled." : "Completed.");
-                Console.WriteLine(message);
-                DisplayTsMessage(message);
+                if (isDebug)
+                    Console.WriteLine(message);
+
+                if (!isThreadCancel)
+                    DisplayDialog(message);
             }
             catch (Exception e)
             {
@@ -919,9 +919,9 @@ namespace MouseAI.UI
             lvwMazes.Width = pbxPath.Width;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
             pbxMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
-            pbxPath.Location = new Point(pbxMaze.Width + 20, lvwMazes.Height - 10);
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
+            pbxPath.Location = new Point(lvwMazes.Location.X, lvwMazes.Location.Y + lvwMazes.Height + 10);
             MinimumSize = new Size(Width, Height);
             MaximumSize = new Size(Width, Height);
 
@@ -988,22 +988,21 @@ namespace MouseAI.UI
             offscreen = buffer.Canvas;
             offscreen.Clear(SKColor.Parse("#003366"));
 
-            SKImageInfo resizeInfo = new SKImageInfo(160, 160);
             SKBitmap bmp = Resources.cheese.ToSKBitmap();
-            Cheese_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
+            SKImageInfo resizeInfo = new SKImageInfo(1, 1)
+            {
+                Width = (bmp.Width / (MAZE_SCALE_WIDTH_PX + 2)) * 3,
+                Height = (bmp.Height / (MAZE_SCALE_HEIGHT_PX + 2)) * 3
+            };
 
-            resizeInfo.Height = 51;
-            resizeInfo.Width = 51;
+            Cheese_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
 
             bmp = Resources.mouse_south.ToSKBitmap();
             Mouse_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-
             bmp = Resources.visible.ToSKBitmap();
             Visible_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-
             bmp = Resources.deadend.ToSKBitmap();
             DeadEnd_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
-
             bmp = Resources.smell.ToSKBitmap();
             Smell_Bitmap = bmp.Resize(resizeInfo, SKFilterQuality.Medium);
 
@@ -1141,7 +1140,6 @@ namespace MouseAI.UI
                 string guid = Guid.NewGuid().ToString();
                 maze.SetMazeModelsGuid(guid);
                 maze.SaveMazeModels(filename);
-                DisplayTsMessage("Saved and Generated Mazes ...");
                 settings.LastFileName = maze.GetFileName();
                 settings.Guid = maze.GetModelProjectGuid();
                 UpdateSettings();
@@ -1153,7 +1151,6 @@ namespace MouseAI.UI
             catch (Exception e)
             {
                 DisplayError("Error Creating DB:", e, false);
-                DisplayTsMessage("Error");
                 DisplayTitleMessage(string.Empty);
                 return false;
             }
@@ -1196,7 +1193,6 @@ namespace MouseAI.UI
                 settings.Guid = maze.GetModelProjectGuid();
                 UpdateSettings();
                 DisplayTitleMessage(settings.LastFileName);
-                DisplayTsMessage("Mazes Loaded");
                 ClearStatistics();
                 return true;
             }
@@ -1637,6 +1633,11 @@ namespace MouseAI.UI
             MessageBox.Show(message, title);
         }
 
+        private static void DisplayDialog(string message)
+        {
+            MessageBox.Show(message);
+        }
+
         private void DisplayTsMessage(string message)
         {
             tsStatus.Text = message;
@@ -1651,5 +1652,6 @@ namespace MouseAI.UI
         }
 
         #endregion
+
     }
 }
