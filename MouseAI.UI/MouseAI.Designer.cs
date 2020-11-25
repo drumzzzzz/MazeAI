@@ -51,11 +51,10 @@
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pbxPath = new System.Windows.Forms.PictureBox();
-            this.pbxMaze = new System.Windows.Forms.PictureBox();
+            this.skgMaze = new SkiaSharp.Views.Desktop.SKGLControl();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).BeginInit();
             this.SuspendLayout();
             // 
             // stpStatus
@@ -270,28 +269,25 @@
             this.pbxPath.TabIndex = 13;
             this.pbxPath.TabStop = false;
             // 
-            // pbxMaze
+            // skgMaze
             // 
-            this.pbxMaze.BackColor = System.Drawing.Color.Blue;
-            this.pbxMaze.Location = new System.Drawing.Point(9, 44);
-            this.pbxMaze.Margin = new System.Windows.Forms.Padding(0);
-            this.pbxMaze.Name = "pbxMaze";
-            this.pbxMaze.Size = new System.Drawing.Size(100, 100);
-            this.pbxMaze.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.pbxMaze.TabIndex = 4;
-            this.pbxMaze.TabStop = false;
-            this.pbxMaze.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbxMaze_MouseClick);
+            this.skgMaze.BackColor = System.Drawing.Color.Black;
+            this.skgMaze.Location = new System.Drawing.Point(12, 38);
+            this.skgMaze.Name = "skgMaze";
+            this.skgMaze.Size = new System.Drawing.Size(726, 518);
+            this.skgMaze.TabIndex = 14;
+            this.skgMaze.VSync = false;
             // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(894, 725);
+            this.Controls.Add(this.skgMaze);
             this.Controls.Add(this.pbxPath);
             this.Controls.Add(this.lvwMazes);
             this.Controls.Add(this.stpStatus);
             this.Controls.Add(this.msMain);
-            this.Controls.Add(this.pbxMaze);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
@@ -305,7 +301,6 @@
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbxMaze)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -328,13 +323,13 @@
         private System.Windows.Forms.ColumnHeader c1;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.PictureBox pbxPath;
-        private System.Windows.Forms.PictureBox pbxMaze;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel tsCoords;
+        private SkiaSharp.Views.Desktop.SKGLControl skgMaze;
     }
 }
 

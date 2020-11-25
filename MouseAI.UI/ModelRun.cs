@@ -16,8 +16,8 @@ namespace MouseAI.UI
         private const int Y_MARGIN = 10;
         private const int X_POSITION = 5;
         private const int Y_POSITION = 5;
-        private Color background;
-        private Color foreground;
+        private readonly Color background;
+        private readonly Color foreground;
 
         public ModelRun(string[] columns, Color background, Color foreground)
         {

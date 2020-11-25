@@ -62,6 +62,7 @@ namespace MouseAI.UI
         private SKBitmap DeadEnd_Bitmap;
         private SKBitmap Smell_Bitmap;
         private Point mouse_last;
+        private Point mouse_current;
         private readonly Color BLOCK_COLOR = Color.DarkBlue;
         private readonly Color SPACE_COLOR = Color.DarkCyan;
         private int maze_count;
@@ -79,6 +80,7 @@ namespace MouseAI.UI
         private bool isRandomSearch;
         private bool isDebug = true;
         private int last_selected;
+        private bool isVisible;
 
         private enum RUN_MODE
         {
@@ -843,7 +845,6 @@ namespace MouseAI.UI
             }
 
             mazeStatistics.Add(maze.GetMazeStatistic());
-
             modelRun.UpdatePlot(mazeStatistics.GetData(), true);
         }
 
@@ -938,16 +939,17 @@ namespace MouseAI.UI
 
         private void InitMazeGraphics()
         {
+            skgMaze.PaintSurface += skgMaze_PaintSurface;
             pbxPath.Width = MAZE_WIDTH * 4;
             pbxPath.Height = MAZE_HEIGHT * 4;
-            pbxMaze.Width = MAZE_WIDTH_PX;
-            pbxMaze.Height = MAZE_HEIGHT_PX;
-            lvwMazes.Height = pbxMaze.Height - pbxPath.Height - 10;
+            skgMaze.Width = MAZE_WIDTH_PX;
+            skgMaze.Height = MAZE_HEIGHT_PX;
+            lvwMazes.Height = skgMaze.Height - pbxPath.Height - 10;
             lvwMazes.Width = pbxPath.Width;
-            lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
+            lvwMazes.Location = new Point(skgMaze.Width + 20, msMain.Height + 5);
             lvwMazes.BackColor = SPACE_COLOR;
             lvwMazes.ForeColor = Color.White;
-            pbxMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
+            skgMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
             pbxPath.Location = new Point(lvwMazes.Location.X, lvwMazes.Location.Y + lvwMazes.Height + 10);
@@ -1017,8 +1019,8 @@ namespace MouseAI.UI
         private void DrawMaze()
         {
             var imageInfo = new SKImageInfo(
-                width: pbxMaze.Width,
-                height: pbxMaze.Height,
+                width: skgMaze.Width,
+                height: skgMaze.Height,
                 colorType: SKColorType.Rgba8888,
                 alphaType: SKAlphaType.Premul);
 
@@ -1070,37 +1072,24 @@ namespace MouseAI.UI
             UpdateMaze(true, false);
         }
 
-        private SKBitmap GetBitmap(Bitmap resource, SKImageInfo resizeInfo)
+        private static SKBitmap GetBitmap(Bitmap resource, SKImageInfo resizeInfo)
         {
             SKBitmap bmp = resource.ToSKBitmap();
             return bmp.Resize(resizeInfo, SKFilterQuality.Medium);
         }
 
-        private bool UpdateMaze(bool isImmediate, bool isVisible)
+        private void skgMaze_PaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
         {
-            if (!isImmediate)
-            {
-                DateTime dtCurrent = DateTime.UtcNow;
-
-                if (dtCurrent < dtRenderTime)
-                    return false;
-
-                dtRenderTime = dtCurrent.AddMilliseconds(RENDER_TIME);
-            }
-
-            Point mp = maze.GetMousePosition();
-            if (mp == mouse_last)
-                return false;
-
             mouse_last = maze.GetMousePosition();
 
-            canvas.Clear(SKColor.Parse("#003366"));
-            canvas.DrawImage(backimage, 0, 0);
-            canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()], (mp.X * MAZE_SCALE_WIDTH_PX), (mp.Y * MAZE_SCALE_HEIGHT_PX));
+            e.Surface.Canvas.Clear(SKColor.Parse("#003366"));
+            e.Surface.Canvas.DrawImage(backimage, 0, 0);
+            e.Surface.Canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()], 
+                (mouse_current.X * MAZE_SCALE_WIDTH_PX), (mouse_current.Y * MAZE_SCALE_HEIGHT_PX));
 
             if (isVisible && run_visible != Maze.RUN_VISIBLE.NONE)
             {
-                maze.UpdatePointLists(mp, run_visible);
+                maze.UpdatePointLists(mouse_current, run_visible);
 
                 foreach (Point p in maze.GetDeadEndPoints())
                 {
@@ -1117,26 +1106,39 @@ namespace MouseAI.UI
                     canvas.DrawBitmap(Smell_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
                 }
             }
+        }
 
-            SKImage image = surface.Snapshot();
-            MazeData = image.Encode();
-
-            using (MemoryStream mStream = new MemoryStream(MazeData.ToArray()))
+        private bool UpdateMaze(bool isvisible, bool isImmediate)
+        {
+            if (!isImmediate)
             {
-                pbxMaze.Image?.Dispose();
-                pbxMaze.Image = new Bitmap(mStream, false);
+                DateTime dtCurrent = DateTime.UtcNow;
+
+                if (dtCurrent < dtRenderTime)
+                    return false;
+
+                dtRenderTime = dtCurrent.AddMilliseconds(RENDER_TIME);
             }
+
+            mouse_current = maze.GetMousePosition();
+            if (mouse_current == mouse_last)
+                return false;
+
+            isVisible = isvisible;
+
+            skgMaze.Invalidate();
+
             return true;
         }
 
         private void ClearMaze()
         {
-            if (canvas == null || pbxMaze.Image == null)
-                return;
+            //if (canvas == null || pbxMaze.Image == null)
+            //    return;
 
-            canvas.Clear(SKColor.Parse("#003366"));
-            pbxMaze.Image.Dispose();
-            pbxMaze.Image = null;
+            //canvas.Clear(SKColor.Parse("#003366"));
+            //pbxMaze.Image.Dispose();
+            //pbxMaze.Image = null;
         }
 
         private void pbxMaze_MouseClick(object sender, MouseEventArgs e)
