@@ -557,7 +557,7 @@ namespace MouseAI
                 if (ProcessNeuralVisionPath(mazeobjects, mazeobjects_de, mouse))
                 {
                     mazeStatistic.IncrementNeuralMoves();
-                    mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
+                    MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
                     UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
                     return false;
                 }
@@ -591,13 +591,13 @@ namespace MouseAI
         {
             if (isMouseAtCheese(mouse))
             {
-                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.DONE);
+                MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.DONE);
                 return true;
             }
 
             if (isCheesePath)
             {
-                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
+                MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
                 if (ProcessCheeseMove(mouse, mazeobjects))
                     CleanPathObjects();
             }
@@ -913,7 +913,7 @@ namespace MouseAI
             {
                 UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
                 mazeStatistic.IncrementSearchMoves();
-                mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SEARCHING);
+                MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SEARCHING);
                 return true;
             }
 
@@ -922,7 +922,7 @@ namespace MouseAI
             {
                 badNodes.Add(new PathNode(mouse.x, mouse.y, false));
             }
-            mazeStatistic.SetMouseStatus(MazeStatistics.MOUSE_STATUS.REVERTING);
+            MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.REVERTING);
             return false;
         }
 
@@ -1201,52 +1201,6 @@ namespace MouseAI
             ValidateSegments(mazeObjectSegments);
             GenerateSegmentImages(mazeObjectSegments);
             GeneratePathNodes(pathobjects);
-        }
-
-        private static void CalculateReverseSegments(MazeObjectSegments mazeObjectSegments, MazeObjects pathobjects)
-        {
-            MazeObjects segmentObjects = new MazeObjects();
-            MazeObject so;
-            int index = pathobjects.Count - 1;
-            bool isFirstJunction = false;
-            bool isBreak = false;
-            bool isAddSegments;
-
-            int count1;
-            while (true)
-            {
-                isAddSegments = false;
-                so = pathobjects[index--];
-
-                segmentObjects.Add(so);
-                segmentObjects.AddRange(SearchObjects(so.x, so.y).Distinct());
-
-                if (so.x == mouse_x && so.y == mouse_y)
-                {
-                    segmentObjects.RemoveAt(segmentObjects.Count - 1);
-                    isBreak = true;
-                }
-                else if (!so.isJunction && !isFirstJunction)
-                {
-                    count1 = mazeObjectSegments.Count;
-                    isAddSegments = (count1 == 0 || mazeObjectSegments[count1 - 1].Count !=
-                                     segmentObjects.Distinct().ToList().Count);
-                }
-                else if (so.isJunction)
-                {
-                    isAddSegments = isFirstJunction = true;
-                }
-
-                if (isAddSegments || isBreak)
-                {
-                    mazeObjectSegments.Add(new MazeObjects(segmentObjects.Distinct().ToList()));
-
-                    if (isBreak)
-                    {
-                        break;
-                    }
-                }
-            }
         }
 
         private static void CalculateForwardSegments(MazeObjectSegments mazeObjectSegments, MazeObjects pathobjects)
@@ -1661,11 +1615,6 @@ namespace MouseAI
             mazeModel.isPath = isTested;
         }
 
-        public int GetAccuracy()
-        {
-            return mazeModel == null ? 0 : mazeModel.errors;
-        }
-
         private static Color GetColor(byte b)
         {
             switch (b)
@@ -1675,11 +1624,6 @@ namespace MouseAI
                 default: return Color.White;
             }
         }
-
-        //private static byte GetByteColor(MazeObject mo)
-        //{
-        //    return (byte) BLACK;
-        //}
 
         #endregion
 
@@ -1866,7 +1810,7 @@ namespace MouseAI
 
         public string GetMouseStatus()
         {
-            return mazeStatistic.GetMouseStatus();
+            return MazeStatistics.GetMouseStatus();
         }
 
         public void EndStatus()

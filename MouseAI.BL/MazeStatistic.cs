@@ -13,7 +13,6 @@ namespace MouseAI.BL
         private double search_moves;
         private DateTime dtStart { get; set; }
         private DateTime dtEnd { get; set; }
-        private MazeStatistics.MOUSE_STATUS mouse_status;
         private bool isRunning;
 
         public MazeStatistic(string maze_guid, string model_name)
@@ -23,12 +22,11 @@ namespace MouseAI.BL
 
             dtStart = DateTime.UtcNow;
             isRunning = true;
-            mouse_status = MazeStatistics.MOUSE_STATUS.NONE;
         }
 
         public double[] GetData()
         {
-            return new []{ predict_labels, predict_error, neural_moves, search_moves };
+            return MazeStatistics.GetStatisticData(new[] {predict_labels, predict_error, neural_moves, search_moves});
         }
 
         public void IncrementNeuralMoves()
@@ -57,26 +55,6 @@ namespace MouseAI.BL
             isRunning = false;
         }
 
-        public string GetMouseStatus()
-        {
-            switch (mouse_status)
-            {
-                case MazeStatistics.MOUSE_STATUS.NONE: return "Waiting";
-                case MazeStatistics.MOUSE_STATUS.RECALLING: return "Moving neurally";
-                case MazeStatistics.MOUSE_STATUS.SEARCHING: return "Searching";
-                case MazeStatistics.MOUSE_STATUS.LOOKING: return "Looking";
-                case MazeStatistics.MOUSE_STATUS.FOUND: return "Can see the cheese!";
-                case MazeStatistics.MOUSE_STATUS.DONE: return "Arrived at the cheese!";
-                case MazeStatistics.MOUSE_STATUS.REVERTING: return "Leaving a dead end";
-                default: return string.Empty;
-            }
-        }
-
-        public void SetMouseStatus(MazeStatistics.MOUSE_STATUS ms)
-        {
-            mouse_status = ms;
-        }
-
         public string GetTime()
         {
             TimeSpan ts = (isRunning) ? DateTime.UtcNow - dtStart : dtEnd - dtStart;
@@ -87,6 +65,7 @@ namespace MouseAI.BL
     public class MazeStatistics : List<MazeStatistic>
     {
         private const int COLUMNS = 4;
+        private static MOUSE_STATUS mouse_status;
 
         public enum MOUSE_STATUS
         {
@@ -99,6 +78,26 @@ namespace MouseAI.BL
             REVERTING
         }
 
+        public static void SetMouseStatus(MOUSE_STATUS ms)
+        {
+            mouse_status = ms;
+        }
+
+        public static string GetMouseStatus()
+        {
+            switch (mouse_status)
+            {
+                case MOUSE_STATUS.NONE: return "Waiting";
+                case MOUSE_STATUS.RECALLING: return "Moving neurally";
+                case MOUSE_STATUS.SEARCHING: return "Searching";
+                case MOUSE_STATUS.LOOKING: return "Looking";
+                case MOUSE_STATUS.FOUND: return "Can see the cheese!";
+                case MOUSE_STATUS.DONE: return "Arrived at the cheese!";
+                case MOUSE_STATUS.REVERTING: return "Leaving a dead end";
+                default: return string.Empty;
+            }
+        }
+
         private static readonly string[] Columns =
         {
             "Predicted\nLabels", "Predicted\nErrors", "Neural\nMemory", "Tree\nSearches"
@@ -107,6 +106,18 @@ namespace MouseAI.BL
         public static string[] GetPlotColumns()
         {
             return Columns;
+        }
+
+        public static double[] GetStatisticData(double[] values)
+        {
+            double total = values[0] + values[1];
+            values[0] = CalculatePercentage(values[0], total);
+            values[1] = CalculatePercentage(values[1], total);
+            total = values[2] + values[3];
+            values[2] = CalculatePercentage(values[2], total);
+            values[3] = CalculatePercentage(values[3], total);
+
+            return values;
         }
 
         public double[] GetData()
@@ -123,14 +134,7 @@ namespace MouseAI.BL
                 }
             }
 
-            double total = values[0] + values[1];
-            values[0] = CalculatePercentage(values[0], total);
-            values[1] = CalculatePercentage(values[1], total);
-            total = values[2] + values[3];
-            values[2] = CalculatePercentage(values[2], total);
-            values[3] = CalculatePercentage(values[3], total);
-
-            return values;
+            return GetStatisticData(values);
         }
 
         private static double CalculatePercentage(double value, double total)
