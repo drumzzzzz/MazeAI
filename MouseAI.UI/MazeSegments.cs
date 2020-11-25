@@ -15,7 +15,7 @@ namespace MouseAI.UI
         private const int MARGIN = 5;
         private const int SCALE = 2;
 
-        public MazeSegments(int width, int height, Maze maze)
+        public MazeSegments(int width, int height, Maze maze, Color backcolor)
         {
             InitializeComponent();
 
@@ -24,23 +24,7 @@ namespace MouseAI.UI
             height *= SCALE;
             Width = COLUMNS * (width + (MARGIN * SCALE));
             Height = (ROWS + 1) * (height + (MARGIN * SCALE));
-
-            for (int x = 0; x < COLUMNS + 1; x++)
-            {
-                for (int y = 0; y < ROWS + 1; y++)
-                {
-                    PictureBox pbx = new PictureBox
-                    {
-                        Width = width,
-                        Height = height,
-                        Location = new Point(x * width + (MARGIN * SCALE), y * height + (MARGIN * SCALE)),
-                        Visible = false,
-                        SizeMode = PictureBoxSizeMode.StretchImage,
-                        BorderStyle = BorderStyle.FixedSingle
-                    };
-                    Controls.Add(pbx);
-                }
-            }
+            lvwSegments.BackColor = backcolor;
         }
 
         public void ShowImages()
@@ -56,24 +40,21 @@ namespace MouseAI.UI
             }
 
             MemoryStream ms;
-            int index = 0;
-            foreach (Control c in Controls)
+            lvwSegments.Items.Clear();
+            ImageList imglist = new ImageList();
+            imglist.ImageSize = new Size(100,100);
+
+            for (int i = 0; i < segments.Count; i++)
             {
-                if (c is PictureBox)
+                ms = new MemoryStream(segments[i]);
+                imglist.Images.Add((Bitmap)Image.FromStream(ms));
+                lvwSegments.Items.Add(new ListViewItem
                 {
-                    if (index >= segments.Count)
-                    {
-                        ((PictureBox) c).Visible = false;
-                    }
-                    else
-                    {
-                        ms = new MemoryStream(segments[index++]);
-                        ((PictureBox) c).Image = (Bitmap) Image.FromStream(ms);
-                        ((PictureBox) c).Visible = true;
-                        ((PictureBox) c).SizeMode = PictureBoxSizeMode.StretchImage;
-                    }
-                }
+                    Text = i.ToString(),
+                    ImageIndex = i
+                });
             }
+            lvwSegments.LargeImageList = imglist;
         }
     }
 }

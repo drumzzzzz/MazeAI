@@ -16,11 +16,15 @@ namespace MouseAI.UI
         private const int Y_MARGIN = 10;
         private const int X_POSITION = 5;
         private const int Y_POSITION = 5;
+        private Color background;
+        private Color foreground;
 
-        public ModelRun(string[] columns)
+        public ModelRun(string[] columns, Color background, Color foreground)
         {
             InitializeComponent();
 
+            this.background = background;
+            this.foreground = foreground;
             buttons = new List<Button>();
 
             foreach (Control ctl in Controls)
@@ -47,7 +51,7 @@ namespace MouseAI.UI
             FormsPlot plot = (isTotal) ? total_plot : maze_plot;
 
             plot.plt.Clear();
-            plot.plt.PlotBar(xs, data, fillColor:Color.Blue);
+            plot.plt.PlotBar(xs, data, fillColor:background);
             plot.Render();
         }
 
@@ -55,7 +59,7 @@ namespace MouseAI.UI
         {
             columns_length = columns.Length;
             double[] xs = DataGen.Consecutive(columns_length);
-            double[] ys = DataGen.Consecutive(columns_length, 0, 0);
+            double[] ys = DataGen.Consecutive(columns_length, 0);
 
             try
             {
@@ -71,8 +75,7 @@ namespace MouseAI.UI
 
                 pnlPlot.Controls.Add(maze_plot);
                 pnlPlot.Controls.Add(total_plot);
-                maze_plot.plt.Style(Style.Blue2);
-                total_plot.plt.Style(Style.Blue2);
+      
                 maze_plot.Render();
                 total_plot.Render();
             }
@@ -83,18 +86,20 @@ namespace MouseAI.UI
             }
         }
 
-        private static FormsPlot GetPlot(double[] xs, double[] ys, string[] columns, string title)
+        private FormsPlot GetPlot(double[] xs, double[] ys, string[] columns, string title)
         {
             FormsPlot plot = new FormsPlot();
 
+            plot.plt.Style(Style.Blue1);
             plot.plt.PlotBar(xs, ys);
             plot.plt.Axis(y1: 0);
             plot.plt.Grid(enableVertical: false, lineStyle: LineStyle.Dot);
             plot.plt.XTicks(xs, columns);
-            plot.plt.Ticks(fontName: "arial narrow", fontSize: 10, color: Color.DarkBlue);
+            plot.plt.Ticks(fontName: "arial narrow", fontSize: 10);
             plot.plt.XLabel(title);
             plot.plt.AxisAuto(horizontalMargin: .1, verticalMargin: 0);
             plot.AutoSize = false;
+            plot.plt.Style(dataBg: foreground, tick: Color.White);
 
             return plot;
         }

@@ -53,7 +53,6 @@
             // 
             // pnlPlot
             // 
-            this.pnlPlot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlPlot.Location = new System.Drawing.Point(364, 12);
             this.pnlPlot.Margin = new System.Windows.Forms.Padding(0);
             this.pnlPlot.Name = "pnlPlot";
@@ -288,7 +287,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1022, 340);
+            this.ClientSize = new System.Drawing.Size(1018, 336);
             this.ControlBox = false;
             this.Controls.Add(this.rdoNeural);
             this.Controls.Add(this.chkDebug);

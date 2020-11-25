@@ -233,15 +233,19 @@
             // 
             // lvwMazes
             // 
+            this.lvwMazes.Activation = System.Windows.Forms.ItemActivation.OneClick;
             this.lvwMazes.AutoArrange = false;
+            this.lvwMazes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lvwMazes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.c1});
+            this.lvwMazes.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lvwMazes.FullRowSelect = true;
             this.lvwMazes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lvwMazes.HideSelection = false;
             this.lvwMazes.Location = new System.Drawing.Point(744, 38);
             this.lvwMazes.MultiSelect = false;
             this.lvwMazes.Name = "lvwMazes";
+            this.lvwMazes.ShowGroups = false;
             this.lvwMazes.Size = new System.Drawing.Size(150, 500);
             this.lvwMazes.TabIndex = 11;
             this.lvwMazes.UseCompatibleStateImageBehavior = false;

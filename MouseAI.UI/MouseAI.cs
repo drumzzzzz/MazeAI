@@ -61,9 +61,9 @@ namespace MouseAI.UI
         private SKBitmap Visible_Bitmap;
         private SKBitmap DeadEnd_Bitmap;
         private SKBitmap Smell_Bitmap;
-        private Bitmap NoPaths_Bitmap;
         private Point mouse_last;
-
+        private readonly Color BLOCK_COLOR = Color.DarkBlue;
+        private readonly Color SPACE_COLOR = Color.DarkCyan;
         private int maze_count;
         private bool isStep;
         private bool isCheese;
@@ -116,7 +116,7 @@ namespace MouseAI.UI
                 DisplayError("Maze Initialization Error", e, true);
             }
 
-            mazeSegments = new MazeSegments(MAZE_WIDTH, MAZE_HEIGHT, maze)
+            mazeSegments = new MazeSegments(MAZE_WIDTH, MAZE_HEIGHT, maze, SPACE_COLOR)
             {
                 Visible = false
             };
@@ -604,7 +604,7 @@ namespace MouseAI.UI
                 return;
             }
 
-            modelRun = new ModelRun(maze.GetMazeStatisticPlotColumns());
+            modelRun = new ModelRun(maze.GetMazeStatisticPlotColumns(), BLOCK_COLOR, SPACE_COLOR);
 
             foreach (Control ctl in modelRun.Controls)
             {
@@ -853,7 +853,7 @@ namespace MouseAI.UI
 
         private void PredictModel()
         {
-            modelPredict = new ModelPredict(MAZE_WIDTH, MAZE_HEIGHT);
+            modelPredict = new ModelPredict(SPACE_COLOR);
 
             foreach (Control ctl in modelPredict.Controls)
             {
@@ -925,6 +925,8 @@ namespace MouseAI.UI
             lvwMazes.Height = pbxMaze.Height - pbxPath.Height - 10;
             lvwMazes.Width = pbxPath.Width;
             lvwMazes.Location = new Point(pbxMaze.Width + 20, msMain.Height + 5);
+            lvwMazes.BackColor = SPACE_COLOR;
+            lvwMazes.ForeColor = Color.White;
             pbxMaze.Location = new Point(MAZE_MARGIN_PX / 2, msMain.Height + 5);
             Width = MAZE_WIDTH_PX + (MAZE_MARGIN_PX * 2) + pbxPath.Width;
             Height = MAZE_HEIGHT_PX + (MAZE_MARGIN_PX * 5);
@@ -933,16 +935,16 @@ namespace MouseAI.UI
             MaximumSize = new Size(Width, Height);
 
             BlockColor = new SKColor(
-                    red: 0,
-                    green: 0,
-                    blue: 0,
-                    alpha: 255);
+                    red: BLOCK_COLOR.R,
+                    green: BLOCK_COLOR.G,
+                    blue: BLOCK_COLOR.B,
+                    alpha: BLOCK_COLOR.A);
 
             SpaceColor = new SKColor(
-                red: 102,
-                green: 153,
-                blue: 153,
-                alpha: 255);
+                red: SPACE_COLOR.R,
+                green: SPACE_COLOR.G,
+                blue: SPACE_COLOR.B,
+                alpha: SPACE_COLOR.A);
 
             BlockPaint = new SKPaint
             {
@@ -961,8 +963,6 @@ namespace MouseAI.UI
                 IsAntialias = true,
                 Style = SKPaintStyle.Fill,
             };
-
-            NoPaths_Bitmap = Resources.nopaths;
         }
 
         private void DrawPath()
@@ -986,7 +986,7 @@ namespace MouseAI.UI
             {
                 pbxPath.Image = new Bitmap(bmp);
                 maze.SetTested(true);
-                UpdateItemState(maze.GetTested(), maze.GetAccuracy());
+                UpdateItemState(maze.GetTested());
             }
             else
             {
@@ -1008,7 +1008,6 @@ namespace MouseAI.UI
             offscreen = buffer.Canvas;
             offscreen.Clear(SKColor.Parse("#003366"));
 
-            
             SKImageInfo resizeInfo = new SKImageInfo(1, 1)
             {
                 Width = (BITMAP_WIDTH / (MAZE_SCALE_WIDTH_PX + 2)) * 3,
@@ -1131,7 +1130,6 @@ namespace MouseAI.UI
 
         private bool NewMazes()
         {
-            //maze_count = -1;
             mazeNew = null;
             mazeNew = new MazeNew();
             mazeNew.Closing += Mazenew_Closing;
@@ -1345,7 +1343,7 @@ namespace MouseAI.UI
             return false;
         }
 
-        private void UpdateItemState(bool isPath, double Acc)
+        private void UpdateItemState(bool isPath)
         {
             if (!isMazeSelected())
                 return;
