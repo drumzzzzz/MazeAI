@@ -1131,12 +1131,7 @@ namespace MouseAI.UI
 
         private bool NewMazes()
         {
-            string filename = maze.GetSaveName();
-
-            if (string.IsNullOrEmpty(filename))
-                return false;
-
-            maze_count = -1;
+            //maze_count = -1;
             mazeNew = null;
             mazeNew = new MazeNew();
             mazeNew.Closing += Mazenew_Closing;
@@ -1147,6 +1142,11 @@ namespace MouseAI.UI
                 return false;
 
             if (maze_count <= 0)
+                return false;
+
+            string filename = maze.GetSaveName();
+
+            if (string.IsNullOrEmpty(filename))
                 return false;
 
             maze = null;
