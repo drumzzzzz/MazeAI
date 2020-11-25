@@ -860,7 +860,27 @@ namespace MouseAI.UI
                 if (ctl is Button)
                     (ctl as Button).Click += btnPredictModel;
             }
+            modelPredict.lvwSegments.SelectedIndexChanged += lvwSegments_SelectedIndexChanged;
+
             modelPredict.Show();
+        }
+
+        private void lvwSegments_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ListView lv = modelPredict.lvwSegments;
+            if (lv.FocusedItem == null || lv.SelectedItems.Count == 0 || lv.SelectedItems[0] == null)
+                return;
+
+            ListViewItem li = lv.SelectedItems[0];
+
+            int.TryParse(li.Text, out int index);
+            index -= 1;
+            int selected = GetSelectedIndex();
+            if (index >= 0 && index != GetSelectedIndex())
+            {
+                SelectItem(index);
+                SelectMaze(index);
+            }
         }
 
         private void AIPredict()
@@ -1452,6 +1472,14 @@ namespace MouseAI.UI
         private bool isMazeSelected()
         {
             return (lvwMazes.SelectedItems.Count != 0 && lvwMazes.SelectedItems[0] != null);
+        }
+
+        private int GetSelectedIndex()
+        {
+            if (!isMazeSelected())
+                return -1;
+
+            return lvwMazes.SelectedItems[0].Index;
         }
 
         #endregion

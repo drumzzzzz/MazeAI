@@ -99,7 +99,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(690, 653);
+            this.ClientSize = new System.Drawing.Size(686, 649);
             this.ControlBox = false;
             this.Controls.Add(this.lvwSegments);
             this.Controls.Add(this.label1);
@@ -128,6 +128,6 @@
         public System.Windows.Forms.Button btnBack;
         public System.Windows.Forms.Button btnExit;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ListView lvwSegments;
+        public System.Windows.Forms.ListView lvwSegments;
     }
 }
