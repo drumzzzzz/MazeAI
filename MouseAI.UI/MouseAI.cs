@@ -926,23 +926,32 @@ namespace MouseAI.UI
             MaximumSize = new Size(Width, Height);
 
             BlockColor = new SKColor(
-                    red: 46,
-                    green: 37,
-                    blue: 217,
+                    red: 0,
+                    green: 0,
+                    blue: 0,
                     alpha: 255);
 
+
             SpaceColor = new SKColor(
-                red: 255,
-                green: 255,
-                blue: 255,
+                red: 102,
+                green: 153,
+                blue: 153,
                 alpha: 255);
+
+            //SpaceColor = new SKColor(
+            //    red: 255,
+            //    green: 255,
+            //    blue: 255,
+            //    alpha: 255);
 
             BlockPaint = new SKPaint
             {
                 Color = BlockColor,
                 StrokeWidth = LINE_WIDTH,
                 IsAntialias = true,
-                Style = SKPaintStyle.Fill
+                Style = SKPaintStyle.Fill,
+                IsStroke = true,
+                StrokeJoin = SKStrokeJoin.Miter
             };
 
             SpacePaint = new SKPaint
@@ -950,7 +959,7 @@ namespace MouseAI.UI
                 Color = SpaceColor,
                 StrokeWidth = LINE_WIDTH,
                 IsAntialias = true,
-                Style = SKPaintStyle.Fill
+                Style = SKPaintStyle.Fill,
             };
         }
 
