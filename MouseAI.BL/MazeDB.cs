@@ -29,22 +29,10 @@ namespace MouseAI.BL
             }
         }
 
-        public bool InsertMaze(DbTable_Mazes tbl)
-        {
-            string values = string.Format("'{0}', {1}, {2}, '{3}'", tbl.Guid, tbl.Success, tbl.Failure, tbl.LastUsed);
-
-            return db.Insert(DbTable_Mazes.TABLE, DbTable_Mazes.COLUMNS, values);
-        }
-
-        public DbTable_Mazes ReadMazes(string guid)
-        {
-            return (DbTable_Mazes) db.ReadRow(DbTable_Mazes.TABLE, "Guid", guid, new DbTable_Mazes());
-        }
-
         public bool InsertProject(DbTable_Projects tbl)
         {
-            string values = string.Format("'{0}','{1}',{2},'{3}','{4}', '{5}', {6}", 
-                tbl.Guid, tbl.Accuracy, tbl.Epochs, tbl.Start, tbl.End, tbl.Log, tbl.isLast);
+            string values = string.Format("'{0}','{1}',{2},'{3}','{4}', '{5}'", 
+                tbl.Guid, tbl.Accuracy, tbl.Start, tbl.End, tbl.Log, tbl.isLast);
 
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }
@@ -80,16 +68,6 @@ namespace MouseAI.BL
             return db.ReadRows(DbTable_Projects.TABLE, "Guid", guid, new DbTable_Projects());
         }
 
-        public int GetMazeCounts(List<string> guids)
-        {
-            return db.RowCount(DbTable_Mazes.TABLE, "Guid", guids);
-        }
-
-        public void DeleteMazeRecords(string guid)
-        {
-            db.DeleteRows(DbTable_Mazes.TABLE, "Guid", guid);
-        }
-
         public void DeleteProjectRecords(string guid)
         {
             db.DeleteRows(DbTable_Projects.TABLE, "Guid", guid);
@@ -97,20 +75,8 @@ namespace MouseAI.BL
 
         public int GetProjectCounts(string guid)
         {
-            return db.RowCount(DbTable_Mazes.TABLE, "Guid", guid);
+            return db.RowCount(DbTable_Projects.TABLE, "Guid", guid);
         }
-    }
-
-    public class DbTable_Mazes
-    {
-        public long Id { get; set; }
-        public string Guid { get; set; }
-        public long Success { get; set; }
-        public long Failure { get; set; }
-        public string LastUsed { get; set; }
-
-        public static readonly string TABLE = "mazes";
-        public static readonly string COLUMNS = "Guid, Success, Failure, LastUsed";
     }
 
     public class DbTable_Projects
@@ -118,13 +84,12 @@ namespace MouseAI.BL
         public long Id { get; set; }
         public string Guid { get; set; }
         public double Accuracy { get; set; }
-        public int Epochs { get; set; }
         public string Start { get; set; }
         public string End { get; set; }
         public string Log { get; set; }
         public string isLast { get; set; }
 
         public static readonly string TABLE = "projects";
-        public static readonly string COLUMNS = "Guid, Accuracy, Epochs, Start, End, Log, isLast";
+        public static readonly string COLUMNS = "Guid, Accuracy, Start, End, Log, isLast";
     }
 }

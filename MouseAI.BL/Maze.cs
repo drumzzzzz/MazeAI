@@ -36,7 +36,6 @@ namespace MouseAI
 
         // Db
         private static MazeDb mazeDb;
-        private static DbTable_Mazes dbtblStats;
         private static DbTable_Projects dbtblProjects;
 
         private static Random r;
@@ -406,7 +405,6 @@ namespace MouseAI
             {
                 Guid = GetModelProjectGuid(),
                 Accuracy = neuralNet.GetAccuracy(),
-                Epochs = neuralNet.GetEpochs(),
                 Start = neuralNet.GetStartTime(),
                 End = neuralNet.GetEndTime(),
                 Log = neuralNet.GetLogName(),
@@ -1951,17 +1949,6 @@ namespace MouseAI
 
         public void SaveMazeModels(string filename)
         {
-            dbtblStats = new DbTable_Mazes();
-
-            foreach (MazeModel mm in mazeModels.GetMazeModels())
-            {
-                dbtblStats.Guid = mm.guid;
-                dbtblStats.LastUsed = DateTime.UtcNow.ToString();
-
-                if (!mazeDb.InsertMaze(dbtblStats))
-                    throw new Exception("Failed to create maze table");
-            }
-
             FileIO.SerializeXml(mazeModels, filename);
             FileName = filename;
         }
@@ -1988,12 +1975,6 @@ namespace MouseAI
                 throw new Exception("Error Loading File");
 
             modelProjectGuid = mms.Guid;
-
-            foreach (MazeModel mm in mms.GetMazeModels())
-            {
-                if (mazeDb.ReadMazes(mm.guid) == null)
-                    throw new Exception(string.Format("DB Stats Missing for GUID '{0}'", mm.guid));
-            }
 
             mazeModels.Clear();
             mazeModels = mms;
@@ -2069,39 +2050,12 @@ namespace MouseAI
                     throw new Exception("No maze models found in project");
                 }
 
-                RemoveMazeRecords(mms);
                 return ArchiveProjectFiles(projectname, mms.Guid);
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error Archiving Project:{0}", e.Message);
                 return string.Empty;
-            }
-        }
-
-        private static void RemoveMazeRecords(MazeModels mms)
-        {
-            List<string> guids = mms.GetGuids();
-
-            int rowcount = 0;
-
-            if (guids.Count != 0)
-            {
-                foreach (string guid in guids)
-                {
-                    mazeDb.DeleteMazeRecords(guid);
-                }
-
-                rowcount = mazeDb.GetMazeCounts(guids);
-            }
-
-            if (rowcount == 0)
-            {
-                Console.WriteLine("Deleted {0} maze records", guids.Count);
-            }
-            else
-            {
-                Console.WriteLine("Error deleting {0} maze records: Returned {1}", guids.Count, rowcount);
             }
         }
 
@@ -2282,13 +2236,6 @@ namespace MouseAI
 
             if (mazeModel == null)
                 return false;
-
-            DbTable_Mazes dbTableStats = mazeDb.ReadMazes(mazeModel.guid);
-
-            if (dbTableStats == null)
-                return false;
-
-            dbtblStats = dbTableStats;
 
             mazedata = ConvertArray(mazeModel.mazedata);
 
