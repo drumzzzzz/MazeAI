@@ -173,11 +173,6 @@ namespace MouseAI
             mazeModels.Add(new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
         }
 
-        public bool isMazeModels()
-        {
-            return (mazeModels != null && mazeModels.Count() > 0);
-        }
-
         public bool AddCharacters()
         {
             if (mazeModel == null)
@@ -2312,6 +2307,11 @@ namespace MouseAI
         public int GetMazeModelSize()
         {
             return (mazeModels == null) ? 0 : mazeModels.Count();
+        }
+
+        public bool isMazeModels()
+        {
+            return (mazeModels != null && mazeModels.Count() > 0);
         }
     }
 

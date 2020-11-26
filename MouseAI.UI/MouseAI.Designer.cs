@@ -277,6 +277,7 @@
             this.skgMaze.Size = new System.Drawing.Size(726, 518);
             this.skgMaze.TabIndex = 14;
             this.skgMaze.VSync = false;
+            this.skgMaze.MouseClick += new System.Windows.Forms.MouseEventHandler(this.skgMaze_MouseClick);
             // 
             // MouseAI
             // 

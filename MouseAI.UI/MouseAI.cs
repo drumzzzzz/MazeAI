@@ -151,7 +151,7 @@ namespace MouseAI.UI
             {
                 SetMenuItems(false);
             }
-            RunTest();
+            // RunTest();
         }
 
         #endregion
@@ -426,13 +426,6 @@ namespace MouseAI.UI
             {
                 modelLoad.lbxModels.SelectedItem = modelLoad.lbxModels.Items[0];
             }
-
-            // ToDo: Debug remove!
-            //if (ModelLoad())
-            //{
-            //    SetRunMode(RUN_MODE.STEP);
-            //    ModelRun();
-            //}
         }
 
         private bool LoadModel(string starttime)
@@ -1097,9 +1090,10 @@ namespace MouseAI.UI
 
         private void skgMaze_PaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
         {
-            mouse_last = maze.GetMousePosition();
-
             e.Surface.Canvas.Clear(ClearColor);
+            if (!maze.isMazeModels())
+                return;
+
             e.Surface.Canvas.DrawImage(backimage, 0, 0);
             e.Surface.Canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()],
                 (mouse_current.X * MAZE_SCALE_WIDTH_PX), (mouse_current.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
@@ -1151,14 +1145,14 @@ namespace MouseAI.UI
             return true;
         }
 
-        private void ClearMaze()
-        {
-            canvas?.Clear(SKColor.Parse("#003366"));
-        }
-
-        private void pbxMaze_MouseClick(object sender, MouseEventArgs e)
+        private void skgMaze_MouseClick(object sender, MouseEventArgs e)
         {
             tsCoords.Text = string.Format("(X:{0} Y:{1})", e.X / MAZE_SCALE_WIDTH_PX, e.Y / MAZE_SCALE_HEIGHT_PX);
+        }
+
+        private void ClearMaze()
+        {
+            skgMaze.Invalidate();
         }
 
         #endregion
