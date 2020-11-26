@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml.Schema;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
@@ -404,9 +405,6 @@ namespace MouseAI
             dbtblProjects = new DbTable_Projects
             {
                 Guid = GetModelProjectGuid(),
-                Accuracy = neuralNet.GetAccuracy(),
-                Start = neuralNet.GetStartTime(),
-                End = neuralNet.GetEndTime(),
                 Log = neuralNet.GetLogName(),
                 isLast = "0"
             };
@@ -1747,7 +1745,7 @@ namespace MouseAI
 
         #region Plotting
 
-        public static void SavePlot(string plotname)
+        public void SavePlot(string plotname)
         {
             string plotfile = LOG_DIR + @"\" + plotname + "." + LOG_EXT;
             List<string> plotvalues = FileIO.ReadFileAsList(plotfile);
@@ -1760,6 +1758,10 @@ namespace MouseAI
             if (values.Count < PLOT_COLUMNS_Y.Length + 1)
                 throw new Exception("Error reading plot columns");
 
+            double[] scores = neuralNet.GetAccuracies();
+            if (scores == null || scores.Length != 2)
+                throw new Exception("Error reading plot scores");
+
             var plt = new Plot(PLOT_WIDTH, PLOT_HEIGHT);
 
             double[] x = values[PLOT_COLUMN_X];
@@ -1771,6 +1773,8 @@ namespace MouseAI
             }
 
             plt.Legend(fontSize: 8);
+            plt.XLabel(string.Format("val_loss: {0:0.###} val_accuracy: {1:0.###}", scores[0], scores[1]), fontSize:12);
+            plt.Title("Accuracy vs. Epoch");
             plt.SaveFig(LOG_DIR + @"\" + plotname + "." + PLOT_EXT);
         }
 
@@ -2009,6 +2013,16 @@ namespace MouseAI
             mazeDb.UpdateModelLast(guid, starttime);
         }
 
+        public string GetLogPath(string starttime)
+        {
+            return string.Format(@"{0}/{1}.{2}",log_dir, starttime, LOG_EXT);
+        }
+
+        public string GetLogFileName(string starttime)
+        {
+            return string.Format(@"{0}.{1}", starttime, LOG_EXT);
+        }
+
         public string GetProjectLast(string guid)
         {
             if (string.IsNullOrEmpty(guid))
@@ -2034,88 +2048,15 @@ namespace MouseAI
 
         #region Archiving
 
-        public static string ArchiveProject(string projectname)
+        public static bool RemoveProjectRecord(string starttime)
         {
-            try
-            {
-                MazeModels mms = (MazeModels) FileIO.DeSerializeXml(typeof(MazeModels), maze_dir + @"\" + projectname);
+            int startcount = mazeDb.GetProjectRecordCount(starttime);
+            mazeDb.DeleteProjectRecord(starttime);
+            int endcount = mazeDb.GetProjectRecordCount(starttime);
 
-                if (mms == null || string.IsNullOrEmpty(mms.Guid))
-                    throw new Exception("Failed to retrieve project id");
+            Console.WriteLine("Removed {0} Project Records", startcount - endcount);
 
-                List<MazeModel> mazemodels = mms.GetMazeModels();
-
-                if (mazemodels == null || mazemodels.Count == 0)
-                {
-                    throw new Exception("No maze models found in project");
-                }
-
-                return ArchiveProjectFiles(projectname, mms.Guid);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error Archiving Project:{0}", e.Message);
-                return string.Empty;
-            }
-        }
-
-        private static string ArchiveProjectFiles(string projectname, string guid)
-        {
-            List<string> projectmodels = GetProjectModels(guid);
-
-            List<string> files = new List<string>
-            {
-                maze_dir + DIR + projectname
-            };
-
-            if (projectmodels.Count != 0)
-            {
-                foreach (string pm in projectmodels)
-                {
-                    files.Add(Utils.GetFileWithExtension(log_dir, pm, LOG_EXT));
-                    files.Add(Utils.GetFileWithExtension(log_dir, pm, PLOT_EXT));
-                    files.Add(Utils.GetFileWithExtension(model_dir, pm, CONFIG_EXT));
-                    files.Add(Utils.GetFileWithExtension(model_dir, pm, MODELS_EXT));
-                }
-            }
-
-            string archive_name = Utils.GetFileWithExtension(archive_dir, Utils.GetDateTime_Formatted(), ARCHIVE_EXT);
-
-            Console.WriteLine("Archiving {0} Files to {1}", files.Count, archive_name);
-
-            if (!FileIO.CreateZipArchive(archive_name, files, out string result))
-            {
-                throw new Exception(result);
-            }
-
-            sb.Clear();
-            sb.Append(result);
-            sb.Append(Environment.NewLine);
-            sb.Append(RemoveProjectFiles(files));
-            sb.Append(Environment.NewLine);
-            sb.Append(RemoveProjectRecord(guid));
-
-            return sb.ToString();
-        }
-
-        private static string RemoveProjectFiles(List<string> projectfiles)
-        {
-            int removed_count = FileIO.DeleteFiles(projectfiles);
-            int count = projectfiles.Count;
-
-            return removed_count != count
-                ? string.Format("Error Removing {0} of {1} Project Files", count - removed_count, count)
-                : string.Format("Removed {0} Project Files", removed_count);
-        }
-
-        private static string RemoveProjectRecord(string guid)
-        {
-            mazeDb.DeleteProjectRecords(guid);
-            int removed_count = mazeDb.GetProjectCounts(guid);
-
-            return removed_count != 0
-                ? "Error Removing 1 Project Record"
-                : "Removed 1 Project Record";
+            return (startcount - endcount) == 1;
         }
 
         #endregion

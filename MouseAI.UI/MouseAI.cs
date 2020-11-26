@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using MouseAI.BL;
 using MouseAI.ML;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
+using ThreadState = System.Threading.ThreadState;
 
 #endregion
 
@@ -29,7 +31,6 @@ namespace MouseAI.UI
         private TrainSettings trainSettings;
         private Progress progress;
         private MazeNew mazeNew;
-        private MazeManage mazeManage;
         private readonly MazeStatistics mazeStatistics;
 
         private const int MAZE_WIDTH = 31;
@@ -387,7 +388,72 @@ namespace MouseAI.UI
             modelLoad.btnCancel.Click += btnExit_Click;
             modelLoad.btnPredict.Click += btnPredict_Click;
             modelLoad.btnRun.Click += btnRun_Click;
+            modelLoad.btnDelete.Click += btnDelete_Click;
+            modelLoad.llblLog.Click += llblLog_Click;
             modelLoad.Shown += ModelLoad_Shown;
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (!isSelectedModel())
+                return;
+
+            string starttime = GetSelectedModel();
+            if (string.IsNullOrEmpty(starttime))
+                return;
+
+            DialogResult result = DisplayDialog(string.Format("Delete model record '{0}'?" , starttime), 
+                "Confirm Deletion", MessageBoxButtons.OKCancel);
+
+            if (result != DialogResult.OK)
+                return;
+
+            modelLoad.btnDelete.Enabled = false;
+            RemoveModelRecord(starttime);
+        }
+
+        private void RemoveModelRecord(string starttime)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(starttime))
+                    throw new Exception("Selection Error");
+
+                if (!Maze.RemoveProjectRecord(starttime))
+                    throw new Exception("Error Removing Record");
+
+                DisplayDialog(string.Format("Record '{0}' Removed", starttime));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                DisplayError("Error Removing Record", e, false);
+            }
+
+            modelLoad.Close();
+            RunTest();
+        }
+
+        private void llblLog_Click(object sender, EventArgs e)
+        {
+            string link = (string) modelLoad.llblLog.Tag;
+            if (string.IsNullOrEmpty(link))
+                return;
+
+            Process process = new Process
+            {
+                StartInfo = {FileName = link}
+            };
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error opening log file '{0}': {1}",link,ex);
+                DisplayError(string.Format("Error opening log file '{0}'", link), ex, false);
+            }
         }
 
         private void btnRun_Click(object sender, EventArgs e)
@@ -418,9 +484,12 @@ namespace MouseAI.UI
         {
             string modelast = maze.GetProjectLast(maze.GetModelProjectGuid());
 
-            if (modelLoad.lbxModels.Items.Count != 0 && modelLoad.lbxModels.Items.Contains(modelast))
+            ListBox lbx = modelLoad.lbxModels;
+
+            if (lbx.Items.Count != 0 && lbx.Items.Contains(modelast))
             {
                 modelLoad.lbxModels.SelectedItem = modelast;
+                lbx.SetSelected(lbx.SelectedIndex, true);
             }
             else
             {
@@ -477,12 +546,17 @@ namespace MouseAI.UI
                     modelLoad.tbxSummary.Text = summary;
                     modelLoad.btnPredict.Enabled = true;
                     modelLoad.btnRun.Enabled = true;
+                    modelLoad.btnDelete.Enabled = true;
 
                     string plot = Maze.GetModelPlot(starttime);
                     modelLoad.pbxPlot.Image = (!string.IsNullOrEmpty(plot)) ? Image.FromFile(plot) : null;
+                    modelLoad.llblLog.Tag = maze.GetLogPath(starttime);
+                    modelLoad.llblLog.Text = string.Format("Log: {0}", maze.GetLogFileName(starttime));
                     return;
                 }
             }
+
+            modelLoad.btnDelete.Enabled = false;
             modelLoad.btnPredict.Enabled = false;
             modelLoad.btnRun.Enabled = false;
         }
@@ -494,7 +568,7 @@ namespace MouseAI.UI
 
         private string GetSelectedModel()
         {
-            return modelLoad.lbxModels.SelectedItem.ToString();
+            return  modelLoad.lbxModels.SelectedItem.ToString();
         }
 
         #endregion
@@ -1317,42 +1391,6 @@ namespace MouseAI.UI
                 DisplayError(Settings.Error, true);
         }
 
-        private void ManageMazes()
-        {
-            mazeManage = null;
-            mazeManage = new MazeManage();
-            DisplayProjectFiles();
-            mazeManage.btnArchive.Click += btnArchive_Click;
-            mazeManage.btnCancel.Click += btnCancel_Click;
-            mazeManage.lbxProjects.SelectedIndexChanged += lbxProjects_SelectedIndexChanged;
-            mazeManage.ShowDialog();
-        }
-
-        private void DisplayProjectFiles()
-        {
-            mazeManage.SetProjectFiles(maze.GetProjects());
-            mazeManage.lbxProjects.SelectedItem = null;
-        }
-
-        private void lbxProjects_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            mazeManage.btnArchive.Enabled = (mazeManage.lbxProjects.SelectedItem != null);
-        }
-
-        private static void ArchiveProject(string projectname)
-        {
-            string message = string.Format(
-                    "Archive maze project {0}?\nThe projects files will be archived and removed.\n" +
-                    "Any associated database records removed.",
-                    projectname);
-            if (MessageBox.Show(message, "Archive Project", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                return;
-
-            string result = Maze.ArchiveProject(projectname);
-
-            MessageBox.Show(result);
-        }
-
         #endregion
 
         #region Listview
@@ -1523,25 +1561,6 @@ namespace MouseAI.UI
 
         #region Button
 
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            mazeManage.Close();
-        }
-
-        private void btnArchive_Click(object sender, EventArgs e)
-        {
-            object selecteditem = mazeManage.lbxProjects.SelectedItem;
-            if (selecteditem != null && !string.IsNullOrEmpty(selecteditem.ToString()))
-            {
-                mazeManage.btnArchive.Enabled = false;
-                mazeManage.btnCancel.Enabled = false;
-                ArchiveProject(selecteditem.ToString());
-                mazeManage.btnArchive.Enabled = false;
-                mazeManage.btnCancel.Enabled = true;
-                DisplayProjectFiles();
-            }
-        }
-
         private void btnProgressCancel_Click(object sender, EventArgs e)
         {
             if (!isThreadDone)
@@ -1574,7 +1593,6 @@ namespace MouseAI.UI
 
         private void SetMenuItems(bool isOpened)
         {
-            manageToolStripMenuItem.Enabled = !isOpened;
             closeToolStripMenuItem.Enabled = isOpened;
             pathsToolStripMenuItem.Enabled = isOpened;
             trainToolStripMenuItem.Enabled = isOpened;
@@ -1606,12 +1624,6 @@ namespace MouseAI.UI
             {
                 SetMenuItems(false);
             }
-        }
-
-        private void manageToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (!maze.isMazeModels())
-                ManageMazes();
         }
 
         private void SetOptionsItems()

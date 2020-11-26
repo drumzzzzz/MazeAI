@@ -34,6 +34,8 @@
             this.pbxPlot = new System.Windows.Forms.PictureBox();
             this.btnPredict = new System.Windows.Forms.Button();
             this.btnRun = new System.Windows.Forms.Button();
+            this.llblLog = new System.Windows.Forms.LinkLabel();
+            this.btnDelete = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPlot)).BeginInit();
             this.SuspendLayout();
             // 
@@ -45,13 +47,13 @@
             this.lbxModels.Location = new System.Drawing.Point(12, 12);
             this.lbxModels.Name = "lbxModels";
             this.lbxModels.ScrollAlwaysVisible = true;
-            this.lbxModels.Size = new System.Drawing.Size(184, 244);
+            this.lbxModels.Size = new System.Drawing.Size(184, 276);
             this.lbxModels.TabIndex = 18;
             // 
             // btnCancel
             // 
             this.btnCancel.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(565, 276);
+            this.btnCancel.Location = new System.Drawing.Point(363, 308);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(81, 33);
             this.btnCancel.TabIndex = 19;
@@ -66,7 +68,7 @@
             this.tbxSummary.Name = "tbxSummary";
             this.tbxSummary.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbxSummary.ShortcutsEnabled = false;
-            this.tbxSummary.Size = new System.Drawing.Size(161, 244);
+            this.tbxSummary.Size = new System.Drawing.Size(161, 276);
             this.tbxSummary.TabIndex = 20;
             this.tbxSummary.WordWrap = false;
             // 
@@ -75,7 +77,7 @@
             this.pbxPlot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbxPlot.Location = new System.Drawing.Point(421, 12);
             this.pbxPlot.Name = "pbxPlot";
-            this.pbxPlot.Size = new System.Drawing.Size(247, 244);
+            this.pbxPlot.Size = new System.Drawing.Size(308, 276);
             this.pbxPlot.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pbxPlot.TabIndex = 22;
             this.pbxPlot.TabStop = false;
@@ -84,7 +86,7 @@
             // 
             this.btnPredict.Enabled = false;
             this.btnPredict.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPredict.Location = new System.Drawing.Point(47, 276);
+            this.btnPredict.Location = new System.Drawing.Point(129, 308);
             this.btnPredict.Margin = new System.Windows.Forms.Padding(0);
             this.btnPredict.Name = "btnPredict";
             this.btnPredict.Size = new System.Drawing.Size(81, 33);
@@ -96,7 +98,7 @@
             // 
             this.btnRun.Enabled = false;
             this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(167, 276);
+            this.btnRun.Location = new System.Drawing.Point(246, 308);
             this.btnRun.Margin = new System.Windows.Forms.Padding(0);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(81, 33);
@@ -104,12 +106,35 @@
             this.btnRun.Text = "RUN";
             this.btnRun.UseVisualStyleBackColor = true;
             // 
+            // llblLog
+            // 
+            this.llblLog.AutoSize = true;
+            this.llblLog.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.llblLog.Location = new System.Drawing.Point(496, 318);
+            this.llblLog.Name = "llblLog";
+            this.llblLog.Size = new System.Drawing.Size(0, 16);
+            this.llblLog.TabIndex = 25;
+            // 
+            // btnDelete
+            // 
+            this.btnDelete.Enabled = false;
+            this.btnDelete.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDelete.Location = new System.Drawing.Point(16, 308);
+            this.btnDelete.Margin = new System.Windows.Forms.Padding(0);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(81, 33);
+            this.btnDelete.TabIndex = 26;
+            this.btnDelete.Text = "DELETE";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            // 
             // ModelLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(672, 326);
+            this.ClientSize = new System.Drawing.Size(753, 359);
             this.ControlBox = false;
+            this.Controls.Add(this.btnDelete);
+            this.Controls.Add(this.llblLog);
             this.Controls.Add(this.btnRun);
             this.Controls.Add(this.btnPredict);
             this.Controls.Add(this.pbxPlot);
@@ -135,5 +160,7 @@
         public System.Windows.Forms.PictureBox pbxPlot;
         public System.Windows.Forms.Button btnPredict;
         public System.Windows.Forms.Button btnRun;
+        public System.Windows.Forms.LinkLabel llblLog;
+        public System.Windows.Forms.Button btnDelete;
     }
 }

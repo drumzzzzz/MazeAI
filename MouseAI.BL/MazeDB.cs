@@ -31,8 +31,8 @@ namespace MouseAI.BL
 
         public bool InsertProject(DbTable_Projects tbl)
         {
-            string values = string.Format("'{0}','{1}',{2},'{3}','{4}', '{5}'", 
-                tbl.Guid, tbl.Accuracy, tbl.Start, tbl.End, tbl.Log, tbl.isLast);
+            string values = string.Format("'{0}','{1}','{2}'", 
+                tbl.Guid, tbl.Log, tbl.isLast);
 
             return db.Insert(DbTable_Projects.TABLE, DbTable_Projects.COLUMNS, values);
         }
@@ -68,14 +68,19 @@ namespace MouseAI.BL
             return db.ReadRows(DbTable_Projects.TABLE, "Guid", guid, new DbTable_Projects());
         }
 
-        public void DeleteProjectRecords(string guid)
+        public void DeleteProjectRecord(string starttime)
         {
-            db.DeleteRows(DbTable_Projects.TABLE, "Guid", guid);
+            db.DeleteRows(DbTable_Projects.TABLE, "Log", starttime);
         }
 
         public int GetProjectCounts(string guid)
         {
             return db.RowCount(DbTable_Projects.TABLE, "Guid", guid);
+        }
+
+        public int GetProjectRecordCount(string starttime)
+        {
+            return db.RowCount(DbTable_Projects.TABLE, "Log", starttime);
         }
     }
 
@@ -83,13 +88,10 @@ namespace MouseAI.BL
     {
         public long Id { get; set; }
         public string Guid { get; set; }
-        public double Accuracy { get; set; }
-        public string Start { get; set; }
-        public string End { get; set; }
         public string Log { get; set; }
         public string isLast { get; set; }
 
         public static readonly string TABLE = "projects";
-        public static readonly string COLUMNS = "Guid, Accuracy, Start, End, Log, isLast";
+        public static readonly string COLUMNS = "Guid, Log, isLast";
     }
 }

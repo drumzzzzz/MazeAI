@@ -504,6 +504,14 @@ namespace MouseAI.ML
             return score[1];
         }
 
+        public double[] GetAccuracies()
+        {
+            if (score == null || score.Length != 2)
+                return null;
+
+            return new double[] {score[0], score[1]};
+        }
+
         #endregion
 
     }
