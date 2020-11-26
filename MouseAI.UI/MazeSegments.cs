@@ -41,8 +41,10 @@ namespace MouseAI.UI
 
             MemoryStream ms;
             lvwSegments.Items.Clear();
-            ImageList imglist = new ImageList();
-            imglist.ImageSize = new Size(100,100);
+            ImageList imglist = new ImageList
+            {
+                ImageSize = new Size(100, 100)
+            };
 
             for (int i = 0; i < segments.Count; i++)
             {

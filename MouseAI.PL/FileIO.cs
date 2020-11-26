@@ -4,13 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-using Microsoft.Win32;
-using System.Reflection;
 using System.Linq;
 using System.Windows.Forms;
-using System.Data.SQLite;
 using System.Text;
-using System.Xml;
 using System.Xml.Linq;
 using System.IO.Compression;
 

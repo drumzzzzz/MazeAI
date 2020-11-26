@@ -327,7 +327,7 @@ namespace MouseAI.ML
                     : x_data.reshape(x_data.shape[0], height, width, 1);
             }
 
-            NDarray y = model_loaded.Predict(x_data, verbose: 1);
+            NDarray y = model_loaded.Predict(x_data);
 
             y = y.argmax();
             int index = y.asscalar<int>();

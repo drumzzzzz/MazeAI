@@ -85,10 +85,12 @@ namespace MouseAI.UI
             int index = 0;
             for (int i = MAX_LAYERS - 1; i > -1; i--)
             {
-                NeuralLayer nl = new NeuralLayer();
-                nl.nudNodes.Value = Convert.ToDecimal(config.Nodes[index]);
-                nl.nudDropout.Value = Convert.ToDecimal(config.DropOut[index]);
-                nl.Enabled = (index < layers);
+                NeuralLayer nl = new NeuralLayer
+                {
+                    nudNodes = {Value = Convert.ToDecimal(config.Nodes[index])},
+                    nudDropout = {Value = Convert.ToDecimal(config.DropOut[index])},
+                    Enabled = (index < layers)
+                };
                 pnlLayers.Controls.Add(nl);
                 nl.Location = new Point(1, (i * nl.Height) + 1);
                 neurallayers.Add(nl);

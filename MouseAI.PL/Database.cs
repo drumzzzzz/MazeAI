@@ -360,9 +360,11 @@ namespace MouseAI.PL
             {
                 conn.Open();
 
-                SQLiteCommand cmd = new SQLiteCommand(conn);
+                SQLiteCommand cmd = new SQLiteCommand(conn)
+                {
+                    CommandText = string.Format("SELECT COUNT(*) FROM {0} WHERE {1} = '{2}'", table, column, value)
+                };
 
-                cmd.CommandText = string.Format("SELECT COUNT(*) FROM {0} WHERE {1} = '{2}'", table, column, value);
                 result = cmd.ExecuteScalar();
                 rowcount += (result != null) ? Convert.ToInt32(result) : 0;
      
