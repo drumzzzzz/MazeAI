@@ -245,13 +245,13 @@
             // 
             this.nudRate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.nudRate.Increment = new decimal(new int[] {
-            100,
+            25,
             0,
             0,
             0});
             this.nudRate.Location = new System.Drawing.Point(61, 31);
             this.nudRate.Maximum = new decimal(new int[] {
-            10000,
+            2000,
             0,
             0,
             0});
@@ -287,7 +287,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1018, 336);
+            this.ClientSize = new System.Drawing.Size(1014, 332);
             this.ControlBox = false;
             this.Controls.Add(this.rdoNeural);
             this.Controls.Add(this.chkDebug);

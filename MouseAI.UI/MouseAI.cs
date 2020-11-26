@@ -48,9 +48,9 @@ namespace MouseAI.UI
 
         private SKColor BlockColor;
         private SKColor SpaceColor;
+        private SKColor ClearColor;
         private SKPaint BlockPaint;
         private SKPaint SpacePaint;
-        private SKData MazeData;
         private SKCanvas offscreen;
         private SKCanvas canvas;
         private SKSurface buffer;
@@ -61,10 +61,14 @@ namespace MouseAI.UI
         private SKBitmap Visible_Bitmap;
         private SKBitmap DeadEnd_Bitmap;
         private SKBitmap Smell_Bitmap;
+        private SKPaint DropShadow;
+        private SKColor DropShadowColor;
         private Point mouse_last;
         private Point mouse_current;
         private readonly Color BLOCK_COLOR = Color.DarkBlue;
         private readonly Color SPACE_COLOR = Color.DarkCyan;
+        private readonly Color SHADOW_COLOR = Color.DeepSkyBlue;
+        private const int SHADOW_ALPHA = 225;
         private int maze_count;
         private bool isStep;
         private bool isCheese;
@@ -74,9 +78,9 @@ namespace MouseAI.UI
         private int runDelay;
         private const int RUN_DELAY = 0;
         private DateTime dtPlotTime;
-        private const int PLOT_TIME = 250;
+        private const int PLOT_TIME = 500;
         private DateTime dtRenderTime;
-        private const int RENDER_TIME = 5;
+        private const int RENDER_TIME = 1;
         private bool isRandomSearch;
         private bool isDebug = true;
         private int last_selected;
@@ -148,7 +152,7 @@ namespace MouseAI.UI
             {
                 SetMenuItems(false);
             }
-            //RunTest();
+            RunTest();
         }
 
         #endregion
@@ -590,7 +594,6 @@ namespace MouseAI.UI
         private void UpdateStatus()
         {
             modelRun.tbxTime.Text = maze.GetMazeStatisticTime();
-            modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
         }
 
         private bool AIRun()
@@ -823,6 +826,7 @@ namespace MouseAI.UI
             if (dtCurrent >= dtPlotTime)
             {
                 modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
+                modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
                 dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
             }
         }
@@ -956,6 +960,20 @@ namespace MouseAI.UI
             MinimumSize = new Size(Width, Height);
             MaximumSize = new Size(Width, Height);
 
+            ClearColor = SKColor.Parse("#003366");
+            
+            DropShadowColor = new SKColor(
+                red: SHADOW_COLOR.R,
+                green: SHADOW_COLOR.G,
+                blue: SHADOW_COLOR.B,
+                alpha: SHADOW_ALPHA
+                );
+
+            DropShadow = new SKPaint
+            {
+                ImageFilter = SKImageFilter.CreateDropShadow(0, 0, 2, 2, DropShadowColor)
+            };
+
             BlockColor = new SKColor(
                     red: BLOCK_COLOR.R,
                     green: BLOCK_COLOR.G,
@@ -1028,7 +1046,7 @@ namespace MouseAI.UI
             surface = SKSurface.Create(imageInfo);
             canvas = surface.Canvas;
             offscreen = buffer.Canvas;
-            offscreen.Clear(SKColor.Parse("#003366"));
+            offscreen.Clear(ClearColor);
 
             SKImageInfo resizeInfo = new SKImageInfo(1, 1)
             {
@@ -1064,7 +1082,7 @@ namespace MouseAI.UI
                             (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
 
                     if (Maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
-                        offscreen.DrawBitmap(Cheese_Bitmap, x_pos, y_pos);
+                        offscreen.DrawBitmap(Cheese_Bitmap, x_pos, y_pos, DropShadow);
                 }
             }
             offscreen.Save();
@@ -1082,10 +1100,10 @@ namespace MouseAI.UI
         {
             mouse_last = maze.GetMousePosition();
 
-            e.Surface.Canvas.Clear(SKColor.Parse("#003366"));
+            e.Surface.Canvas.Clear(ClearColor);
             e.Surface.Canvas.DrawImage(backimage, 0, 0);
-            e.Surface.Canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()], 
-                (mouse_current.X * MAZE_SCALE_WIDTH_PX), (mouse_current.Y * MAZE_SCALE_HEIGHT_PX));
+            e.Surface.Canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()],
+                (mouse_current.X * MAZE_SCALE_WIDTH_PX), (mouse_current.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
 
             if (isVisible && run_visible != Maze.RUN_VISIBLE.NONE)
             {
@@ -1093,22 +1111,25 @@ namespace MouseAI.UI
 
                 foreach (Point p in maze.GetDeadEndPoints())
                 {
-                    canvas.DrawBitmap(DeadEnd_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+                    e.Surface.Canvas.DrawBitmap(DeadEnd_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX),
+                        (p.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
                 }
 
                 foreach (Point p in maze.GetVisiblePoints())
                 {
-                    canvas.DrawBitmap(Visible_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+                    e.Surface.Canvas.DrawBitmap(Visible_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX),
+                        (p.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
                 }
 
                 foreach (Point p in maze.GetSmellPoints())
                 {
-                    canvas.DrawBitmap(Smell_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX), (p.Y * MAZE_SCALE_HEIGHT_PX));
+                    e.Surface.Canvas.DrawBitmap(Smell_Bitmap, (p.X * MAZE_SCALE_WIDTH_PX),
+                        (p.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
                 }
             }
         }
 
-        private bool UpdateMaze(bool isvisible, bool isImmediate)
+        private bool UpdateMaze(bool isImmediate, bool isvisible)
         {
             if (!isImmediate)
             {
@@ -1133,12 +1154,7 @@ namespace MouseAI.UI
 
         private void ClearMaze()
         {
-            //if (canvas == null || pbxMaze.Image == null)
-            //    return;
-
-            //canvas.Clear(SKColor.Parse("#003366"));
-            //pbxMaze.Image.Dispose();
-            //pbxMaze.Image = null;
+            canvas?.Clear(SKColor.Parse("#003366"));
         }
 
         private void pbxMaze_MouseClick(object sender, MouseEventArgs e)

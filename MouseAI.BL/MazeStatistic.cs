@@ -73,6 +73,7 @@ namespace MouseAI.BL
             RECALLING,
             SEARCHING,
             LOOKING,
+            SMELLED,
             FOUND,
             DONE,
             REVERTING
@@ -91,6 +92,7 @@ namespace MouseAI.BL
                 case MOUSE_STATUS.RECALLING: return "Moving neurally";
                 case MOUSE_STATUS.SEARCHING: return "Searching";
                 case MOUSE_STATUS.LOOKING: return "Looking";
+                case MOUSE_STATUS.SMELLED: return "Can smell the cheese!";
                 case MOUSE_STATUS.FOUND: return "Can see the cheese!";
                 case MOUSE_STATUS.DONE: return "Arrived at the cheese!";
                 case MOUSE_STATUS.REVERTING: return "Leaving a dead end";

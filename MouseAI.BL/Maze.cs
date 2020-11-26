@@ -112,6 +112,14 @@ namespace MouseAI
             PATHS
         }
 
+        public enum SCAN_RESULT
+        {
+            SPACE,
+            BLOCK,
+            CHEESE,
+            SMELL
+        }
+
         #endregion
 
         #region Initialization
@@ -332,6 +340,7 @@ namespace MouseAI
             pathObjects.Clear();
             mazePaths.ClearPath(mazeModel.guid);
             isCheesePath = false;
+            isSmellPath = false;
         }
 
         public void Generate()
@@ -342,6 +351,7 @@ namespace MouseAI
             MazeGenerator.Reset();
             mazeGenerator.Generate();
             isCheesePath = false;
+            isSmellPath = false;
         }
 
         public void Update()
@@ -510,12 +520,12 @@ namespace MouseAI
             mazeStatistic.SetPredictedLabels(neuralNet.GetPredicted());
             mazeStatistic.SetPredictedErrors(neuralNet.GetPredictedErrors());
 
-            // Scan Check if mouse can see the cheese
-            if (!isCheesePath)
-                isCheesePath = ScanObjects(x, y);
-
-            if (isDebug)
-                Console.WriteLine("Can mouse see cheese? {0}", isCheesePath);
+            // Object scan: set if mouse can see the cheese
+            if (!isCheesePath && ScanObjects(x, y))
+            {
+                isCheesePath = true;
+                isSmellPath = false;
+            }
 
             List<MazeObject> mazeobjects_de = CheckNode(x, y, true);
             List<MazeObject> mazeobjects = mazeobjects_de.Where(o => !o.isDeadEnd).ToList();
@@ -526,9 +536,15 @@ namespace MouseAI
                 throw new Exception("Mouse Object Null!");
             }
 
+            if (!isSmellPath && !isCheesePath)
+                isSmellPath = (mouse.smell_level != 0);
+
+            if (isDebug)
+                Console.WriteLine("Mouse smell cheese: {0} see cheese: {1}", isSmellPath, isCheesePath);
+
             if (CheckForCheese(mouse, mazeobjects))
                 return true;
-            if (isCheesePath)
+            if (isCheesePath || isSmellPath)
             {
                 UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
                 return false;
@@ -571,7 +587,7 @@ namespace MouseAI
             return false;
         }
 
-        private void UpdateMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
+        private static void UpdateMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
         {
             if (x_curr < x_last)
                 mouse_direction = DIRECTION.WEST;
@@ -587,7 +603,7 @@ namespace MouseAI
 
         #region Cheese Movement
 
-        private bool CheckForCheese(MazeObject mouse, IEnumerable<MazeObject> mazeobjects)
+        private bool CheckForCheese(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
         {
             if (isMouseAtCheese(mouse))
             {
@@ -601,6 +617,49 @@ namespace MouseAI
                 if (ProcessCheeseMove(mouse, mazeobjects))
                     CleanPathObjects();
             }
+            else if (isSmellPath)
+            {
+                MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SMELLED);
+                if (ProcessSmellMove(mouse, mazeobjects))
+                    CleanPathObjects();
+            }
+            return false;
+        }
+
+        private bool ProcessSmellMove(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
+        {
+            int curr_x = mouse.x;
+            int curr_y = mouse.y;
+
+            if (isMouseAtCheese(mouse))
+            {
+                MazeObject m = mazeObjects[curr_x, curr_y];
+                m.object_state = OBJECT_STATE.CHEESE;
+                m.dtLastVisit = DateTime.UtcNow;
+                pathObjects.Add(m);
+                return true;
+            }
+
+            int current_level = mouse.smell_level;
+            MazeObject mo = null;
+            int[] pan_array = GetXYPanArray(curr_x, curr_y);
+
+            for (int i = 0; i < pan_array.Length; i += 2)
+            {
+                mo = mazeobjects.FirstOrDefault(o => o.x == pan_array[i] && o.y == pan_array[i + 1] 
+                                                                         && o.smell_level < current_level 
+                                                                         && o.smell_level != 0);
+                if (mo != null)
+                    break;
+            }
+
+            if (mo == null || !SetPathMove(curr_x, curr_y, mo.x, mo.y))
+                throw new Exception("Invalid Smell Move!");
+
+            mo.isCheesePath = true;
+            pathObjects.Add(mo);
+            segmentPathObjects.Add(mo);
+            
             return false;
         }
 
@@ -931,7 +990,7 @@ namespace MouseAI
             int x = mouseObject.x;
             int y = mouseObject.y;
 
-            // Check if mouse can see the cheese
+            // Scan Check if mouse can see the cheese
             if (!isCheesePath)
                 isCheesePath = ScanObjects(x, y);
 
