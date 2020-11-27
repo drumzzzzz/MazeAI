@@ -378,6 +378,7 @@ namespace MouseAI.UI
             if (starttimes == null || starttimes.Count == 0)
             {
                 DisplayDialog("No models found for project", "Test Error");
+                msMain.Enabled = true;
                 return;
             }
 
@@ -418,6 +419,8 @@ namespace MouseAI.UI
             {
                 if (string.IsNullOrEmpty(starttime))
                     throw new Exception("Selection Error");
+
+                modelLoad.pbxPlot.Image?.Dispose();
 
                 if (!Maze.RemoveProjectRecord(starttime))
                     throw new Exception("Error Removing Record");
@@ -946,7 +949,7 @@ namespace MouseAI.UI
 
             int.TryParse(li.Text, out int index);
             index -= 1;
-            int selected = GetSelectedIndex();
+
             if (index >= 0 && index != GetSelectedIndex())
             {
                 SelectItem(index);

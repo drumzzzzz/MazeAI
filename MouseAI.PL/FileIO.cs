@@ -360,6 +360,37 @@ namespace MouseAI.PL
             }
         }
 
+        public static bool MoveFiles(List<string> sources, string dest)
+        {
+            int count = 0;
+            string file_name;
+            string dest_file_path;
+
+            foreach (string source_file_path in sources)
+            {
+                try
+                {
+                    file_name = Path.GetFileName(source_file_path);
+
+                    if (string.IsNullOrEmpty(file_name))
+                        throw new Exception(string.Format("Failed getting file name for {0}", source_file_path));
+
+                    dest_file_path = string.Format(@"{0}\{1}", dest, file_name);
+                    Console.WriteLine("Moving {0} to {1}", source_file_path, dest_file_path);
+
+                    File.Move(source_file_path, dest_file_path);
+                    if (File.Exists(dest_file_path))
+                        count++;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            Console.WriteLine("Moved {0} Files", count);
+            return count == sources.Count;
+        }
+
         #endregion
 
         #region XML Related

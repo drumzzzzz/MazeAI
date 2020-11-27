@@ -60,8 +60,7 @@ namespace MouseAI
         private const string MODELS_DIR = "models";
         private const string MODELS_EXT = "h5";
         private const string CONFIG_EXT = "xml";
-        private const string ARCHIVE_DIR = "archived";
-        private const string ARCHIVE_EXT = "zip";
+        private const string BACKUP_DIR = "backup";
         private const string PLOT_EXT = "png";
         private const char LOG_DELIMIT = ',';
         private static readonly string[] LOG_COLUMN_VALUES = {"epoch", "accuracy", "loss", "val_accuracy", "val_loss"};
@@ -77,7 +76,7 @@ namespace MouseAI
         private static string model_dir;
         private static string log_dir;
         private static string maze_dir;
-        private static string archive_dir;
+        private static string backup_dir;
         private string FileName;
         private string modelProjectGuid;
         private static readonly string[] IGNORE_VALUES = {"Config", "Model", "Guid", "StartTime"};
@@ -154,7 +153,7 @@ namespace MouseAI
             maze_dir = appdir + DIR + MAZE_DIR;
             log_dir = appdir + DIR + LOG_DIR;
             model_dir = appdir + DIR + MODELS_DIR;
-            archive_dir = appdir + DIR + ARCHIVE_DIR;
+            backup_dir = appdir + DIR + BACKUP_DIR;
 
             if (!FileIO.CheckCreateDirectory(maze_dir))
                 throw new Exception("Could not create maze directory");
@@ -162,7 +161,7 @@ namespace MouseAI
                 throw new Exception("Could not create log directory");
             if (!FileIO.CheckCreateDirectory(model_dir))
                 throw new Exception("Could not create log directory");
-            if (!FileIO.CheckCreateDirectory(archive_dir))
+            if (!FileIO.CheckCreateDirectory(backup_dir))
                 throw new Exception("Could not create archive directory");
 
             mazeDb = new MazeDb();
@@ -2055,8 +2054,22 @@ namespace MouseAI
             int endcount = mazeDb.GetProjectRecordCount(starttime);
 
             Console.WriteLine("Removed {0} Project Records", startcount - endcount);
+            MoveProjectFiles(starttime);
 
             return (startcount - endcount) == 1;
+        }
+
+        private static void MoveProjectFiles(string starttime)
+        {
+            List<string> files = new List<string>
+            {
+                Utils.GetFileWithExtension(log_dir, starttime, LOG_EXT),
+                Utils.GetFileWithExtension(log_dir, starttime, PLOT_EXT),
+                Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT),
+                Utils.GetFileWithExtension(model_dir, starttime, MODELS_EXT)
+            };
+
+            FileIO.MoveFiles(files, backup_dir);
         }
 
         #endregion
