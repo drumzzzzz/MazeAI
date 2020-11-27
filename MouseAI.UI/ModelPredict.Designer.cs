@@ -99,7 +99,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(686, 649);
+            this.ClientSize = new System.Drawing.Size(682, 645);
             this.ControlBox = false;
             this.Controls.Add(this.lvwSegments);
             this.Controls.Add(this.label1);
@@ -115,6 +115,7 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Model Predict";
             this.TopMost = true;
             this.ResumeLayout(false);

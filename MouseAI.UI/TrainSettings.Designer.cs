@@ -425,6 +425,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "TrainSettings";
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Train Settings";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.nudEpochs)).EndInit();

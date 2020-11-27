@@ -102,6 +102,7 @@
             this.Controls.Add(this.btnCreate);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "MazeNew";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Maze Creation";
             ((System.ComponentModel.ISupportInitialize)(this.nudMazes)).EndInit();
             this.ResumeLayout(false);

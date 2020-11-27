@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -166,27 +167,27 @@ namespace MouseAI.UI
             isThreadCancel = false;
             isThreadDone = false;
 
-            progress = new Progress(message, isCancel)
-            {
-                TopMost = true
-            };
+            progress = new Progress(message, isCancel);
 
             if (isCancel)
                 progress.btnProgressCancel.Click += btnProgressCancel_Click;
 
             progress.Show();
+            progress.Location = new Point((Width / 2) - (progress.Width / 2), (Height / 2) - (progress.Height / 2));
             progress.Focus();
         }
 
-        private void DisplayProgress(string message)
+        private void progress_Move(object sender, EventArgs e)
+        {
+            Point p = progress.Location;
+            Console.WriteLine(p);
+        }
+
+        private void DisplayProgress(string message, bool isCancel)
         {
             Enabled = false;
 
-            progress = new Progress(message, false)
-            {
-                TopMost = true
-            };
-
+            progress = new Progress(message, isCancel);
             progress.Show();
             progress.Focus();
         }
@@ -324,21 +325,14 @@ namespace MouseAI.UI
                 Console.Clear();
                 maze.Train(settings.Guid);
                 isThreadDone = true;
-
-                if (DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
-                                  "Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    maze.SaveResults();
-                    maze.SaveUpdatedMazeModels(settings.LastFileName);
-                    DisplayDialog("Files Saved", "Save Models");
-                }
-                maze.CleanNetwork();
             }
             catch (Exception e)
             {
                 Console.WriteLine("Training Cancelled");
-                if (e.HResult != -2146233040)
+                if (!isThreadCancel && e.HResult != -2146233040)
                     DisplayError("Training Error", e, false);
+
+                isThreadCancel = true;
             }
 
             if (InvokeRequired)
@@ -354,8 +348,24 @@ namespace MouseAI.UI
         private void TrainDone()
         {
             FinalizeProcessing();
-
             trainThread = null;
+
+            if (!isThreadCancel && DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
+                              "Save Model and Results?", "Save Files", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                maze.SaveResults();
+                maze.SaveUpdatedMazeModels(settings.LastFileName);
+                DisplayDialog("Files Saved", "Save Models");
+            }
+            maze.CleanNetwork();
+
+            if (Debugger.IsAttached)
+                Debugger.Launch();
+            else
+            {
+                Process.Start(Assembly.GetExecutingAssembly().Location);
+                Application.Exit();
+            }
         }
 
         private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -461,7 +471,7 @@ namespace MouseAI.UI
 
         private void btnRun_Click(object sender, EventArgs e)
         {
-            DisplayProgress("Loading Model");
+            DisplayProgress("Loading Model", false);
 
             bool result = ModelLoad();
 
@@ -473,7 +483,7 @@ namespace MouseAI.UI
 
         private void btnPredict_Click(object sender, EventArgs e)
         {
-            DisplayProgress("Loading Model");
+            DisplayProgress("Loading Model", false);
 
             bool result = ModelLoad();
 
@@ -1569,6 +1579,7 @@ namespace MouseAI.UI
             if (!isThreadDone)
             {
                 progress.btnProgressCancel.Enabled = false;
+                isThreadCancel = true;
 
                 if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
                 {
@@ -1584,7 +1595,6 @@ namespace MouseAI.UI
                     }
 
                     trainThread = null;
-
                     FinalizeProcessing();
                 }
             }

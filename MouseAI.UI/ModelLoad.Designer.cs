@@ -131,7 +131,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(753, 359);
+            this.ClientSize = new System.Drawing.Size(749, 355);
             this.ControlBox = false;
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.llblLog);
@@ -145,6 +145,7 @@
             this.Name = "ModelLoad";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Model Load";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.pbxPlot)).EndInit();

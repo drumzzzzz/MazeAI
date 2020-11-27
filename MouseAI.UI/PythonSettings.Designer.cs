@@ -86,6 +86,7 @@
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
             this.Name = "PythonSettings";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "PythonSettings";
             this.Load += new System.EventHandler(this.PythonSettings_Load);
             this.ResumeLayout(false);
