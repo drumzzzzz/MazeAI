@@ -368,6 +368,32 @@ namespace MouseAI.UI
             }
         }
 
+        private void btnProgressCancel_Click(object sender, EventArgs e)
+        {
+            if (!isThreadDone)
+            {
+                progress.btnProgressCancel.Enabled = false;
+                isThreadCancel = true;
+
+                if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
+                {
+                    try
+                    {
+                        trainThread.Interrupt();
+                        if (!trainThread.Join(2000))
+                            trainThread.Abort();
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
+
+                    trainThread = null;
+                    FinalizeProcessing();
+                }
+            }
+        }
+
         private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (trainSettings.DialogResult == DialogResult.OK)
@@ -399,9 +425,16 @@ namespace MouseAI.UI
             modelLoad.btnCancel.Click += btnExit_Click;
             modelLoad.btnPredict.Click += btnPredict_Click;
             modelLoad.btnRun.Click += btnRun_Click;
+            modelLoad.btnModel.Click += btnModel_Click;
             modelLoad.btnDelete.Click += btnDelete_Click;
             modelLoad.llblLog.Click += llblLog_Click;
             modelLoad.Shown += ModelLoad_Shown;
+        }
+
+        private void btnModel_Click(object sender, EventArgs e)
+        {
+            ModelInfo model_info = new ModelInfo(Maze.GetModelInfo());
+            model_info.ShowDialog();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -560,6 +593,7 @@ namespace MouseAI.UI
                     modelLoad.btnPredict.Enabled = true;
                     modelLoad.btnRun.Enabled = true;
                     modelLoad.btnDelete.Enabled = true;
+                    modelLoad.btnModel.Enabled = true;
 
                     string plot = Maze.GetModelPlot(starttime);
                     modelLoad.pbxPlot.Image = (!string.IsNullOrEmpty(plot)) ? Image.FromFile(plot) : null;
@@ -572,6 +606,7 @@ namespace MouseAI.UI
             modelLoad.btnDelete.Enabled = false;
             modelLoad.btnPredict.Enabled = false;
             modelLoad.btnRun.Enabled = false;
+            modelLoad.btnModel.Enabled = false;
         }
 
         private bool isSelectedModel()
@@ -1568,36 +1603,6 @@ namespace MouseAI.UI
         private void DisplayMazeSegments()
         {
             mazeSegments.ShowImages();
-        }
-
-        #endregion
-
-        #region Button
-
-        private void btnProgressCancel_Click(object sender, EventArgs e)
-        {
-            if (!isThreadDone)
-            {
-                progress.btnProgressCancel.Enabled = false;
-                isThreadCancel = true;
-
-                if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
-                {
-                    try
-                    {
-                        trainThread.Interrupt();
-                        if (!trainThread.Join(2000))
-                            trainThread.Abort();
-                    }
-                    catch (Exception exception)
-                    {
-                        Console.WriteLine(exception);
-                    }
-
-                    trainThread = null;
-                    FinalizeProcessing();
-                }
-            }
         }
 
         #endregion

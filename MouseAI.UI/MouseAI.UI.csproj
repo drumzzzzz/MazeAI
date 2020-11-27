@@ -132,6 +132,12 @@
     <Compile Include="MazeSegments.Designer.cs">
       <DependentUpon>MazeSegments.cs</DependentUpon>
     </Compile>
+    <Compile Include="ModelInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModelInfo.Designer.cs">
+      <DependentUpon>ModelInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="ModelLoad.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +198,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MazeSegments.resx">
       <DependentUpon>MazeSegments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModelInfo.resx">
+      <DependentUpon>ModelInfo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ModelLoad.resx">
       <DependentUpon>ModelLoad.cs</DependentUpon>

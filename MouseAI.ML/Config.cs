@@ -4,7 +4,6 @@
     {
         public int Epochs { get; set; }
         public int Batch { get; set; }
-        public int Layers { get; set; }
         public int[] Nodes { get; set; }
         public double[] DropOut { get; set; }
         public bool isCNN { get; set; }
@@ -16,6 +15,7 @@
         public double LearnDecay { get; set; }
         public string Guid { get; set; }
         public string StartTime { get; set; }
+        public int Layers { get; set; }
         public string Model { get; set; }
     }
 }

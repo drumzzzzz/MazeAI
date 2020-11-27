@@ -36,6 +36,7 @@
             this.btnRun = new System.Windows.Forms.Button();
             this.llblLog = new System.Windows.Forms.LinkLabel();
             this.btnDelete = new System.Windows.Forms.Button();
+            this.btnModel = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPlot)).BeginInit();
             this.SuspendLayout();
             // 
@@ -53,7 +54,7 @@
             // btnCancel
             // 
             this.btnCancel.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(363, 308);
+            this.btnCancel.Location = new System.Drawing.Point(130, 371);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(81, 33);
             this.btnCancel.TabIndex = 19;
@@ -86,7 +87,7 @@
             // 
             this.btnPredict.Enabled = false;
             this.btnPredict.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPredict.Location = new System.Drawing.Point(129, 308);
+            this.btnPredict.Location = new System.Drawing.Point(22, 308);
             this.btnPredict.Margin = new System.Windows.Forms.Padding(0);
             this.btnPredict.Name = "btnPredict";
             this.btnPredict.Size = new System.Drawing.Size(81, 33);
@@ -98,7 +99,7 @@
             // 
             this.btnRun.Enabled = false;
             this.btnRun.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRun.Location = new System.Drawing.Point(246, 308);
+            this.btnRun.Location = new System.Drawing.Point(130, 308);
             this.btnRun.Margin = new System.Windows.Forms.Padding(0);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(81, 33);
@@ -119,7 +120,7 @@
             // 
             this.btnDelete.Enabled = false;
             this.btnDelete.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDelete.Location = new System.Drawing.Point(16, 308);
+            this.btnDelete.Location = new System.Drawing.Point(22, 371);
             this.btnDelete.Margin = new System.Windows.Forms.Padding(0);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(81, 33);
@@ -127,12 +128,25 @@
             this.btnDelete.Text = "DELETE";
             this.btnDelete.UseVisualStyleBackColor = true;
             // 
+            // btnModel
+            // 
+            this.btnModel.Enabled = false;
+            this.btnModel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnModel.Location = new System.Drawing.Point(239, 308);
+            this.btnModel.Margin = new System.Windows.Forms.Padding(0);
+            this.btnModel.Name = "btnModel";
+            this.btnModel.Size = new System.Drawing.Size(81, 33);
+            this.btnModel.TabIndex = 27;
+            this.btnModel.Text = "MODEL";
+            this.btnModel.UseVisualStyleBackColor = true;
+            // 
             // ModelLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(749, 355);
+            this.ClientSize = new System.Drawing.Size(745, 424);
             this.ControlBox = false;
+            this.Controls.Add(this.btnModel);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.llblLog);
             this.Controls.Add(this.btnRun);
@@ -163,5 +177,6 @@
         public System.Windows.Forms.Button btnRun;
         public System.Windows.Forms.LinkLabel llblLog;
         public System.Windows.Forms.Button btnDelete;
+        public System.Windows.Forms.Button btnModel;
     }
 }

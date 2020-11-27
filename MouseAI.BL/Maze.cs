@@ -8,10 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Schema;
+using System.Xml.Linq;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
+using Newtonsoft.Json;
 using ScottPlot;
 
 #endregion
@@ -79,7 +80,7 @@ namespace MouseAI
         private static string backup_dir;
         private string FileName;
         private string modelProjectGuid;
-        private static readonly string[] IGNORE_VALUES = {"Config", "Model", "Guid", "StartTime"};
+        private static readonly string[] IGNORE_VALUES = {"Config", "Nodes","DropOut", "int", "double", "Model", "Guid", "StartTime"};
 
         // Model Running
         private readonly MazeObjects segmentPathObjects;
@@ -98,6 +99,7 @@ namespace MouseAI
         private int moveCount;
         private static bool isDebug;
         private bool isFirstTime;
+        private static string model_info;
 
         private readonly List<Point> pnVisible;
         private readonly List<Point> pnDeadends;
@@ -1730,7 +1732,47 @@ namespace MouseAI
 
             try
             {
-                return FileIO.ReadXml(filename, IGNORE_VALUES);
+                XDocument xdoc = FileIO.ReadXml(filename);
+                XElement root = xdoc.Root;
+                
+                if (root == null)
+                    throw new Exception("Failed to read XML config");
+
+                int layers = (int) root.Element("Layers");
+                int[] Nodes = root.Element("Nodes")?.Elements("int").Select(x => (int) x).ToArray();
+                double[] DropOut = root.Element("DropOut")?.Elements("double").Select(x => (double)x).ToArray();
+                model_info = (string) root.Element("Model");
+
+                if (Nodes == null || DropOut == null || layers > Nodes.Length + 1 || layers > DropOut.Length + 1)
+                {
+                    throw new Exception("Invalid XML config values");
+                }
+
+                sb.Clear();
+
+                foreach (XElement element in xdoc.Descendants())
+                {
+                    if (!IGNORE_VALUES.Contains(element.Name.ToString()))
+                    {
+                        sb.Append(string.Format("{0}:{1}", element.Name, element.Value) + Environment.NewLine);
+                    }
+                }
+
+                sb.Append("Nodes: ");
+                for (int idx = layers - 1; idx > -1; idx--)
+                {
+                    sb.Append(Nodes[idx] + ((idx > 0) ? ", " : ""));
+                }
+                sb.Append(Environment.NewLine);
+
+                sb.Append("DropOut: ");
+                for (int idx = layers - 1; idx > -1; idx--)
+                {
+                    sb.Append(DropOut[idx] + ((idx > 0) ? ", " : ""));
+                }
+                sb.Append(Environment.NewLine);
+
+                return sb.ToString();
             }
             catch (Exception e)
             {
@@ -1738,6 +1780,11 @@ namespace MouseAI
             }
 
             return null;
+        }
+
+        public static string GetModelInfo()
+        {
+            return FileIO.ParseJson(model_info);
         }
 
         #endregion

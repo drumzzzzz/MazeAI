@@ -9,6 +9,9 @@ using System.Windows.Forms;
 using System.Text;
 using System.Xml.Linq;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -429,8 +432,64 @@ namespace MouseAI.PL
                 }
                 return sb.ToString();
             }
-
             return null;
+        }
+
+
+        public static XDocument ReadXml(string filepath)
+        {
+            return File.Exists(filepath) ? XDocument.Load(filepath) : null;
+        }
+
+        #endregion
+
+        #region JSON
+
+        public static string ParseJson(string json)
+        {
+            try
+            {
+                Dictionary<string, string> nodes = new Dictionary<string, string>();
+                ParseJson(JObject.Parse(json), nodes);
+                StringBuilder sb = new StringBuilder();
+                foreach (string key in nodes.Keys.Where(key => !nodes[key].Contains(",,") 
+                                                               && !nodes[key].Contains("{}")
+                                                               && !nodes[key].Equals(string.Empty, StringComparison.OrdinalIgnoreCase)))
+                {
+                    sb.Append(string.Format("{0}:{1}", key, nodes[key]));
+                    sb.Append(Environment.NewLine);
+                }
+                return sb.ToString();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return string.Empty;
+            }
+        }
+
+        private static void ParseJson(JToken token, IDictionary<string, string> nodes, string parent = "")
+        {
+            if (token.HasValues)
+            {
+                foreach (JToken child in token.Children())
+                {
+                    if (token.Type == JTokenType.Property)
+                    {
+                        if (parent == string.Empty)
+                            parent = ((JProperty)token).Name;
+                        else
+                            parent += "." + ((JProperty)token).Name;
+                    }
+                    ParseJson(child, nodes, parent);
+                }
+                return;
+            }
+
+            if (nodes.ContainsKey(parent))
+                nodes[parent] += "," + token;
+            else
+                nodes.Add(parent, token.ToString());
         }
 
         #endregion
@@ -475,5 +534,6 @@ namespace MouseAI.PL
         }
 
         #endregion
+
     }
 }
