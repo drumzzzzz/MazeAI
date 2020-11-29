@@ -43,7 +43,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(151, 32);
             this.label1.TabIndex = 7;
-            this.label1.Text = "Select Number of Mazes\r\nto Create (10 to 5000):\r\n";
+            this.label1.Text = "Select Number of Mazes\r\nto Create (1 to 5000):\r\n";
             // 
             // nudMazes
             // 
@@ -55,7 +55,7 @@
             0,
             0});
             this.nudMazes.Minimum = new decimal(new int[] {
-            10,
+            1,
             0,
             0,
             0});

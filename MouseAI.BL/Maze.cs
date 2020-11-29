@@ -339,6 +339,14 @@ namespace MouseAI
             isSmellPath = false;
         }
 
+        public void ResetRun()
+        {
+            sb.Clear();
+            pathObjects.Clear();
+            isCheesePath = false;
+            isSmellPath = false;
+        }
+
         public void Generate()
         {
             if (mazeGenerator == null)

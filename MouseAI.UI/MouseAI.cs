@@ -634,7 +634,7 @@ namespace MouseAI.UI
             
             try
             { 
-                maze.Reset();
+                maze.ResetRun();
                 maze.InitRunMove(isRandomSearch);
                 modelRun.ClearMazePlot();
 
@@ -1410,6 +1410,7 @@ namespace MouseAI.UI
                 ClearMaze();
                 DrawPath();
                 ClearStatistics();
+                DisplayTitleMessage(string.Empty);
                 return true;
             }
             catch (Exception e)
@@ -1470,7 +1471,6 @@ namespace MouseAI.UI
                 return;
 
             ListViewItem item = lvwMazes.SelectedItems[0];
-            item.SubItems[1].Text = (isPath) ? "Y" : "N";
             lvwMazes.Refresh();
         }
 
@@ -1490,8 +1490,6 @@ namespace MouseAI.UI
             for (int i = 0; i < maze.GetMazeModelSize(); i++)
             {
                 ListViewItem item = new ListViewItem((i + 1).ToString());
-                item.SubItems.Add(maze.isModelBMP(i) ? "Y" : "N");
-                item.SubItems.Add("0");
                 lvwMazes.Items.Add(item);
             }
 
@@ -1749,10 +1747,7 @@ namespace MouseAI.UI
 
         private void DisplayTitleMessage(string value)
         {
-            if (string.IsNullOrEmpty(value))
-                Text = TITLE;
-            else
-                Text = string.Format("{0} ({1})", TITLE, value);
+            Text = (string.IsNullOrEmpty(value)) ? TITLE : string.Format("{0} ({1})", TITLE, value);
         }
 
         #endregion
