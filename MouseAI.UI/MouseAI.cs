@@ -671,7 +671,7 @@ namespace MouseAI.UI
                             maze.ProcessVisionImage();
                     }
 
-                    if (UpdateMaze(run_mode != RUN_MODE.RUN, true))
+                    if (UpdateMaze(run_mode != RUN_MODE.RUN, true) && run_mode != RUN_MODE.PAUSE)
                     {
                         UpdateStatus();
                     }
