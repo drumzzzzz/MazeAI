@@ -2186,9 +2186,14 @@ namespace MouseAI
             return (pn.x == mouse.x && pn.y == mouse.y);
         }
 
-        private static bool isMouseAtCheese(MazeObject mouse)
+        public static bool isMouseAtCheese(MazeObject mouse)
         {
             return (mouse.x == cheese_x && mouse.y == cheese_y);
+        }
+
+        public bool isMouseAtCheese()
+        {
+            return (mouseObject != null && mouseObject.x == cheese_x && mouseObject.y == cheese_y);
         }
 
         public Point GetMousePosition()
@@ -2277,6 +2282,8 @@ namespace MouseAI
             return mazeModels != null && mazeModels.Count() > 0 && mazeModels.CheckPaths() &&
                    mazeModels.CheckSegments();
         }
+
+        
     }
 
     #endregion

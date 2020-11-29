@@ -108,8 +108,8 @@ namespace MouseAI.UI
         public MouseAI()
         {
             InitializeComponent();
-            //Console.BackgroundColor = ConsoleColor.Blue;
-            //Console.ForegroundColor = ConsoleColor.White;
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WindowHeight = 40;
             Console.WindowWidth = 140;
             ConsoleHelper.SetCurrentFont("Consolas", 18);
@@ -631,7 +631,12 @@ namespace MouseAI.UI
         {
             mouse_last = new Point(-1, -1);
             bool isProcess = false;
-            
+
+            if (maze.isMouseAtCheese())
+            {
+                SelectCurrent();
+            }
+
             try
             { 
                 maze.ResetRun();
@@ -1463,6 +1468,19 @@ namespace MouseAI.UI
             }
 
             return false;
+        }
+
+        private void SelectCurrent()
+        {
+            if (!isMazeSelected())
+                return;
+
+            int selectedIndex = lvwMazes.SelectedIndices[0];
+
+            if (selectedIndex < lvwMazes.Items.Count)
+            {
+                SelectMaze(selectedIndex);
+            }
         }
 
         private void UpdateItemState(bool isPath)
