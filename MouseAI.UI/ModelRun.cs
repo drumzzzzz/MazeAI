@@ -18,6 +18,7 @@ namespace MouseAI.UI
         private const int Y_POSITION = 5;
         private readonly Color background;
         private readonly Color foreground;
+        private readonly string[] columns;
 
         public ModelRun(string[] columns, Color background, Color foreground)
         {
@@ -35,12 +36,13 @@ namespace MouseAI.UI
                 }
             }
 
-            InitPlot(columns);
+            this.columns = columns;
+            InitPlot();
         }
 
         public void UpdatePlot(double[] data, bool isTotal)
         {
-            if (maze_plot == null || total_plot == null || data.Length != columns_length)
+            if (maze_plot == null || total_plot == null || (data != null && data.Length != columns_length))
             {
                 Console.WriteLine("Plot Error!");
                 return;
@@ -55,7 +57,7 @@ namespace MouseAI.UI
             plot.Render();
         }
 
-        public void InitPlot(string[] columns)
+        public void InitPlot()
         {
             columns_length = columns.Length;
             double[] xs = DataGen.Consecutive(columns_length);

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,6 +70,7 @@ namespace MouseAI.UI
         private readonly Color BLOCK_COLOR = Color.DarkBlue;
         private readonly Color SPACE_COLOR = Color.DarkCyan;
         private readonly Color SHADOW_COLOR = Color.DeepSkyBlue;
+        private readonly Color RUN_COLOR = Color.Yellow;
         private const int SHADOW_ALPHA = 225;
         private int maze_count;
         private bool isStep;
@@ -635,7 +637,6 @@ namespace MouseAI.UI
             { 
                 maze.ResetRun();
                 maze.InitRunMove(isRandomSearch);
-                modelRun.ClearMazePlot();
 
                 Console.WriteLine("Mouse processing started ...");
                 while (isRunMode())
@@ -670,7 +671,7 @@ namespace MouseAI.UI
                         UpdateStatus();
                     }
 
-                    UpdateStatistic();
+                    UpdateStatistic(false);
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
                     {
@@ -679,6 +680,8 @@ namespace MouseAI.UI
                 }
 
                 UpdateStatistics();
+                UpdateStatistic(true);
+                SetSelectedTextItalic(true);
             }
             catch (Exception e)
             {
@@ -936,11 +939,11 @@ namespace MouseAI.UI
             mazeStatistics.Clear();
         }
 
-        private void UpdateStatistic()
+        private void UpdateStatistic(bool isImmediate)
         {
             DateTime dtCurrent = DateTime.UtcNow;
 
-            if (dtCurrent >= dtPlotTime)
+            if (dtCurrent >= dtPlotTime || isImmediate)
             {
                 modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
                 modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
@@ -1448,6 +1451,15 @@ namespace MouseAI.UI
 
         #region Listview
 
+        private void SetSelectedTextItalic(bool isSelected)
+        {
+            ListViewItem item = GetSelectedListViewItem();
+            if (item != null && isSelected)
+                item.ForeColor = RUN_COLOR;
+            //Font f = new Font(item.Font, (isSelected) ? Col : FontStyle.Regular);
+            //item.Font = f;
+        }
+
         private bool SelectNext()
         {
             int selectedIndex = lvwMazes.SelectedIndices[0];
@@ -1493,6 +1505,12 @@ namespace MouseAI.UI
 
             ListViewItem item = lvwMazes.SelectedItems[0];
             return item.SubItems[0].Text;
+        }
+
+
+        private ListViewItem GetSelectedListViewItem()
+        {
+            return !isMazeSelected() ? null : lvwMazes.SelectedItems[0];
         }
 
         private void AddMazeItems()
@@ -1568,6 +1586,20 @@ namespace MouseAI.UI
 
                 if (settings.isMazeSegments)
                     DisplayMazeSegments();
+
+                if (modelRun != null && run_mode == RUN_MODE.READY)
+                {
+                    maze.SetMazeStatistic(mazeStatistics.FirstOrDefault(o => o.maze_guid == maze.GetMazeModelGUID()));
+                    if (maze.CheckMazeStatistic())
+                    {
+                        dtPlotTime = DateTime.UtcNow;
+                        UpdateStatistic(true);
+                    }
+                    else
+                    {
+                        modelRun.ClearMazePlot();
+                    }
+                }
 
                 DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetMazeModelGUID()));
                 last_selected = index;

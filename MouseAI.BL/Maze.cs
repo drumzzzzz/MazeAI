@@ -663,7 +663,6 @@ namespace MouseAI
             int new_x = -1;
             int new_y = -1;
 
-            //if (curr_x == cheese_x && curr_y == cheese_y)
             if (isMouseAtCheese(mouse))
             {
                 MazeObject m = mazeObjects[curr_x, curr_y];
@@ -1905,6 +1904,16 @@ namespace MouseAI
             return mazeStatistic;
         }
 
+        public bool CheckMazeStatistic()
+        {
+            return mazeStatistic != null;
+        }
+
+        public void SetMazeStatistic(MazeStatistic ms)
+        {
+            mazeStatistic = ms;
+        }
+
         public string[] GetMazeStatisticPlotColumns()
         {
             return MazeStatistics.GetPlotColumns();
@@ -1912,7 +1921,7 @@ namespace MouseAI
 
         public double[] GetMazeStatisticData()
         {
-            return mazeStatistic.GetData();
+            return mazeStatistic?.GetData();
         }
 
         public string GetMazeStatisticTime()
