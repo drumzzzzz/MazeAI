@@ -177,12 +177,6 @@ namespace MouseAI.UI
             progress.Focus();
         }
 
-        private void progress_Move(object sender, EventArgs e)
-        {
-            Point p = progress.Location;
-            Console.WriteLine(p);
-        }
-
         private void DisplayProgress(string message, bool isCancel)
         {
             Enabled = false;
@@ -680,7 +674,7 @@ namespace MouseAI.UI
                     Application.DoEvents();
                     if (run_mode == RUN_MODE.RUN)
                     {
-                        Thread.Sleep(runDelay <= 0 ? 10 : runDelay);
+                        Thread.Sleep(runDelay <= 0 ? RUN_DELAY : runDelay);
                     }
                 }
 
@@ -1149,7 +1143,7 @@ namespace MouseAI.UI
             {
                 pbxPath.Image = new Bitmap(bmp);
                 maze.SetTested(true);
-                UpdateItemState(maze.GetTested());
+                UpdateItemState();
             }
             else
             {
@@ -1226,8 +1220,6 @@ namespace MouseAI.UI
                 return;
 
             e.Surface.Canvas.DrawImage(backimage, 0, 0);
-            e.Surface.Canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()],
-                (mouse_current.X * MAZE_SCALE_WIDTH_PX), (mouse_current.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
 
             if (isVisible && run_visible != Maze.RUN_VISIBLE.NONE)
             {
@@ -1251,6 +1243,9 @@ namespace MouseAI.UI
                         (p.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
                 }
             }
+
+            e.Surface.Canvas.DrawBitmap(Mouse_Bitmap[maze.GetMouseDirection()],
+                (mouse_current.X * MAZE_SCALE_WIDTH_PX), (mouse_current.Y * MAZE_SCALE_HEIGHT_PX), DropShadow);
         }
 
         private bool UpdateMaze(bool isImmediate, bool isvisible)
@@ -1483,12 +1478,11 @@ namespace MouseAI.UI
             }
         }
 
-        private void UpdateItemState(bool isPath)
+        private void UpdateItemState()
         {
             if (!isMazeSelected())
                 return;
 
-            ListViewItem item = lvwMazes.SelectedItems[0];
             lvwMazes.Refresh();
         }
 

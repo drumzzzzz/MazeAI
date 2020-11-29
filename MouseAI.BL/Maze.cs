@@ -588,7 +588,7 @@ namespace MouseAI
                 mouse_direction = DIRECTION.EAST;
             else if (y_curr < y_last)
                 mouse_direction = DIRECTION.NORTH;
-            else
+            else if (y_curr > y_last)
                 mouse_direction = DIRECTION.SOUTH;    
         }
 
