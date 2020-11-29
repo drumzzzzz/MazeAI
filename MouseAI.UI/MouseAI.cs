@@ -79,7 +79,7 @@ namespace MouseAI.UI
         private bool isThreadCancel;
         private bool isRunAll;
         private int runDelay;
-        private const int RUN_DELAY = 0;
+        private const int RUN_DELAY = 1;
         private DateTime dtPlotTime;
         private const int PLOT_TIME = 500;
         private DateTime dtRenderTime;
