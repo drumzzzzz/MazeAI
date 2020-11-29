@@ -372,18 +372,11 @@ namespace MouseAI
                 throw new Exception("Invalid Config!");
 
             if (mazeModels == null || mazeModels.Count() == 0)
-                throw new Exception("No MazeModels!");
+                throw new Exception("No MazeModels Found");
 
-            MazeModel _mm = mazeModels.CheckPaths();
-            if (_mm != null)
+            if (!mazeModels.CheckPaths() || mazeModels.GetSegmentCount() == 0)
             {
-                throw new Exception(string.Format("MazePath data for model not found:{0}\nHas the path been built?",
-                    _mm.guid));
-            }
-
-            if (mazeModels.Count() == 0 || mazeModels.GetSegmentCount() == 0)
-            {
-                throw new Exception("Maze test data not found!");
+                throw new Exception("The path/segment data for model was not found");
             }
 
             config.Guid = guid;
@@ -1702,6 +1695,15 @@ namespace MouseAI
             return starttimes;
         }
 
+        public bool CheckProjectModels()
+        {
+            if (string.IsNullOrEmpty(mazeModels.Guid))
+                return false;
+
+            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
+            return oList != null && oList.Any();
+        }
+
         private static List<string> GetProjectModels(string guid)
         {
             IEnumerable<object> oList = mazeDb.ReadProjectGuids(guid);
@@ -2260,6 +2262,12 @@ namespace MouseAI
         public bool isMazeModels()
         {
             return (mazeModels != null && mazeModels.Count() > 0);
+        }
+
+        public bool CheckMazeModel()
+        {
+            return mazeModels != null && mazeModels.Count() > 0 && mazeModels.CheckPaths() &&
+                   mazeModels.CheckSegments();
         }
     }
 

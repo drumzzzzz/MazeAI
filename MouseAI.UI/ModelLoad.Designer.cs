@@ -137,14 +137,14 @@
             this.btnModel.Name = "btnModel";
             this.btnModel.Size = new System.Drawing.Size(81, 33);
             this.btnModel.TabIndex = 27;
-            this.btnModel.Text = "MODEL";
+            this.btnModel.Text = "INFO";
             this.btnModel.UseVisualStyleBackColor = true;
             // 
             // ModelLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(745, 424);
+            this.ClientSize = new System.Drawing.Size(741, 420);
             this.ControlBox = false;
             this.Controls.Add(this.btnModel);
             this.Controls.Add(this.btnDelete);

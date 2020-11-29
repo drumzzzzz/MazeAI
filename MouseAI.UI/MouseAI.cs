@@ -247,7 +247,10 @@ namespace MouseAI.UI
                     Console.WriteLine(message);
 
                 if (!isThreadCancel)
+                {
                     DisplayDialog(message);
+                    SetMenuItems(true);
+                }
             }
             catch (Exception e)
             {
@@ -302,7 +305,7 @@ namespace MouseAI.UI
 
         private void RunTrain()
         {
-            if (trainThread != null || string.IsNullOrEmpty(maze.GetModelProjectGuid()))
+            if (!maze.CheckMazeModel() || trainThread != null || string.IsNullOrEmpty(maze.GetModelProjectGuid()))
                 return;
      
             trainSettings = new TrainSettings(maze.GetConfig());
@@ -357,6 +360,7 @@ namespace MouseAI.UI
                 maze.SaveUpdatedMazeModels(settings.LastFileName);
                 DisplayDialog("Files Saved", "Save Models");
             }
+            SetMenuItems(true);
             maze.CleanNetwork();
 
             if (Debugger.IsAttached)
@@ -1613,8 +1617,8 @@ namespace MouseAI.UI
         {
             closeToolStripMenuItem.Enabled = isOpened;
             pathsToolStripMenuItem.Enabled = isOpened;
-            trainToolStripMenuItem.Enabled = isOpened;
-            testToolStripMenuItem.Enabled = isOpened;
+            trainToolStripMenuItem.Enabled = isOpened && maze.CheckMazeModel();
+            testToolStripMenuItem.Enabled = isOpened && maze.CheckProjectModels();
 
             SetToolsVisible(isOpened);
         }
@@ -1673,18 +1677,6 @@ namespace MouseAI.UI
             UpdateSettings();
         }
 
-        private void mazeSegmentsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            mazeSegmentsToolStripMenuItem.Checked = !mazeSegmentsToolStripMenuItem.Checked;
-            settings.isMazeSegments = mazeSegmentsToolStripMenuItem.Checked;
-            UpdateSettings();
-
-            if (!maze.isMazeModels())
-                return;
-
-            SetMazeSegmentsVisible();
-        }
-
         private void trainToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RunTrain();
@@ -1698,6 +1690,23 @@ namespace MouseAI.UI
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RunTest();
+        }
+
+        private void mazeSegmentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mazeSegmentsToolStripMenuItem.Checked = !mazeSegmentsToolStripMenuItem.Checked;
+            settings.isMazeSegments = mazeSegmentsToolStripMenuItem.Checked;
+            UpdateSettings();
+
+            if (!maze.isMazeModels())
+                return;
+
+            SetMazeSegmentsVisible();
+        }
+
+        private void viewHelpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
 
         #endregion

@@ -45,12 +45,13 @@
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadLastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.skgMaze = new SkiaSharp.Views.Desktop.SKGLControl();
+            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
@@ -97,7 +98,7 @@
             this.fileToolStripMenuItem,
             this.buildToolStripMenuItem,
             this.editToolStripMenuItem,
-            this.toolsToolStripMenuItem});
+            this.helpToolStripMenuItem});
             this.msMain.Location = new System.Drawing.Point(0, 0);
             this.msMain.Name = "msMain";
             this.msMain.Size = new System.Drawing.Size(894, 35);
@@ -117,14 +118,14 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
@@ -132,7 +133,7 @@
             // 
             this.closeToolStripMenuItem.Enabled = false;
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
@@ -151,7 +152,7 @@
             // 
             this.pathsToolStripMenuItem.Enabled = false;
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
@@ -159,7 +160,7 @@
             // 
             this.trainToolStripMenuItem.Enabled = false;
             this.trainToolStripMenuItem.Name = "trainToolStripMenuItem";
-            this.trainToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.trainToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.trainToolStripMenuItem.Text = "Train";
             this.trainToolStripMenuItem.Click += new System.EventHandler(this.trainToolStripMenuItem_Click);
             // 
@@ -167,7 +168,7 @@
             // 
             this.testToolStripMenuItem.Enabled = false;
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.testToolStripMenuItem.Text = "Test";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
@@ -176,7 +177,8 @@
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.debugToolStripMenuItem,
             this.autorunToolStripMenuItem,
-            this.loadLastToolStripMenuItem});
+            this.loadLastToolStripMenuItem,
+            this.mazeSegmentsToolStripMenuItem});
             this.editToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(65, 31);
@@ -185,40 +187,23 @@
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugToolStripMenuItem.Text = "Debug";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // loadLastToolStripMenuItem
             // 
             this.loadLastToolStripMenuItem.Name = "loadLastToolStripMenuItem";
-            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.loadLastToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadLastToolStripMenuItem.Text = "Load Last";
             this.loadLastToolStripMenuItem.Click += new System.EventHandler(this.loadLastToolStripMenuItem_Click);
-            // 
-            // toolsToolStripMenuItem
-            // 
-            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mazeSegmentsToolStripMenuItem});
-            this.toolsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(50, 31);
-            this.toolsToolStripMenuItem.Text = "Tools";
-            // 
-            // mazeSegmentsToolStripMenuItem
-            // 
-            this.mazeSegmentsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
-            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
-            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
             // 
             // lvwMazes
             // 
@@ -269,6 +254,29 @@
             this.skgMaze.VSync = false;
             this.skgMaze.MouseClick += new System.Windows.Forms.MouseEventHandler(this.skgMaze_MouseClick);
             // 
+            // mazeSegmentsToolStripMenuItem
+            // 
+            this.mazeSegmentsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
+            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
+            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.viewHelpToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(46, 31);
+            this.helpToolStripMenuItem.Text = "Help";
+            // 
+            // viewHelpToolStripMenuItem
+            // 
+            this.viewHelpToolStripMenuItem.Name = "viewHelpToolStripMenuItem";
+            this.viewHelpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.viewHelpToolStripMenuItem.Text = "View Help";
+            this.viewHelpToolStripMenuItem.Click += new System.EventHandler(this.viewHelpToolStripMenuItem_Click);
+            // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
@@ -316,10 +324,11 @@
         private System.Windows.Forms.PictureBox pbxPath;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel tsCoords;
         private SkiaSharp.Views.Desktop.SKGLControl skgMaze;
+        private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewHelpToolStripMenuItem;
     }
 }
 

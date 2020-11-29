@@ -151,17 +151,14 @@ namespace MouseAI.BL
             return imageDatas;
         }
 
-        public MazeModel CheckPaths()
+        public bool CheckPaths()
         {
-            foreach (MazeModel mm in mazeModels)
-            {
-                if (mm.mazepath == null || mm.mazepath.Length == 0 || mm.maze == null)
-                {
-                    return mm;
-                }
-            }
+            return mazeModels.All(mm => mm.mazepath != null && mm.mazepath.Length != 0 && mm.maze != null);
+        }
 
-            return null;
+        public bool CheckSegments()
+        {
+            return !mazeModels.Any(mm => mm.segments == null || mm.segments.Count == 0);
         }
 
         public List<PathNode> GetPathNodes(int index)
