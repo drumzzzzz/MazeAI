@@ -28,11 +28,11 @@ namespace MouseAI.UI
         private ModelLoad modelLoad;
         private ModelRun modelRun;
         private ModelPredict modelPredict;
-        private readonly MazeSegments mazeSegments;
         private Maze maze;
         private TrainSettings trainSettings;
         private Progress progress;
         private MazeNew mazeNew;
+        private readonly MazeSegments mazeSegments;
         private readonly MazeStatistics mazeStatistics;
 
         private const int MAZE_WIDTH = 31;
@@ -74,7 +74,6 @@ namespace MouseAI.UI
         private const int SHADOW_ALPHA = 225;
         private int maze_count;
         private bool isStep;
-        private bool isCheese;
         private bool isThreadDone;
         private bool isThreadCancel;
         private bool isRunAll;
@@ -106,7 +105,8 @@ namespace MouseAI.UI
         #endregion
 
         #region Initialization
-
+        
+        // Startup init
         public MouseAI()
         {
             InitializeComponent();
@@ -114,7 +114,6 @@ namespace MouseAI.UI
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WindowHeight = 40;
             Console.WindowWidth = 140;
-            ConsoleHelper.SetCurrentFont("Consolas", 18);
 
             try
             {
@@ -136,6 +135,7 @@ namespace MouseAI.UI
             DisplayTitleMessage(string.Empty);
         }
 
+        // On form shown: Python check and project loading
         private void MazeAI_Shown(object sender, EventArgs e)
         {
             try
@@ -155,67 +155,20 @@ namespace MouseAI.UI
             {
                 SetMenuItems(false);
             }
-            // RunTest();
-        }
-
-        #endregion
-
-        #region Processing
-
-        private void InitProcessing(string message, bool isCancel)
-        {
-            Console.Clear();
-            Enabled = false;
-            isThreadCancel = false;
-            isThreadDone = false;
-
-            progress = new Progress(message, isCancel);
-
-            if (isCancel)
-                progress.btnProgressCancel.Click += btnProgressCancel_Click;
-
-            progress.Show();
-            progress.Location = new Point((Width / 2) - (progress.Width / 2), (Height / 2) - (progress.Height / 2));
-            progress.Focus();
-        }
-
-        private void DisplayProgress(string message, bool isCancel)
-        {
-            Enabled = false;
-
-            progress = new Progress(message, isCancel);
-            progress.Show();
-            progress.Focus();
-        }
-
-        private void CloseProgress()
-        {
-            progress?.Close();
-            Enabled = true;
-            Focus();
-        }
-
-        private void FinalizeProcessing()
-        {
-            progress?.Close();
-            Enabled = true;
-            Focus();
         }
 
         #endregion
 
         #region Path Solving
 
+        // Iterate projects mazes: call path solving and image segment generation 
         private async void SolvePaths(bool isNewMazes)
         {
             if (!maze.isMazeModels())
                 return;
 
-            if (isNewMazes && MessageBox.Show("Calculate and solve maze paths?\n"
-                    , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                return;
-
-            if (!isNewMazes && MessageBox.Show("Calculate and solve maze paths?\nthis will clear any current build"
+            if (MessageBox.Show(string.Format("Calculate and solve maze paths?\n{0}", 
+                        (isNewMazes) ? "" : "this will clear any current build")
                     , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
                 return;
 
@@ -255,12 +208,13 @@ namespace MouseAI.UI
             FinalizeProcessing();
         }
 
+        // Async path tree search: generate image segments on success
         private async Task RunSearch()
         {
             maze.Reset();
             mouse_last = new Point(-1, -1);
             
-            await Task.Run(AISearch);
+            bool isCheese = await Task.Run(PathSearch);
 
             DrawMaze();
 
@@ -269,16 +223,15 @@ namespace MouseAI.UI
                 maze.CalculatePath();
                 maze.CalculateSegments();
                 mazeSegments.ShowImages();
-
                 DrawPath();
             }
             else
                 DisplayError("Error Calculating Path!", false);
         }
 
-        private void AISearch()
+        // Path search thread: iterate while mouse moves are available
+        private bool PathSearch()
         {
-            isCheese = false;
             try
             {
                 while (!maze.ProcessMouseMove())
@@ -286,12 +239,12 @@ namespace MouseAI.UI
                     Thread.Sleep(SEARCH_DELAY);
                 }
                 Console.WriteLine("Path solved for {0}", maze.GetMazeModelGUID());
-                isCheese = true;
+                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Search Error:" + e.Message);
-                isCheese = false;
+                return false;
             }
         }
 
@@ -299,6 +252,7 @@ namespace MouseAI.UI
 
         #region Neural Network Training
 
+        // Show train settings dialog: if ok start the training thread
         private void RunTrain()
         {
             if (!maze.CheckMazeModel() || trainThread != null || string.IsNullOrEmpty(maze.GetModelProjectGuid()))
@@ -306,17 +260,16 @@ namespace MouseAI.UI
      
             trainSettings = new TrainSettings(maze.GetConfig());
             trainSettings.Closing += TrainSettings_Closing;
-            DialogResult dlr = trainSettings.ShowDialog();
 
-            if (dlr != DialogResult.OK)
+            if (trainSettings.ShowDialog() != DialogResult.OK)
                 return;
 
             trainThread = new Thread(AITrain);
             trainThread.Start();
-
             InitProcessing("Training Neural Network ...", true);
         }
 
+        // Training thread
         private void AITrain()
         {
             try
@@ -327,23 +280,21 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
+                // On cancel - handle any Keras HResult 
                 Console.WriteLine("Training Cancelled");
                 if (!isThreadCancel && e.HResult != -2146233040)
                     DisplayError("Training Error", e, false);
 
                 isThreadCancel = true;
             }
-
+            // Thread safe invocation
             if (InvokeRequired)
-            {
                 Invoke(new MethodInvoker(TrainDone));
-            }
             else
-            {
                 TrainDone();
-            }
         }
 
+        // Display save dialog if not cancelled
         private void TrainDone()
         {
             FinalizeProcessing();
@@ -359,6 +310,8 @@ namespace MouseAI.UI
             SetMenuItems(true);
             maze.CleanNetwork();
 
+            // The invoked Python via .NET libraries occasionally enter unpredictable states after training calls
+            // Restart the debugger/application just in case! 
             if (Debugger.IsAttached)
                 Debugger.Launch();
             else
@@ -368,32 +321,25 @@ namespace MouseAI.UI
             }
         }
 
-        private void btnProgressCancel_Click(object sender, EventArgs e)
+        // On thread cancel
+        private void StopTraining()
         {
-            if (!isThreadDone)
+            try
             {
-                progress.btnProgressCancel.Enabled = false;
-                isThreadCancel = true;
-
-                if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
-                {
-                    try
-                    {
-                        trainThread.Interrupt();
-                        if (!trainThread.Join(2000))
-                            trainThread.Abort();
-                    }
-                    catch (Exception exception)
-                    {
-                        Console.WriteLine(exception);
-                    }
-
-                    trainThread = null;
-                    FinalizeProcessing();
-                }
+                trainThread.Interrupt();
+                if (!trainThread.Join(2000))
+                    trainThread.Abort();
             }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
+
+            trainThread = null;
+            FinalizeProcessing();
         }
 
+        // On settings close
         private void TrainSettings_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (trainSettings.DialogResult == DialogResult.OK)
@@ -404,45 +350,40 @@ namespace MouseAI.UI
 
         #region Neural Network Testing
 
+        // Display neural model selection and loading dialog
         private void RunTest()
         {
             if (maze == null || !maze.isMazeModels())
                 return;
 
             List<string> starttimes = maze.GetProjectModels();
-
             if (starttimes == null || starttimes.Count == 0)
             {
-                DisplayDialog("No models found for project", "Test Error");
                 msMain.Enabled = true;
                 return;
             }
 
             msMain.Enabled = false;
-            modelLoad = new ModelLoad(starttimes, maze.GetProjectModelName());
-            modelLoad.Show();
-            modelLoad.lbxModels.SelectedIndexChanged += lbxModels_SelectedIndexChanged;
-            modelLoad.btnCancel.Click += btnExit_Click;
+            modelLoad = new ModelLoad(maze, starttimes);
             modelLoad.btnPredict.Click += btnPredict_Click;
             modelLoad.btnRun.Click += btnRun_Click;
-            modelLoad.btnModel.Click += btnModel_Click;
+            modelLoad.Closed += modelLoad_Closed;
             modelLoad.btnDelete.Click += btnDelete_Click;
-            modelLoad.llblLog.Click += llblLog_Click;
-            modelLoad.Shown += ModelLoad_Shown;
+            modelLoad.Show();
         }
 
-        private void btnModel_Click(object sender, EventArgs e)
+        private void modelLoad_Closed(object sender, EventArgs e)
         {
-            ModelInfo model_info = new ModelInfo(Maze.GetModelInfo());
-            model_info.ShowDialog();
+            msMain.Enabled = true;
         }
 
+        // Model record deletion  
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (!isSelectedModel())
+            if (!modelLoad.isSelectedModel())
                 return;
 
-            string starttime = GetSelectedModel();
+            string starttime = modelLoad.GetSelectedModel();
             if (string.IsNullOrEmpty(starttime))
                 return;
 
@@ -456,6 +397,7 @@ namespace MouseAI.UI
             RemoveModelRecord(starttime);
         }
 
+        // Perform record deletion, relocate any associated files and reload control
         private void RemoveModelRecord(string starttime)
         {
             try
@@ -480,143 +422,51 @@ namespace MouseAI.UI
             RunTest();
         }
 
-        private void llblLog_Click(object sender, EventArgs e)
-        {
-            string link = (string) modelLoad.llblLog.Tag;
-            if (string.IsNullOrEmpty(link))
-                return;
-
-            Process process = new Process
-            {
-                StartInfo = {FileName = link}
-            };
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error opening log file '{0}': {1}",link,ex);
-                DisplayError(string.Format("Error opening log file '{0}'", link), ex, false);
-            }
-        }
-
+        // On neural model loaded - call run method
         private void btnRun_Click(object sender, EventArgs e)
         {
             DisplayProgress("Loading Model", false);
-
-            bool result = ModelLoad();
-
+            bool result = LoadNeuralModel();
             CloseProgress();
 
             if (result)
                 ModelRun();
         }
 
+        // On neural model loaded - call predict method
         private void btnPredict_Click(object sender, EventArgs e)
         {
             DisplayProgress("Loading Model", false);
-
-            bool result = ModelLoad();
-
+            bool result = LoadNeuralModel();
             CloseProgress();
 
             if (result)
                 PredictModel();
         }
 
-        private void ModelLoad_Shown(object sender, EventArgs e)
+        // Load neural model selection
+        private bool LoadNeuralModel()
         {
-            string modelast = maze.GetProjectLast(maze.GetModelProjectGuid());
+            if (modelLoad.lbxModels.SelectedItem == null)
+                return false;
 
-            ListBox lbx = modelLoad.lbxModels;
+            string starttime = modelLoad.lbxModels.SelectedItem.ToString();
+            modelLoad.Enabled = false;
 
-            if (lbx.Items.Count != 0 && lbx.Items.Contains(modelast))
-            {
-                modelLoad.lbxModels.SelectedItem = modelast;
-                lbx.SetSelected(lbx.SelectedIndex, true);
-            }
-            else
-            {
-                modelLoad.lbxModels.SelectedItem = modelLoad.lbxModels.Items[0];
-            }
-        }
-
-        private bool LoadModel(string starttime)
-        {
             try
             {
                 maze.LoadModel(starttime);
                 maze.SetProjectLast(maze.GetModelProjectGuid(), starttime);
+                modelLoad.Close();
                 return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 DisplayError(string.Format("Error loading model '{0}'", starttime), e, false);
-                return false;
-            }
-        }
-
-        private bool ModelLoad()
-        {
-            if (modelLoad.lbxModels.SelectedItem != null)
-            {
-                modelLoad.Enabled = false;
-                if (LoadModel(modelLoad.lbxModels.SelectedItem.ToString()))
-                {
-                    modelLoad.Close();
-                    return true;
-                }
             }
             modelLoad.Enabled = true;
             return false;
-        }
-
-        private void btnExit_Click(object sender, EventArgs e)
-        {
-            modelLoad.Close();
-            msMain.Enabled = true;
-        }
-
-        private void lbxModels_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (isSelectedModel())
-            {
-                string starttime = GetSelectedModel();
-                string summary = Maze.GetModelSummary(starttime);
-
-                if (!string.IsNullOrEmpty(summary))
-                {
-                    modelLoad.tbxSummary.Text = summary;
-                    modelLoad.btnPredict.Enabled = true;
-                    modelLoad.btnRun.Enabled = true;
-                    modelLoad.btnDelete.Enabled = true;
-                    modelLoad.btnModel.Enabled = true;
-
-                    string plot = Maze.GetModelPlot(starttime);
-                    modelLoad.pbxPlot.Image = (!string.IsNullOrEmpty(plot)) ? Image.FromFile(plot) : null;
-                    modelLoad.llblLog.Tag = maze.GetLogPath(starttime);
-                    modelLoad.llblLog.Text = string.Format("Log: {0}", maze.GetLogFileName(starttime));
-                    return;
-                }
-            }
-
-            modelLoad.btnDelete.Enabled = false;
-            modelLoad.btnPredict.Enabled = false;
-            modelLoad.btnRun.Enabled = false;
-            modelLoad.btnModel.Enabled = false;
-        }
-
-        private bool isSelectedModel()
-        {
-            return (modelLoad.lbxModels.SelectedItem != null);
-        }
-
-        private string GetSelectedModel()
-        {
-            return  modelLoad.lbxModels.SelectedItem.ToString();
         }
 
         #endregion
@@ -1015,7 +865,7 @@ namespace MouseAI.UI
             {
                 modelPredict.txtResults.Text = string.Empty;
 
-                ImageDatas ids = maze.Predict(GetSelectedModel());
+                ImageDatas ids = maze.Predict(modelLoad.GetSelectedModel());
                 if (ids == null)
                     throw new Exception("Prediction result error!");
 
@@ -1749,6 +1599,64 @@ namespace MouseAI.UI
         private void viewHelpToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        #endregion
+
+        #region Progress Bar
+
+        private void InitProcessing(string message, bool isCancel)
+        {
+            Console.Clear();
+            Enabled = false;
+            isThreadCancel = false;
+            isThreadDone = false;
+
+            progress = new Progress(message, isCancel);
+
+            if (isCancel)
+                progress.btnProgressCancel.Click += btnProgressCancel_Click;
+
+            progress.Show();
+            progress.Location = new Point((Width / 2) - (progress.Width / 2), (Height / 2) - (progress.Height / 2));
+            progress.Focus();
+        }
+
+        private void btnProgressCancel_Click(object sender, EventArgs e)
+        {
+            if (!isThreadDone)
+            {
+                progress.btnProgressCancel.Enabled = false;
+                isThreadCancel = true;
+
+                if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
+                {
+                    StopTraining();
+                }
+            }
+        }
+
+        private void DisplayProgress(string message, bool isCancel)
+        {
+            Enabled = false;
+
+            progress = new Progress(message, isCancel);
+            progress.Show();
+            progress.Focus();
+        }
+
+        private void CloseProgress()
+        {
+            progress?.Close();
+            Enabled = true;
+            Focus();
+        }
+
+        private void FinalizeProcessing()
+        {
+            progress?.Close();
+            Enabled = true;
+            Focus();
         }
 
         #endregion

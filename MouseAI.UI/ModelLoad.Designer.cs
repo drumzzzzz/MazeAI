@@ -50,6 +50,7 @@
             this.lbxModels.ScrollAlwaysVisible = true;
             this.lbxModels.Size = new System.Drawing.Size(184, 276);
             this.lbxModels.TabIndex = 18;
+            this.lbxModels.SelectedIndexChanged += new System.EventHandler(this.lbxModels_SelectedIndexChanged);
             // 
             // btnCancel
             // 
@@ -60,6 +61,7 @@
             this.btnCancel.TabIndex = 19;
             this.btnCancel.Text = "CANCEL";
             this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // tbxSummary
             // 
@@ -115,6 +117,7 @@
             this.llblLog.Name = "llblLog";
             this.llblLog.Size = new System.Drawing.Size(0, 16);
             this.llblLog.TabIndex = 25;
+            this.llblLog.Click += new System.EventHandler(this.llblLog_Click);
             // 
             // btnDelete
             // 
@@ -139,12 +142,13 @@
             this.btnModel.TabIndex = 27;
             this.btnModel.Text = "INFO";
             this.btnModel.UseVisualStyleBackColor = true;
+            this.btnModel.Click += new System.EventHandler(this.btnModel_Click);
             // 
             // ModelLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(741, 420);
+            this.ClientSize = new System.Drawing.Size(725, 414);
             this.ControlBox = false;
             this.Controls.Add(this.btnModel);
             this.Controls.Add(this.btnDelete);
@@ -162,6 +166,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Model Load";
             this.TopMost = true;
+            this.Shown += new System.EventHandler(this.ModelLoad_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.pbxPlot)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

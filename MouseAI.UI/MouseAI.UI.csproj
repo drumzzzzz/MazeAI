@@ -119,7 +119,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsoleHelper.cs" />
     <Compile Include="MazeNew.cs">
       <SubType>Form</SubType>
     </Compile>
