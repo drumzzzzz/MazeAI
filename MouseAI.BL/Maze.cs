@@ -12,7 +12,6 @@ using System.Xml.Linq;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
-using Newtonsoft.Json;
 using ScottPlot;
 
 #endregion
@@ -113,14 +112,6 @@ namespace MouseAI
             PATHS
         }
 
-        public enum SCAN_RESULT
-        {
-            SPACE,
-            BLOCK,
-            CHEESE,
-            SMELL
-        }
-
         #endregion
 
         #region Initialization
@@ -134,6 +125,7 @@ namespace MouseAI
             mazeObjects = new MazeObject[maze_width, maze_height];
             mazeModels = new MazeModels();
             mazeModel = new MazeModel();
+            mazeDb = new MazeDb();
             r = new Random();
             sb = new StringBuilder();
             pathObjects = new List<MazeObject>();
@@ -165,8 +157,6 @@ namespace MouseAI
                 throw new Exception("Could not create log directory");
             if (!FileIO.CheckCreateDirectory(backup_dir))
                 throw new Exception("Could not create archive directory");
-
-            mazeDb = new MazeDb();
         }
 
         public void AddMazeModel()
@@ -738,16 +728,10 @@ namespace MouseAI
                     isMouse = true;
 
                 // If we've found the mouse and this is a valid path node 
-                //if (isMouse && !mo.isVisited && !mo.isDeadEnd && !badNodes.Any(o => o.x == p.x && o.y == p.y))
                 if (isMouse && !mo.isVisited && !mo.isDeadEnd && CheckNode(p))
                 {
-                    // If visible and not a duplicate
-                    //if (visionObjects.Any(o => o.x == p.x && o.y == p.y) &&
-                    //    !pathNodes.Any(o => o.x == p.x && o.y == p.y))
-                    {
-                        pathNodes.Add(p);
-                        count++;
-                    }
+                    pathNodes.Add(p);
+                    count++;
                 }
             }
             // Return if mouse was found and any neural vision nodes have been added to the list
@@ -790,7 +774,7 @@ namespace MouseAI
                         }
 
                         if (isDebug)
-                            Console.WriteLine("Encountered a neural path error: pruning path nodes");
+                            Console.WriteLine("Encountered a neural path deadend: pruning path nodes");
 
                         UpdateVisionState();
 
@@ -1360,18 +1344,11 @@ namespace MouseAI
 
         private static void ValidateSegments(MazeObjectSegments mazeObjectSegments)
         {
-            // ToDo: reincorporate segment validation
             for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
             {
                 if (mazeObjectSegments[idx].Count == 0)
                     mazeObjectSegments.RemoveAt(idx);
             }
-
-            //int count1 = mazeObjectSegments[mazeObjectSegments.Count - 1].Count;
-            //int count2 = pathObjects.Count - 1;
-
-            //if (count1 != count2)
-            //    throw new Exception(string.Format("Segment length not equal: {0}, {1}", count1, count2));
         }
 
         private static void GenerateSegmentImages(MazeObjectSegments mazeObjectSegments)
@@ -1459,7 +1436,7 @@ namespace MouseAI
             return false;
         }
 
-        private void FinalizePathObjects()
+        private static void FinalizePathObjects()
         {
             List<MazeObject> pathobjects = new List<MazeObject>();
             List<MazeObject> pathsLast = new List<MazeObject>();
@@ -1635,27 +1612,9 @@ namespace MouseAI
             return mazePaths.GetAddPath(guid).bmp;
         }
 
-        public bool isModelBMP(int index)
-        {
-            if (index < 0 || index > mazeModels.Count())
-                return false;
-
-            MazeModel mm = mazeModels.GetMazeModel(index);
-
-            if (mm == null)
-                return false;
-
-            return mm.maze != null && mm.mazepath != null;
-        }
-
         public string GetMazeModelGUID()
         {
             return mazeModel?.guid;
-        }
-
-        public bool GetTested()
-        {
-            return mazeModel != null && mazeModel.isPath;
         }
 
         public void SetTested(bool isTested)
@@ -1709,25 +1668,6 @@ namespace MouseAI
 
             IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
             return oList != null && oList.Any();
-        }
-
-        private static List<string> GetProjectModels(string guid)
-        {
-            IEnumerable<object> oList = mazeDb.ReadProjectGuids(guid);
-
-            if (oList == null)
-                return null;
-
-            DbTable_Projects dbTableProjects;
-            List<string> starttimes = new List<string>();
-
-            foreach (DbTable_Projects obj in oList)
-            {
-                dbTableProjects = obj;
-                starttimes.Add(dbTableProjects.Log);
-            }
-
-            return starttimes;
         }
 
         public string GetProjectModelName()
@@ -2053,11 +1993,6 @@ namespace MouseAI
             return true;
         }
 
-        public List<string> GetProjects()
-        {
-            return FileIO.GetFiles(maze_dir, "*." + MAZE_EXT);
-        }
-
         public string GetSaveName()
         {
             return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
@@ -2111,7 +2046,7 @@ namespace MouseAI
 
         #endregion
 
-        #region Archiving
+        #region Record Removal
 
         public static bool RemoveProjectRecord(string starttime)
         {
@@ -2291,8 +2226,6 @@ namespace MouseAI
             return mazeModels != null && mazeModels.Count() > 0 && mazeModels.CheckPaths() &&
                    mazeModels.CheckSegments();
         }
-
-        
     }
 
     #endregion

@@ -8,9 +8,6 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Text;
 using System.Xml.Linq;
-using System.IO.Compression;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 #endregion
@@ -80,118 +77,6 @@ namespace MouseAI.PL
 
         #region File IO Stream Related
 
-        public static List<string> GetFiles(string path)
-        {
-            List<string> fileNames = new List<string>();
-            if (Directory.Exists(path))
-            {
-                string[] files = Directory.GetFiles(path);
-                fileNames.AddRange(files);
-            }
-            return fileNames;
-        }
-
-        public static List<string> GetFiles(string path, string filters)
-        {
-            List<string> fpaths = new List<string>();
-            List<string> fnames = new List<string>();
-
-            if (Directory.Exists(path))
-                fpaths = filters.Split('|').SelectMany(filter => Directory.GetFiles(path, filter)).ToList();
-
-            int index;
-            foreach (string fname in fpaths)
-            {
-                index = fname.LastIndexOf(@"\", StringComparison.Ordinal);
-                if (index != -1)
-                {
-                    fnames.Add(fname.Substring(index + 1));
-                }
-            }
-            return fnames;
-        }
-
-        public static bool WriteCreateFile(string FileName, List<string> stringVals)
-        {
-            try
-            {
-                FileStream fStream = new FileStream(FileName, FileMode.OpenOrCreate);
-                StreamWriter sWriter = new StreamWriter(fStream);
-
-                foreach (string sVal in stringVals)
-                    sWriter.WriteLine(sVal);
-
-                sWriter.Close();
-                fStream.Close();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("File Write Error:" + ex.Message);
-                return false;
-            }
-        }
-
-        public static bool WriteCreateFile(string FileName, string value)
-        {
-            try
-            {
-                FileStream fStream = new FileStream(FileName, FileMode.OpenOrCreate);
-                StreamWriter sWriter = new StreamWriter(fStream);
-
-                sWriter.WriteLine(value);
-                sWriter.Close();
-                fStream.Close();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("File Write Error:" + ex.Message);
-                return false;
-            }
-        }
-
-        public static bool AppendFile(string FileName,List<string> stringVals)
-        {
-            try
-            {
-                StreamWriter sw = File.AppendText(FileName);
-                foreach (string sVal in stringVals)
-                    sw.WriteLine(sVal);
-                sw.Close();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("File Append Error:" + ex.Message);
-                return false;
-            }
-        }
-
-        public static bool AppendFile(string FileName, string stringVal)
-        {
-            try
-            {
-                StreamWriter sw = File.AppendText(FileName);
-                sw.WriteLine(stringVal);
-                sw.Close();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("File Append Error:" + ex.Message);
-                return false;
-            }
-        }
-
-        public static string ReadFile(string filepath) // Loads, reads and returns a files text contents
-        {                                                               
-            StreamReader reader = new StreamReader(filepath);
-            string strValues = reader.ReadToEnd();
-            reader.Close();
-            return strValues;
-        }
-
         public static List<string> ReadFileAsList(string filepath) // Loads, reads and returns a file text contents as list
         {
             StreamReader reader = new StreamReader(filepath);
@@ -206,16 +91,6 @@ namespace MouseAI.PL
             return strValues;
         }
 
-        public static bool CreateFile(string fileName)
-        {
-            if (!File.Exists(fileName))
-            {
-                File.Create(fileName);
-                return false;
-            }
-            return true;
-        }
-
         public static bool CheckFileName(string Value)
         {
             return File.Exists(Value);
@@ -226,141 +101,12 @@ namespace MouseAI.PL
             return Directory.Exists(path);
         }
 
-        public static void CreateDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
-        }
-
         public static bool CheckCreateDirectory(string path)
         {
             if(!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
             return Directory.Exists(path);
-        }
-
-        public static void CopyFile(string sourcepath,string filename,  string destinationpath, bool isOverWrite)
-        {
-            File.Copy(Path.Combine(sourcepath, filename), Path.Combine(destinationpath, filename), isOverWrite);
-        }
-
-        public static int CopyFilesDirectories(string source, string target, string[] extensions, bool isOverWrite)
-        {
-            FileCount = 0;
-            try
-            {
-                DirectoryInfo diSource = new DirectoryInfo(source);
-                DirectoryInfo diTarget = new DirectoryInfo(target);
-                CopyFileDirectories(diSource, diTarget, extensions, isOverWrite);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Copy Files Directories Error:" +e.Message);
-            }
-            return FileCount;
-        }
-
-        public static void CopyFileDirectories(DirectoryInfo source, DirectoryInfo target, string[] extensions, bool isOverWrite )
-        {
-            foreach (DirectoryInfo dir in source.GetDirectories())
-                CopyFileDirectories(dir, target.CreateSubdirectory(dir.Name), extensions,isOverWrite);
-
-            CopyFiles(source, target, extensions, isOverWrite);
-        }
-
-        public static int CopyFiles(string source, string target, string[] extensions, bool isOverWrite)
-        {
-            FileCount = 0;
-            try
-            {
-                DirectoryInfo diSource = new DirectoryInfo(source);
-                DirectoryInfo diTarget = new DirectoryInfo(target);
-                CopyFiles(diSource, diTarget, extensions, isOverWrite);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Copy Files Error:" + e.Message);
-            }
-
-            return FileCount;
-        }
-
-        private static void CopyFiles(DirectoryInfo source, FileSystemInfo target, string[] extensions, bool isOverWrite)
-        { 
-            foreach (FileInfo file in source.EnumerateFiles().Where(file => extensions.Contains(file.Extension)))
-            {
-                file.CopyTo(Path.Combine(target.FullName, file.Name), isOverWrite);
-                FileCount++;
-            }
-        }
-
-        public static int DeleteFiles(string source, string[] extensions)
-        {
-            FileCount = 0;
-            try
-            {
-                DirectoryInfo diSource = new DirectoryInfo(source);
-                DeleteFiles(diSource, extensions);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Delete Files Error:" + e.Message);
-            }
-
-            return FileCount;
-        }
-
-        public static int DeleteFiles(List<string> files)
-        {
-            int count = 0;
-            try
-            {
-                foreach (string file in files.Where(File.Exists))
-                {
-                    File.Delete(file);
-                    count++;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error Deleting File:" + e.Message);
-            }
-
-            return count;
-        }
-
-        public static int DeleteAllFiles(string source, string[] filenames)
-        {
-            FileCount = 0;
-            try
-            {
-                DirectoryInfo diSource = new DirectoryInfo(source);
-                DeleteFiles(diSource, filenames);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Delete Files Error:" + e.Message);
-            }
-
-            return FileCount;
-        }
-
-        private static void DeleteFiles(DirectoryInfo source, string[] extensions)
-        {
-            foreach (FileInfo file in source.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())))
-            {
-                file.Delete();
-                FileCount++;
-            }
-        }
-
-        private static void DeleteAllFiles(DirectoryInfo source, string[] names)
-        {
-            foreach (FileInfo file in source.EnumerateFiles().Where(f => names.Contains(f.FullName.ToLower())))
-            {
-                file.Delete();
-                FileCount++;
-            }
         }
 
         public static bool MoveFiles(List<string> sources, string dest)
@@ -416,25 +162,6 @@ namespace MouseAI.PL
             reader.Close();
             return obj;
         }
-
-        public static string ReadXml(string filepath, string[] Ignore)
-        {
-            if (File.Exists(filepath))
-            {
-                StringBuilder sb = new StringBuilder();
-                XDocument xdoc = XDocument.Load(filepath);
-                foreach (XElement element in xdoc.Descendants())
-                {
-                    if (!Ignore.Contains(element.Name.ToString()))
-                    {
-                        sb.Append(string.Format("{0}:{1}", element.Name, element.Value) + Environment.NewLine);
-                    }
-                }
-                return sb.ToString();
-            }
-            return null;
-        }
-
 
         public static XDocument ReadXml(string filepath)
         {
@@ -493,47 +220,5 @@ namespace MouseAI.PL
         }
 
         #endregion
-
-        #region Archive Related
-
-        public static bool CreateZipArchive(string path, List<string> files, out string result)
-        {
-            result = string.Empty;
-
-            if (string.IsNullOrEmpty(path))
-                return false;
-
-            FileInfo fi;
-            string filename = new FileInfo(path).Name;
-
-            try
-            {
-                using (var stream = File.OpenWrite(path))
-                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
-                {
-                    foreach (string item in files)
-                    {
-                        fi = new FileInfo(item);
-                        archive.CreateEntryFromFile(fi.FullName, fi.Name);
-                    }
-                }
-
-                if (!File.Exists(path))
-                    throw new Exception(filename);
-
-                result = string.Format("Created Archive: {0}", new FileInfo(path).Name);
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                result = string.Format("Error creating archive: {0}", e.Message);
-                Console.WriteLine(result);
-                return false;
-            }
-        }
-
-        #endregion
-
     }
 }

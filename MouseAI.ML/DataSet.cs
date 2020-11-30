@@ -22,23 +22,16 @@ namespace MouseAI.ML
 
     public class ImageDatas : List<ImageData>
     {
-        private readonly string label;
         private readonly List<string> labels;
         private string results;
 
-        public ImageDatas(string label, List<string> labels)
+        public ImageDatas(List<string> labels)
         {
-            this.label = label;
             this.labels = labels;
         }
 
         public ImageDatas()
         {
-        }
-
-        public string GetLabel()
-        {
-            return label;
         }
 
         public List<string> GetLabels()

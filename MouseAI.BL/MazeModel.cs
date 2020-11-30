@@ -109,7 +109,7 @@ namespace MouseAI.BL
                 Guids.Add(mm.guid);
             }
 
-            ImageDatas imageDatas = new ImageDatas(Guid, Guids);
+            ImageDatas imageDatas = new ImageDatas(Guids);
 
             MazeModel m;
             for (int i = 0; i < mazeModels.Count; i++)
@@ -136,7 +136,7 @@ namespace MouseAI.BL
                 Guids.Add(mm.guid);
             }
 
-            ImageDatas imageDatas = new ImageDatas(Guid, Guids);
+            ImageDatas imageDatas = new ImageDatas(Guids);
 
             MazeModel m;
             for (int i = 0; i < mazeModels.Count; i++)
