@@ -21,18 +21,19 @@ namespace MouseAI.UI
     {
         #region Declarations
 
-        private Settings settings;
-        private Thread trainThread;
+        // UI forms and objects
         private ModelLoad modelLoad;
         private ModelRun modelRun;
         private ModelPredict modelPredict;
-        private Maze maze;
         private TrainSettings trainSettings;
         private Progress progress;
         private MazeNew mazeNew;
+        private Settings settings;
+        private Maze maze;
         private readonly MazeSegments mazeSegments;
         private readonly MazeStatistics mazeStatistics;
 
+        // Graphics
         private const int MAZE_WIDTH = 31;
         private const int MAZE_HEIGHT = 31;
         private const int MAZE_SCALE_WIDTH_PX = 28;
@@ -40,12 +41,12 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
-        private const float LINE_WIDTH = 1;
-        private const string TITLE = "MOUSE AI";
-        private const int SEARCH_DELAY = 1;
         private const int BITMAP_WIDTH = 533;
         private const int BITMAP_HEIGHT = 533;
-
+        private const int MOUSE_BITMAPS = 4;
+        private const float LINE_WIDTH = 1;
+        private const int SHADOW_ALPHA = 225;
+        private const string TITLE = "MOUSE AI";
         private SKColor BlockColor;
         private SKColor SpaceColor;
         private SKColor ClearColor;
@@ -57,7 +58,7 @@ namespace MouseAI.UI
         private SKSurface surface;
         private SKImage backimage;
         private SKBitmap Cheese_Bitmap;
-        private readonly SKBitmap[] Mouse_Bitmap = new SKBitmap[4];
+        private SKBitmap[] Mouse_Bitmap;
         private SKBitmap Visible_Bitmap;
         private SKBitmap DeadEnd_Bitmap;
         private SKBitmap Smell_Bitmap;
@@ -66,25 +67,32 @@ namespace MouseAI.UI
         private Point mouse_last;
         private Point mouse_current;
         private readonly Color BLOCK_COLOR = Color.DarkBlue;
-        private readonly Color SPACE_COLOR = Color.DarkCyan;
+        private readonly Color SPACE_COLOR = Color.DarkSlateGray;
         private readonly Color SHADOW_COLOR = Color.DeepSkyBlue;
         private readonly Color RUN_COLOR = Color.Yellow;
-        private const int SHADOW_ALPHA = 225;
-        private int maze_count;
-        private bool isStep;
+        
+        // Threading and iteration control
+        private Thread trainThread;
+        private int runDelay;
         private bool isThreadDone;
         private bool isThreadCancel;
-        private bool isRunAll;
-        private int runDelay;
-        private const int RUN_DELAY = 1;
-        private DateTime dtPlotTime;
+        private const int SEARCH_DELAY = 1;
+        private const int RUN_DELAY = 50;
+        private const int RUN_DELAY_MIN = 5;
         private const int PLOT_TIME = 500;
+        private const int RENDER_TIME = 5;
         private DateTime dtRenderTime;
-        private const int RENDER_TIME = 1;
+        private DateTime dtPlotTime;
+
+        // Misc
+        private bool isStep;
+        private bool isRunAll;
         private bool isRandomSearch;
         private bool isDebug = true;
         private int last_selected;
         private bool isVisible;
+        private int maze_count;
+        private Maze.RUN_VISIBLE run_visible;
 
         private enum RUN_MODE
         {
@@ -96,14 +104,12 @@ namespace MouseAI.UI
             EXIT,
             BACK
         }
-
         private RUN_MODE run_mode;
-        private Maze.RUN_VISIBLE run_visible;
 
         #endregion
 
         #region Initialization
-        
+
         // Startup init
         public MouseAI()
         {
@@ -171,7 +177,10 @@ namespace MouseAI.UI
                     , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
                 return;
 
-            InitProcessing("Solving Paths ...", true);
+            Console.Clear();
+            isThreadCancel = false;
+            isThreadDone = false;
+            DisplayProgress("Solving Paths ...", true);
 
             try
             {
@@ -204,7 +213,8 @@ namespace MouseAI.UI
             {
                 DisplayError("Path solving error", e, false);
             }
-            FinalizeProcessing();
+
+            CloseProgress();
         }
 
         // Async path tree search: generate image segments on success
@@ -265,7 +275,11 @@ namespace MouseAI.UI
 
             trainThread = new Thread(AITrain);
             trainThread.Start();
-            InitProcessing("Training Neural Network ...", true);
+
+            Console.Clear();
+            isThreadCancel = false;
+            isThreadDone = false;
+            DisplayProgress("Training Neural Network ...", true);
         }
 
         // Training thread
@@ -296,7 +310,7 @@ namespace MouseAI.UI
         // Display save dialog if not cancelled
         private void TrainDone()
         {
-            FinalizeProcessing();
+            CloseProgress();
             trainThread = null;
 
             if (!isThreadCancel && DisplayDialog("Log file saved: " + maze.GetLogName() + Environment.NewLine +
@@ -335,7 +349,7 @@ namespace MouseAI.UI
             }
 
             trainThread = null;
-            FinalizeProcessing();
+            CloseProgress();
         }
 
         // On settings close
@@ -956,6 +970,7 @@ namespace MouseAI.UI
             Visible_Bitmap = GetBitmap(Resources.visible, resizeInfo);
             DeadEnd_Bitmap = GetBitmap(Resources.deadend, resizeInfo);
             Smell_Bitmap = GetBitmap(Resources.smell, resizeInfo);
+            Mouse_Bitmap = new SKBitmap[MOUSE_BITMAPS];
             Mouse_Bitmap[(int)DIRECTION.SOUTH] = GetBitmap(Resources.mouse_south, resizeInfo);
             Mouse_Bitmap[(int)DIRECTION.NORTH] = GetBitmap(Resources.mouse_north, resizeInfo);
             Mouse_Bitmap[(int)DIRECTION.WEST] = GetBitmap(Resources.mouse_west, resizeInfo);
@@ -1151,6 +1166,8 @@ namespace MouseAI.UI
 
         #region File Related
 
+        // New maze dialog and creation:
+        // Iterate and generate mazes by selected amount, create records and save to project file
         private bool NewMazes()
         {
             mazeNew = null;
@@ -1187,8 +1204,7 @@ namespace MouseAI.UI
                 if (!maze.isMazeModels())
                     throw new Exception("Error creating maze models");
 
-                string guid = Guid.NewGuid().ToString();
-                maze.SetMazeModelsGuid(guid);
+                maze.SetMazeModelsGuid(Guid.NewGuid().ToString());
                 maze.SaveMazeModels(filename);
                 settings.LastFileName = maze.GetFileName();
                 settings.Guid = maze.GetModelProjectGuid();
@@ -1204,11 +1220,7 @@ namespace MouseAI.UI
             }
         }
 
-        private void Mazenew_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            maze_count = (int)mazeNew.nudMazes.Value;
-        }
-
+        // Call generation routine, attempt to place characters and add to model list
         private static bool CreateMaze(Maze m)
         {
             m.Reset();
@@ -1220,6 +1232,13 @@ namespace MouseAI.UI
             return true;
         }
 
+        // Update count on form close
+        private void Mazenew_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            maze_count = (int)mazeNew.nudMazes.Value;
+        }
+
+        // Load an existing project by filename; exit on fatal
         private bool LoadMazes(string filename, bool isExit)
         {
             try
@@ -1246,14 +1265,12 @@ namespace MouseAI.UI
             }
             catch (Exception e)
             {
-                if (!isExit)
-                    return false;
-
-                DisplayError("Error Loading Project", e, true);
+                DisplayError("Error Loading Project", e, isExit);
                 return false;
             }
         }
 
+        // Close an active project
         private bool CloseProject()
         {
             if (canvas == null)
@@ -1286,6 +1303,7 @@ namespace MouseAI.UI
             }
         }
 
+        // User settings loading
         private void LoadSettings()
         {
             if (!Settings.isSettings())
@@ -1302,6 +1320,7 @@ namespace MouseAI.UI
             SetOptionsItems();
         }
 
+        // User settings updating
         private void UpdateSettings()
         {
             settings = Settings.Update(settings);
@@ -1312,7 +1331,59 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Listview
+        #region Maze Listview
+
+        // On selection and if valid select the maze and update model run form (if active)
+        private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lvwMazes.FocusedItem != null && lvwMazes.FocusedItem.Index != last_selected)
+            {
+                if(SelectMaze(lvwMazes.FocusedItem.Index)) 
+                    UpdateModelRun();
+            }
+        }
+
+        // Performs selected maze rendering and model run plotting updates (if active)
+        private bool SelectMaze(int index)
+        {
+            try
+            {
+                maze.SelectMazeModel(index);
+                if (!maze.AddCharacters())
+                    throw new Exception("Could not add characters");
+
+                DrawMaze();
+                DrawPath();
+
+                if (settings.isMazeSegments)
+                    mazeSegments.ShowImages();
+
+                if (modelRun != null && run_mode == RUN_MODE.READY)
+                {
+                    maze.SetMazeStatistic(mazeStatistics.FirstOrDefault(o => o.maze_guid == maze.GetMazeModelGUID()));
+                    if (maze.CheckMazeStatistic())
+                    {
+                        dtPlotTime = DateTime.UtcNow;
+                        UpdateStatistic(true);
+                    }
+                    else
+                    {
+                        modelRun.ClearMazePlot();
+                    }
+                }
+
+                DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetMazeModelGUID()));
+                last_selected = index;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Maze selection error:{0}", e.Message);
+                return false;
+            }
+        }
+
+        #region Selection Helpers
 
         private void SetSelectedTextItalic()
         {
@@ -1359,21 +1430,6 @@ namespace MouseAI.UI
             lvwMazes.Refresh();
         }
 
-        private string GetSelectedItem()
-        {
-            if (!isMazeSelected())
-                return string.Empty;
-
-            ListViewItem item = lvwMazes.SelectedItems[0];
-            return item.SubItems[0].Text;
-        }
-
-
-        private ListViewItem GetSelectedListViewItem()
-        {
-            return !isMazeSelected() ? null : lvwMazes.SelectedItems[0];
-        }
-
         private void AddMazeItems()
         {
             lvwMazes.Items.Clear();
@@ -1395,21 +1451,23 @@ namespace MouseAI.UI
             }
         }
 
-        private void lvwMazes_SelectedIndexChanged(object sender, EventArgs e)
+        private bool isMazeSelected()
         {
-            if (lvwMazes.FocusedItem == null)
-                return;
+            return (lvwMazes.SelectedItems.Count != 0 && lvwMazes.SelectedItems[0] != null);
+        }
 
-            if (lvwMazes.FocusedItem.Index != last_selected && SelectMaze(lvwMazes.FocusedItem.Index))
-            {
-                UpdateModelRun();
-            }
+        private int GetSelectedIndex()
+        {
+            if (!isMazeSelected())
+                return -1;
+
+            return lvwMazes.SelectedItems[0].Index;
         }
 
         private void ResetSelectedItem()
         {
             if (!isMazeSelected())
-                    return;
+                return;
 
             ListViewItem item = lvwMazes.SelectedItems[0];
 
@@ -1434,75 +1492,28 @@ namespace MouseAI.UI
             return false;
         }
 
-        private bool SelectMaze(int index)
-        {
-            try
-            {
-                maze.SelectMazeModel(index);
-                if (!maze.AddCharacters())
-                    throw new Exception("Could not add characters");
-
-                DrawMaze();
-                DrawPath();
-
-                if (settings.isMazeSegments)
-                    DisplayMazeSegments();
-
-                if (modelRun != null && run_mode == RUN_MODE.READY)
-                {
-                    maze.SetMazeStatistic(mazeStatistics.FirstOrDefault(o => o.maze_guid == maze.GetMazeModelGUID()));
-                    if (maze.CheckMazeStatistic())
-                    {
-                        dtPlotTime = DateTime.UtcNow;
-                        UpdateStatistic(true);
-                    }
-                    else
-                    {
-                        modelRun.ClearMazePlot();
-                    }
-                }
-
-                DisplayTsMessage(string.Format("Maze: {0} GUID:{1}", index + 1, maze.GetMazeModelGUID()));
-                last_selected = index;
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Maze selection error:{0}", e.Message);
-                return false;
-            }
-        }
-
-        private bool isMazeSelected()
-        {
-            return (lvwMazes.SelectedItems.Count != 0 && lvwMazes.SelectedItems[0] != null);
-        }
-
-        private int GetSelectedIndex()
+        private string GetSelectedItem()
         {
             if (!isMazeSelected())
-                return -1;
+                return string.Empty;
 
-            return lvwMazes.SelectedItems[0].Index;
+            ListViewItem item = lvwMazes.SelectedItems[0];
+            return item.SubItems[0].Text;
+        }
+
+
+        private ListViewItem GetSelectedListViewItem()
+        {
+            return !isMazeSelected() ? null : lvwMazes.SelectedItems[0];
         }
 
         #endregion
-
-        #region Segments
-
-        private void SetMazeSegmentsVisible(bool isVisible)
-        {
-            mazeSegments.Visible = isVisible;
-        }
-
-        private void DisplayMazeSegments()
-        {
-            mazeSegments.ShowImages();
-        }
 
         #endregion
 
         #region Menustrip
+
+        // UI menu item states and method calls
 
         private void SetMenuItems(bool isOpened)
         {
@@ -1510,7 +1521,7 @@ namespace MouseAI.UI
             pathsToolStripMenuItem.Enabled = isOpened;
             trainToolStripMenuItem.Enabled = isOpened && maze.CheckMazeModel();
             testToolStripMenuItem.Enabled = isOpened && maze.CheckProjectModels();
-            SetMazeSegmentsVisible(isOpened && settings.isMazeSegments);
+            mazeSegments.Visible = (isOpened && settings.isMazeSegments);
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1591,7 +1602,7 @@ namespace MouseAI.UI
             if (!maze.isMazeModels())
                 return;
 
-            SetMazeSegmentsVisible(settings.isMazeSegments);
+            mazeSegments.Visible = settings.isMazeSegments;
         }
 
         private void viewHelpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1603,19 +1614,18 @@ namespace MouseAI.UI
 
         #region Progress Bar
 
-        private void InitProcessing(string message, bool isCancel)
+        // Progress bar display for long operations
+
+        private void DisplayProgress(string message, bool isCancel)
         {
-            Console.Clear();
             Enabled = false;
-            isThreadCancel = false;
-            isThreadDone = false;
 
             progress = new Progress(message, isCancel);
-
+            
             if (isCancel)
                 progress.btnProgressCancel.Click += btnProgressCancel_Click;
 
-            progress.Show(); // Cannot be showdialog!
+            progress.Show();
             progress.Location = new Point((Width / 2) - (progress.Width / 2), (Height / 2) - (progress.Height / 2));
             progress.Focus();
         }
@@ -1627,20 +1637,12 @@ namespace MouseAI.UI
                 progress.btnProgressCancel.Enabled = false;
                 isThreadCancel = true;
 
+                // If training
                 if (trainThread != null && trainThread.ThreadState != ThreadState.Stopped)
                 {
                     StopTraining();
                 }
             }
-        }
-
-        private void DisplayProgress(string message, bool isCancel)
-        {
-            Enabled = false;
-
-            progress = new Progress(message, isCancel);
-            progress.Show();
-            progress.Focus();
         }
 
         private void CloseProgress()
@@ -1650,16 +1652,11 @@ namespace MouseAI.UI
             Focus();
         }
 
-        private void FinalizeProcessing()
-        {
-            progress?.Close();
-            Enabled = true;
-            Focus();
-        }
-
         #endregion
 
         #region Messages
+
+        // UI message display helpers
 
         private static void DisplayError(string message, bool isAppExit)
         {

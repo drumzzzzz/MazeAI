@@ -245,19 +245,29 @@
             // 
             this.nudRate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.nudRate.Increment = new decimal(new int[] {
-            25,
+            5,
             0,
             0,
             0});
             this.nudRate.Location = new System.Drawing.Point(61, 31);
             this.nudRate.Maximum = new decimal(new int[] {
-            2000,
+            500,
+            0,
+            0,
+            0});
+            this.nudRate.Minimum = new decimal(new int[] {
+            5,
             0,
             0,
             0});
             this.nudRate.Name = "nudRate";
             this.nudRate.Size = new System.Drawing.Size(82, 22);
             this.nudRate.TabIndex = 58;
+            this.nudRate.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
             // 
             // label3
             // 
@@ -287,7 +297,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1021, 340);
+            this.ClientSize = new System.Drawing.Size(1017, 336);
             this.ControlBox = false;
             this.Controls.Add(this.rdoNeural);
             this.Controls.Add(this.chkDebug);
