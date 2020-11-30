@@ -471,105 +471,9 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Model Running
+        #region Neural Network Running
 
-        private async void RunModel()
-        {
-            mouse_last = new Point(-1, -1);
-            bool isProcess = false;
-
-            if (maze.isMouseAtCheese())
-            {
-                SelectCurrent();
-            }
-
-            try
-            { 
-                maze.ResetRun();
-                maze.InitRunMove(isRandomSearch);
-
-                Console.WriteLine("Mouse processing started ...");
-                while (isRunMode())
-                {
-                    if (run_mode == RUN_MODE.STEP)
-                    {
-                        if (isStep)
-                        {
-                            Console.WriteLine("Step");
-                            isStep = false;
-                            SetRunMode(RUN_MODE.STEP);
-                            isProcess = true;
-                        }
-                    }
-                    else
-                        isProcess = (run_mode != RUN_MODE.PAUSE);
-
-                    if (isProcess)
-                    {
-                        isProcess = false;
-
-                        if (await Task.Run(AIRun))
-                        {
-                            SetRunMode(RUN_MODE.STOP);
-                        }
-                        else
-                            maze.ProcessVisionImage();
-                    }
-
-                    if (UpdateMaze(run_mode != RUN_MODE.RUN, true) && run_mode != RUN_MODE.PAUSE)
-                    {
-                        UpdateStatus();
-                    }
-
-                    UpdateStatistic(false);
-                    Application.DoEvents();
-                    if (run_mode == RUN_MODE.RUN)
-                    {
-                        Thread.Sleep(runDelay <= 0 ? RUN_DELAY : runDelay);
-                    }
-                }
-
-                UpdateStatistics();
-                UpdateStatistic(true);
-                SetSelectedTextItalic(true);
-            }
-            catch (Exception e)
-            {
-                DisplayError("Run model error", e, false);
-            }
-
-            Console.WriteLine("Mouse processing ended.");
-
-            lvwMazes.Enabled = true;
-
-            maze.EndStatus();
-            UpdateStatus();
-
-            if (run_mode == RUN_MODE.EXIT)
-                RunExit();
-            else if (run_mode == RUN_MODE.BACK)
-                RunBack();
-            else
-            {
-                SetRunMode(RUN_MODE.STOP);
-                if (isRunAll)
-                {
-                    if (SelectNext())
-                        modelRun.btnRun.PerformClick();
-                }
-                ResetSelectedItem();
-            }
-        }
-
-        private void UpdateStatus()
-        {
-            modelRun.tbxTime.Text = maze.GetMazeStatisticTime();
-        }
-
-        private bool AIRun()
-        {
-            return maze.ProcessRunMove(isDebug);
-        }
+        #region Control
 
         private void ModelRun()
         {
@@ -579,7 +483,7 @@ namespace MouseAI.UI
                 return;
             }
 
-            modelRun = new ModelRun(maze.GetMazeStatisticPlotColumns(), BLOCK_COLOR, SPACE_COLOR);
+            modelRun = new ModelRun(maze, BLOCK_COLOR, SPACE_COLOR);
 
             foreach (Control ctl in modelRun.Controls)
             {
@@ -771,7 +675,7 @@ namespace MouseAI.UI
 
             modelRun.Text = string.Format("Maze: {0} Model: {1}", selected, maze.GetModelName());
 
-            if (!isRunAll) 
+            if (!isRunAll)
                 SetRunMode((isReady) ? RUN_MODE.READY : RUN_MODE.STOP);
         }
 
@@ -782,49 +686,105 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Statistics
+        #region Process
 
-        private void ClearStatistics()
+        private async void RunModel()
         {
-            mazeStatistics.Clear();
-        }
+            mouse_last = new Point(-1, -1);
+            bool isProcess = false;
 
-        private void UpdateStatistic(bool isImmediate)
-        {
-            DateTime dtCurrent = DateTime.UtcNow;
-
-            if (dtCurrent >= dtPlotTime || isImmediate)
+            if (maze.isMouseAtCheese())
             {
-                modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
-                modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
-                dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
+                SelectCurrent();
+            }
+
+            try
+            {
+                maze.ResetRun();
+                maze.InitRunMove(isRandomSearch);
+
+                Console.WriteLine("Mouse processing started ...");
+                while (isRunMode())
+                {
+                    if (run_mode == RUN_MODE.STEP)
+                    {
+                        if (isStep)
+                        {
+                            Console.WriteLine("Step");
+                            isStep = false;
+                            SetRunMode(RUN_MODE.STEP);
+                            isProcess = true;
+                        }
+                    }
+                    else
+                        isProcess = (run_mode != RUN_MODE.PAUSE);
+
+                    if (isProcess)
+                    {
+                        isProcess = false;
+
+                        if (await Task.Run(AIRun))
+                        {
+                            SetRunMode(RUN_MODE.STOP);
+                        }
+                        else
+                            maze.ProcessVisionImage();
+                    }
+
+                    if (UpdateMaze(run_mode != RUN_MODE.RUN, true) && run_mode != RUN_MODE.PAUSE)
+                    {
+                        modelRun.UpdateTimer();
+                    }
+
+                    UpdateStatistic(false);
+                    Application.DoEvents();
+                    if (run_mode == RUN_MODE.RUN)
+                    {
+                        Thread.Sleep(runDelay <= 0 ? RUN_DELAY : runDelay);
+                    }
+                }
+
+                UpdateStatistics();
+                UpdateStatistic(true);
+                SetSelectedTextItalic();
+            }
+            catch (Exception e)
+            {
+                DisplayError("Run model error", e, false);
+            }
+
+            Console.WriteLine("Mouse processing ended.");
+
+            lvwMazes.Enabled = true;
+
+            maze.EndStatus();
+
+            if (run_mode == RUN_MODE.EXIT)
+                RunExit();
+            else if (run_mode == RUN_MODE.BACK)
+                RunBack();
+            else
+            {
+                SetRunMode(RUN_MODE.STOP);
+                if (isRunAll)
+                {
+                    if (SelectNext())
+                        modelRun.btnRun.PerformClick();
+                }
+                ResetSelectedItem();
             }
         }
 
-        private void UpdateStatistics()
+        private bool AIRun()
         {
-            MazeStatistic ms = maze.GetMazeStatistic();
-
-            if (ms == null || mazeStatistics == null)
-            {
-                DisplayError("Error updating maze statistics!",false);
-                return;
-            }
-
-            int index = mazeStatistics.FindIndex(o =>
-                o.maze_guid.Equals(ms.maze_guid, StringComparison.OrdinalIgnoreCase));
-            if (index != -1)
-            {
-                mazeStatistics.RemoveAt(index);
-            }
-
-            mazeStatistics.Add(maze.GetMazeStatistic());
-            modelRun.UpdatePlot(mazeStatistics.GetData(), true);
+            return maze.ProcessRunMove(isDebug);
         }
 
         #endregion
 
-        #region Model Predict
+        #endregion
+
+        #region Neural Network Predicting
 
         private void PredictModel()
         {
@@ -905,6 +865,48 @@ namespace MouseAI.UI
                 AIPredict();
                 modelPredict.Enabled = true;
             }
+        }
+
+        #endregion
+
+        #region Statistics
+
+        private void ClearStatistics()
+        {
+            mazeStatistics.Clear();
+        }
+
+        private void UpdateStatistic(bool isImmediate)
+        {
+            DateTime dtCurrent = DateTime.UtcNow;
+
+            if (dtCurrent >= dtPlotTime || isImmediate)
+            {
+                modelRun.UpdatePlot(maze.GetMazeStatisticData(), false);
+                modelRun.tbxMouseStatus.Text = maze.GetMouseStatus();
+                dtPlotTime = dtCurrent.AddMilliseconds(PLOT_TIME);
+            }
+        }
+
+        private void UpdateStatistics()
+        {
+            MazeStatistic ms = maze.GetMazeStatistic();
+
+            if (ms == null || mazeStatistics == null)
+            {
+                DisplayError("Error updating maze statistics!",false);
+                return;
+            }
+
+            int index = mazeStatistics.FindIndex(o =>
+                o.maze_guid.Equals(ms.maze_guid, StringComparison.OrdinalIgnoreCase));
+            if (index != -1)
+            {
+                mazeStatistics.RemoveAt(index);
+            }
+
+            mazeStatistics.Add(maze.GetMazeStatistic());
+            modelRun.UpdatePlot(mazeStatistics.GetData(), true);
         }
 
         #endregion
@@ -1301,13 +1303,11 @@ namespace MouseAI.UI
 
         #region Listview
 
-        private void SetSelectedTextItalic(bool isSelected)
+        private void SetSelectedTextItalic()
         {
             ListViewItem item = GetSelectedListViewItem();
-            if (item != null && isSelected)
+            if (item != null)
                 item.ForeColor = RUN_COLOR;
-            //Font f = new Font(item.Font, (isSelected) ? Col : FontStyle.Regular);
-            //item.Font = f;
         }
 
         private bool SelectNext()
@@ -1477,23 +1477,11 @@ namespace MouseAI.UI
 
         #endregion
 
-        #region Maze Text and Segments
+        #region Segments
 
-        private void SetToolsVisible(bool isOpened)
+        private void SetMazeSegmentsVisible(bool isVisible)
         {
-            if (isOpened)
-            {
-                SetMazeSegmentsVisible();
-            }
-            else
-            {
-                mazeSegments.Visible = false;
-            }
-        }
-
-        private void SetMazeSegmentsVisible()
-        {
-            mazeSegments.Visible = (settings.isMazeSegments);
+            mazeSegments.Visible = isVisible;
         }
 
         private void DisplayMazeSegments()
@@ -1511,8 +1499,7 @@ namespace MouseAI.UI
             pathsToolStripMenuItem.Enabled = isOpened;
             trainToolStripMenuItem.Enabled = isOpened && maze.CheckMazeModel();
             testToolStripMenuItem.Enabled = isOpened && maze.CheckProjectModels();
-
-            SetToolsVisible(isOpened);
+            SetMazeSegmentsVisible(isOpened && settings.isMazeSegments);
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1593,7 +1580,7 @@ namespace MouseAI.UI
             if (!maze.isMazeModels())
                 return;
 
-            SetMazeSegmentsVisible();
+            SetMazeSegmentsVisible(settings.isMazeSegments);
         }
 
         private void viewHelpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1617,7 +1604,7 @@ namespace MouseAI.UI
             if (isCancel)
                 progress.btnProgressCancel.Click += btnProgressCancel_Click;
 
-            progress.Show();
+            progress.Show(); // Cannot be showdialog!
             progress.Location = new Point((Width / 2) - (progress.Width / 2), (Height / 2) - (progress.Height / 2));
             progress.Focus();
         }

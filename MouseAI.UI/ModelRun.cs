@@ -8,6 +8,7 @@ namespace MouseAI.UI
 {
     public partial class ModelRun : Form
     {
+        private readonly Maze maze;
         private readonly List<Button> buttons;
         private FormsPlot maze_plot;
         private FormsPlot total_plot;
@@ -20,10 +21,11 @@ namespace MouseAI.UI
         private readonly Color foreground;
         private readonly string[] columns;
 
-        public ModelRun(string[] columns, Color background, Color foreground)
+        public ModelRun(Maze maze, Color background, Color foreground)
         {
             InitializeComponent();
 
+            this.maze = maze;
             this.background = background;
             this.foreground = foreground;
             buttons = new List<Button>();
@@ -36,7 +38,7 @@ namespace MouseAI.UI
                 }
             }
 
-            this.columns = columns;
+            this.columns = maze.GetMazeStatisticPlotColumns();
             InitPlot();
         }
 
@@ -132,6 +134,11 @@ namespace MouseAI.UI
 
             total_plot.plt.Clear();
             total_plot.Render();
+        }
+
+        public void UpdateTimer()
+        {
+            tbxTime.Text = maze.GetMazeStatisticTime();
         }
 
         public void ResetButtons()
