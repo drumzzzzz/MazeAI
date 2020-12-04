@@ -18,13 +18,14 @@ using ScottPlot;
 
 namespace MouseAI
 {
-    public class Maze
+    public class Maze : MazeGenerator
     {
         #region Declarations
 
+        // Objects
         private NeuralNet neuralNet;
         private static byte[,] mazedata;
-        private MazeGenerator mazeGenerator;
+        //private MazeGenerator mazeGenerator;
         private static MazeObject[,] mazeObjects;
         private static MazeModels mazeModels;
         private static MazeModel mazeModel;
@@ -34,25 +35,21 @@ namespace MouseAI
         private static MazePaths mazePaths;
         private static readonly List<MazeObject>[] scanObjects = new List<MazeObject>[4];
         private Config config;
-
-        // Db
         private static MazeDb mazeDb;
         private static DbTable_Projects dbtblProjects;
-
         private static Random r;
         private static StringBuilder sb;
+        private readonly MazeObjects segmentPathObjects;
+        private MazeStatistic mazeStatistic;
+        private readonly List<PathNode> pathNodes;
+        private readonly List<PathNode> badNodes;
+        private static List<MazeObject> visionObjects;
+        private static Bitmap visualbmp;
+        private List<byte[]> imagebytes;
+        private List<byte[]> imagebytes_last;
 
-        private static int maze_width;
-        private static int maze_height;
-        private static int mouse_x;
-        private static int mouse_y;
-        private static DIRECTION mouse_direction;
-        private static int cheese_x;
-        private static int cheese_y;
-        private bool isCheesePath;
-        private bool isSmellPath;
+        // Constants
         private const int SMELL_DISTANCE = 10;
-
         private const string MAZE_DIR = "mazes";
         private const string MAZE_EXT = "mze";
         private const string LOG_DIR = "logs";
@@ -63,47 +60,51 @@ namespace MouseAI
         private const string BACKUP_DIR = "backup";
         private const string PLOT_EXT = "png";
         private const char LOG_DELIMIT = ',';
-        private static readonly string[] LOG_COLUMN_VALUES = {"epoch", "accuracy", "loss", "val_accuracy", "val_loss"};
-        private static readonly int[] PLOT_COLUMNS_Y = {1, 3};
-        private static readonly Color[] PLOT_COLORS_Y = {Color.Empty, Color.Green, Color.Blue, Color.Green, Color.Blue};
         private const int PLOT_COLUMN_X = 0;
         private const int PLOT_WIDTH = 300;
         private const int PLOT_HEIGHT = 300;
         private const string DIR = @"\";
         public const int BLACK = 0x00;
         public const int WHITE = 0xff;
+        private const int INVALID = -1;
 
+        // Vars
+        private static int maze_width;
+        private static int maze_height;
+        private static int mouse_x;
+        private static int mouse_y;
+        private static DIRECTION mouse_direction;
+        private static int cheese_x;
+        private static int cheese_y;
+        private bool isCheesePath;
+        private bool isSmellPath;
+        private static bool isDebug;
         private static string model_dir;
         private static string log_dir;
         private static string maze_dir;
         private static string backup_dir;
         private string FileName;
         private string modelProjectGuid;
-        private static readonly string[] IGNORE_VALUES = {"Config", "Nodes","DropOut", "int", "double", "Model", "Guid", "StartTime"};
 
-        // Model Running
-        private readonly MazeObjects segmentPathObjects;
-        private readonly List<PathNode> pathNodes;
-        private readonly List<PathNode> badNodes;
-        private int lastNode;
-        private static Bitmap visualbmp;
-        private List<byte[]> imagebytes;
-        private List<byte[]> imagebytes_last;
+        // Plotting
+        private static readonly string[] LOG_COLUMN_VALUES = { "epoch", "accuracy", "loss", "val_accuracy", "val_loss" };
+        private static readonly string[] IGNORE_VALUES = { "Config", "Nodes", "DropOut", "int", "double", "Model", "Guid", "StartTime" };
+        private static readonly int[] PLOT_COLUMNS_Y = { 1, 3 };
+        private static readonly Color[] PLOT_COLORS_Y = { Color.Empty, Color.Green, Color.Blue, Color.Green, Color.Blue };
+
+        // Neural Model Run Related
         private int segment_current;
-        private const int INVALID = -1;
-        private static List<MazeObject> visionObjects;
-        private MazeStatistic mazeStatistic;
-        private bool isRandomSearch;
+        private int lastNode;
         private int segmentCountLast;
         private int moveCount;
-        private static bool isDebug;
+        private bool isRandomSearch;
         private bool isFirstTime;
         private static string model_info;
 
+        // Graphic object display related
         private readonly List<Point> pnVisible;
         private readonly List<Point> pnDeadends;
         private readonly List<Point> pnSmell;
-
         public enum RUN_VISIBLE
         {
             NONE,
@@ -116,7 +117,8 @@ namespace MouseAI
 
         #region Initialization
 
-        public Maze(int _maze_width, int _maze_height)
+        // Constructor
+        public Maze(int _maze_width, int _maze_height) : base(_maze_width, _maze_height)
         {
             maze_width = _maze_width;
             maze_height = _maze_height;
@@ -137,7 +139,7 @@ namespace MouseAI
             pnVisible = new List<Point>();
             pnDeadends = new List<Point>();
             pnSmell = new List<Point>();
-            
+
             for (int i = 0; i < scanObjects.Length; i++)
             {
                 scanObjects[i] = new List<MazeObject>();
@@ -159,11 +161,13 @@ namespace MouseAI
                 throw new Exception("Could not create archive directory");
         }
 
+        // Add maze model instance
         public void AddMazeModel()
         {
             mazeModels.Add(new MazeModel(maze_width, maze_height, mouse_x, mouse_y, cheese_x, cheese_y, mazedata));
         }
 
+        // Insert mouse and cheese characters at maze model coordinates
         public bool AddCharacters()
         {
             if (mazeModel == null)
@@ -195,12 +199,12 @@ namespace MouseAI
             mazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
             cheese_x = cx;
             cheese_y = cy;
-            InitSmell();
 
             return true;
         }
 
-        private void InitSmell()
+        // Initialize smell nodes extending from cheese coordinates to SMELL_DISTANCE
+        public void InitSmell()
         {
             List<MazeObject> nodes = new List<MazeObject>();
             List<MazeObject> newnodes = new List<MazeObject>();
@@ -246,6 +250,7 @@ namespace MouseAI
             }
         }
 
+        // Insert the mouse and cheese characters at random coordinates and opposing sides of a given maze 
         public bool AddCharacters_Random()
         {
             DIRECTION dir = (DIRECTION) r.Next(1, 4);
@@ -286,41 +291,7 @@ namespace MouseAI
             return true;
         }
 
-        private static MazeObject GetMazeObject(DIRECTION dir)
-        {
-            List<MazeObject> mos;
-
-            if (dir == DIRECTION.WEST)
-                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == 1)
-                    .ToList();
-            else if (dir == DIRECTION.NORTH)
-                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == 1)
-                    .ToList();
-            else if (dir == DIRECTION.EAST)
-                mos = mazeObjects.Cast<MazeObject>()
-                    .Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == maze_width - 2).ToList();
-            else
-                mos = mazeObjects.Cast<MazeObject>()
-                    .Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == maze_height - 2).ToList();
-
-            return mos.Count == 0 ? null : mos.ElementAt(r.Next(mos.Count - 1));
-        }
-
-        private static DIRECTION OppositeDirection(DIRECTION dir)
-        {
-            if (dir == DIRECTION.EAST)
-                return DIRECTION.WEST;
-            if (dir == DIRECTION.WEST)
-                return DIRECTION.EAST;
-            return dir == DIRECTION.NORTH ? DIRECTION.SOUTH : DIRECTION.NORTH;
-        }
-
-        public int GetMouseDirection()
-        {
-            return (int)mouse_direction;
-        }
-
-        public void Reset()
+        public void MazeReset()
         {
             sb.Clear();
             pathObjects.Clear();
@@ -337,22 +308,20 @@ namespace MouseAI
             isSmellPath = false;
         }
 
-        public void Generate()
+        // Call random maze generation function
+        public void GenerateMazes()
         {
-            if (mazeGenerator == null)
-                mazeGenerator = new MazeGenerator(maze_width, maze_height, r);
-
-            MazeGenerator.Reset();
-            mazeGenerator.Generate();
+            GeneratorReset();
+            Generate();
             isCheesePath = false;
             isSmellPath = false;
         }
 
         public void Update()
         {
-            for (int y = 0; y < maze_height; ++y)
+            for (int y = 0; y < maze_height; y++)
             {
-                for (int x = 0; x < maze_width; ++x)
+                for (int x = 0; x < maze_width; x++)
                 {
                     mazedata[x, y] = MazeGenerator.GetObjectByte(x, y);
                     mazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
@@ -2076,6 +2045,40 @@ namespace MouseAI
         #endregion
 
         #region Maze Object Helpers
+
+        private static MazeObject GetMazeObject(DIRECTION dir)
+        {
+            List<MazeObject> mos;
+
+            if (dir == DIRECTION.WEST)
+                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == 1)
+                    .ToList();
+            else if (dir == DIRECTION.NORTH)
+                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == 1)
+                    .ToList();
+            else if (dir == DIRECTION.EAST)
+                mos = mazeObjects.Cast<MazeObject>()
+                    .Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == maze_width - 2).ToList();
+            else
+                mos = mazeObjects.Cast<MazeObject>()
+                    .Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == maze_height - 2).ToList();
+
+            return mos.Count == 0 ? null : mos.ElementAt(r.Next(mos.Count - 1));
+        }
+
+        private static DIRECTION OppositeDirection(DIRECTION dir)
+        {
+            if (dir == DIRECTION.EAST)
+                return DIRECTION.WEST;
+            if (dir == DIRECTION.WEST)
+                return DIRECTION.EAST;
+            return dir == DIRECTION.NORTH ? DIRECTION.SOUTH : DIRECTION.NORTH;
+        }
+
+        public int GetMouseDirection()
+        {
+            return (int)mouse_direction;
+        }
 
         private static bool isNode(int x, int y, bool isDeadEnds)
         {

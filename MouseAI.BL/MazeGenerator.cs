@@ -10,11 +10,11 @@ namespace MouseAI.BL
         private readonly DIRECTION[] dirs;
         private readonly Random r;
 
-        public MazeGenerator(int _maze_width, int _maze_height, Random r)
+        public MazeGenerator(int _maze_width, int _maze_height)
         {
             maze_width = _maze_width;
             maze_height = _maze_height;
-            this.r = r;
+            r= new Random();
 
             dirs = new DIRECTION[4];
             dirs[0] = DIRECTION.NORTH; // NORTH;
@@ -25,7 +25,7 @@ namespace MouseAI.BL
             maze = new byte[maze_width * maze_height];
         }
 
-        public static void Reset()
+        public void GeneratorReset()
         {
             for (int i = 0; i < maze_width * maze_height; i++)
             {

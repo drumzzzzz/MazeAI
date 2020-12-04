@@ -110,7 +110,7 @@ namespace MouseAI.UI
 
         #region Initialization
 
-        // Startup init
+        // Constructor
         public MouseAI()
         {
             InitializeComponent();
@@ -220,7 +220,7 @@ namespace MouseAI.UI
         // Async path tree search: generate image segments on success
         private async Task RunSearch()
         {
-            maze.Reset();
+            maze.MazeReset();
             mouse_last = new Point(-1, -1);
             
             bool isCheese = await Task.Run(PathSearch);
@@ -1223,8 +1223,8 @@ namespace MouseAI.UI
         // Call generation routine, attempt to place characters and add to model list
         private static bool CreateMaze(Maze m)
         {
-            m.Reset();
-            m.Generate();
+            m.MazeReset();
+            m.GenerateMazes();
             m.Update();
             if (!m.AddCharacters_Random())
                 return false;
@@ -1352,6 +1352,7 @@ namespace MouseAI.UI
                 if (!maze.AddCharacters())
                     throw new Exception("Could not add characters");
 
+                maze.InitSmell();
                 DrawMaze();
                 DrawPath();
 
