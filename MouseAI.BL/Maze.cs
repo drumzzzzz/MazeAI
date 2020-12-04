@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
@@ -535,7 +536,7 @@ namespace MouseAI
             // Create an image for neural prediction which represents the mouses visible path   
             isFirstTime = false;
             CreateVisionImage(mouse);
-            UpdateVisionState();
+            InvalidateVisionState();
             UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
             return false;
         }
@@ -665,23 +666,24 @@ namespace MouseAI
 
         #region Neural Vision Movement
 
-        // Process the possible movements resulting from a given neural vision and associated path nodes
+        // Process a mouse path from a given neural vision and the resultant node memory
         private bool ProcessVisionState(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
         {
+            // Perform any path pruning at a junction
             if (mazeobjects.Count >= 4)
             {
                 mouse.isJunction = true;
                 CleanPathObjects();
             }
 
-            // If mouse is currently moving along a path or there is no vision segment to process
+            // If the mouse is currently moving along a path or there is no vision segment to process
             if (lastNode < pathNodes.Count - 1 || segment_current == INVALID) 
                 return true;
 
             // Get a path node memory from the neural prediction 
-            List<PathNode> pn = mazeModels.GetPathNodes(segment_current);
+            List<PathNode> pathnodes = mazeModels.GetPathNodes(segment_current);
 
-            if (pn == null || pn.Count == 0)
+            if (pathnodes == null || pathnodes.Count == 0)
             {
                 throw new Exception("Invalid Vision Path Nodes!");
             }
@@ -689,34 +691,31 @@ namespace MouseAI
             if (isDebug)
                 Console.WriteLine("Processing neural vision state from memory index: {0}", segment_current);
 
-            PathNode p;
-            //MazeObject mo;
             int count = 0;
-            bool isMouse = false;
+            int nonodes = 0;
+            int start = pathnodes.FindIndex(o => isMouseNode(mouse, o));
 
-            // Iterate and add nodes >= mouse and valid
-            for (int i = 0; i < pn.Count; i++)
+            // Get mouse index
+            if (start != -1)
             {
-                p = pn[i];
-                //mo = mazeObjects[p.x, p.y];
-
-                if (!isMouse && isMouseNode(mouse, p))
-                    isMouse = true;
-
-                // If we've found the mouse and this is a valid path node 
-                //if (isMouse && !mo.isVisited && !mo.isDeadEnd && CheckNode(p))
-
-                // If we've found the mouse and this is a valid path node 
-                if (isMouse && CheckNode(p))
+                // Iterate nodes >= mouse and valid
+                for (int i = start; i < pathnodes.Count; i++)
                 {
-                    pathNodes.Add(p);
-                    count++;
+                    if (CheckNode(pathnodes[i]))
+                    {
+                        pathNodes.Add(pathnodes[i]);
+                        count++;
+                    }
+                    // Stop the path search threshold
+                    else if (nonodes++ > 5) 
+                        break;
                 }
             }
             // Return if the mouse was found and any neural vision nodes have been added to the list
-            return (isMouse && count != 0);
+            return (start != -1 && count != 0);
         }
 
+        // Validate nodes: check bad, duplicate and within vision sight
         private bool CheckNode(PathNode p)
         {
             return !badNodes.Any(o => o.x == p.x && o.y == p.y) &&
@@ -724,9 +723,11 @@ namespace MouseAI
                    visionObjects.Any(o => o.x == p.x && o.y == p.y);
         }
 
+        // 
         private bool ProcessNeuralVisionPath(IReadOnlyCollection<MazeObject> mazeobjects,
                         IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
+            // Return if no moves remain
             if (lastNode >= pathNodes.Count - 1)
                 return false;
 
@@ -735,71 +736,100 @@ namespace MouseAI
 
             MazeObject mo;
 
-            for (int i = 0; i < pathNodes.Count; i++) // Iterate nodes
+            // Iterate path nodes
+            for (int i = 0; i < pathNodes.Count; i++) 
             {
-                if (isMouseNode(mouse, pathNodes[i])) // If at the mouse
+                // If at the mouse and any nodes exist past the mouse
+                if (isMouseNode(mouse, pathNodes[i]) && (i < pathNodes.Count - 1))
                 {
-                    if (i < pathNodes.Count - 1) // If any nodes remain past the mouse
+                    PathNode pn = pathNodes[i + 1]; // Get next node
+                    
+                    // If mouse can move onto the next node: move the mouse and return result
+                    if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse) && !isVisited(pn.x, pn.y))
                     {
-                        PathNode pn = pathNodes[i + 1]; // Get the node
+                        mo = mazeObjects[pn.x, pn.y];
+                        UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
+                        lastNode = i + 1;
+                        InvalidateVisionState();
+                        return true;
+                    }
 
-                        if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse) && !isVisited(pn.x, pn.y)) // If mouse can move on the next node
+                    if (isDebug)
+                        Console.WriteLine("Encountered a neural path deadend: pruning path nodes");
+
+                    // Otherwise - invalidate segment and prune bad nodes
+                    InvalidateVisionState();
+                    for (int idx = pathNodes.Count - 1; idx > -1; idx--)
+                    {
+                        pn = pathNodes[idx];
+                        mo = mazeObjects[pn.x, pn.y];
+
+                        if (!mo.isJunction)
                         {
-                            mo = mazeObjects[pn.x, pn.y];
-                            UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
-                            lastNode = i + 1;
-                            UpdateVisionState();
-                            return true;
-                        }
+                            if (!badNodes.Any(o => o.x == mo.x && o.y == mo.y))
+                                badNodes.Add(pn);
 
-                        if (isDebug)
-                            Console.WriteLine("Encountered a neural path deadend: pruning path nodes");
-
-                        UpdateVisionState();
-
-                        for (int idx = pathNodes.Count - 1; idx > -1; idx--)
-                        {
-                            pn = pathNodes[idx];
-                            mo = mazeObjects[pn.x, pn.y];
-
-                            if (!mo.isJunction)
-                            {
-                                if (!badNodes.Any(o => o.x == mo.x && o.y == mo.y))
-                                    badNodes.Add(pn);
-
-                                pathNodes.RemoveAt(idx);
-                            }
+                            pathNodes.RemoveAt(idx);
                         }
                     }
                     break;
                 }
             }
-            lastNode = pathNodes.Count - 1;
-            if (lastNode < 0)
-                lastNode = 0;
-
+            // Update node counter and return result
+            lastNode = (pathNodes.Count - 1 < 0) ? 0 : pathNodes.Count - 1;
             return false;
         }
 
-        private void CreateVisionImage(MazeObject mouse) // Create a image from the visible path of mouse 
+        // Create a image from the visible path of the mouse 
+        private void CreateVisionImage(MazeObject mouse) 
         {
             if (isDebug)
                 Console.WriteLine("Creating vision image");
 
+            // If no segments - add the mouse
             if (segmentPathObjects.Count == 0)
             {
                 segmentPathObjects.Add(mouse);
             }
-            else if (moveCount > 2 && mouse.x == mouse_x && mouse.y == mouse_y)
+            // Otherwise - clear list
+            else if (moveCount > 1 && mouse.x == mouse_x && mouse.y == mouse_y)
             {
-                if (isDebug)
-                    Console.WriteLine("Pruning dead ends from search tree");
-
                 segmentPathObjects.Clear();
             }
 
+            // Prepare lists and prune any deadends
+            PrepareVisionImage(mouse);
+
+            // If new paths: create an image from the given path
+            if (segmentPathObjects.Count != segmentCountLast)
+            {
+                visionObjects.Clear();
+                imagebytes.Clear();
+                imagebytes_last.Clear();
+                visionObjects.AddRange(segmentPathObjects);
+                imagebytes.Add(GenerateVisualImage(segmentPathObjects));
+                imagebytes_last.AddRange(imagebytes);
+                segmentCountLast = segmentPathObjects.Count;
+            }
+            // Otherwise: restore from buffer
+            else
+            {
+                imagebytes.Clear();
+                imagebytes.AddRange(imagebytes_last);
+            }
+        }
+
+        // Prepares vision segment object paths and imagebyte lists
+        private void PrepareVisionImage(MazeObject mouse)
+        {
             searchObjects = SearchObjects(mouse.x, mouse.y).Distinct().ToList();
             segmentPathObjects.AddRange(searchObjects.Except(segmentPathObjects));
+
+            if (imagebytes == null)
+            {
+                imagebytes = new List<byte[]>();
+                imagebytes_last = new List<byte[]>();
+            }
 
             if (mouse.count > 1)
             {
@@ -815,44 +845,9 @@ namespace MouseAI
                     }
                 }
             }
-
-            if (imagebytes == null)
-            {
-                imagebytes = new List<byte[]>();
-                imagebytes_last = new List<byte[]>();
-            }
-
-            if (segmentPathObjects.Count != segmentCountLast)
-            {
-                visionObjects.Clear();
-                visionObjects.AddRange(segmentPathObjects);
-                imagebytes.Clear();
-                imagebytes_last.Clear();
-                imagebytes.Add(GenerateVisualImage(segmentPathObjects));
-                imagebytes_last.AddRange(imagebytes);
-                segmentCountLast = segmentPathObjects.Count;
-            }
-            else
-            {
-                imagebytes.Clear();
-                imagebytes.AddRange(imagebytes_last);
-            }
         }
 
-        public void ProcessVisionImage()
-        {
-            if (imagebytes == null || imagebytes.Count == 0)
-            {
-                return;
-            }
-
-            segment_current = neuralNet.Predict(imagebytes, mazeModel.guid, isDebug);
-            imagebytes.Clear();
-
-            if (isDebug)
-                Console.WriteLine("Processed Vision Result: {0}", segment_current);
-        }
-
+        // Generates and returns a bitmapped segment image of the given path objects
         private static byte[] GenerateVisualImage(MazeObjects mos)
         {
             if (visualbmp == null)
@@ -877,7 +872,24 @@ namespace MouseAI
             return bytes;
         }
 
-        private void UpdateVisionState()
+        // Performs neural prediction on the mouses visible path
+        // Stores the resultant segment index within the dataset
+        public void ProcessVisionImage()
+        {
+            if (imagebytes == null || imagebytes.Count == 0)
+            {
+                return;
+            }
+
+            segment_current = neuralNet.Predict(imagebytes, mazeModel.guid, isDebug);
+            imagebytes.Clear();
+
+            if (isDebug)
+                Console.WriteLine("Processed Vision Result: {0}", segment_current);
+        }
+
+        // Reset vision segment state
+        private void InvalidateVisionState()
         {
             segment_current = INVALID;
 
@@ -889,20 +901,20 @@ namespace MouseAI
 
         #region Tree Search Movement
 
+        // Non neural mouse movement via a tree search algorithm:
+        // The mouse is lost in an unrecognized portion of the maze due to neural prediction errors
+        // Now the mouse needs to choose an optimal or random move (methods are shared with maze path solving)
         private bool ProcessSearchMove(IReadOnlyCollection<MazeObject> mazeobjects,
-    IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
+                     IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mouse)
         {
-            // The mouse is confused because it is in an unrecognized portion of a maze due
-            // to the predicted neural path memory not relating to anything it sees.
-            // Now the mouse needs to choose an optimal or random move
-
+            // Init array and lists
             int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
             List<MazeObject> mos = mazeobjects.Where(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE)
                 .ToList();
+            List<MazeObject> mos_selections = new List<MazeObject>();
             MazeObject mo = null;
 
-            List<MazeObject> mos_selections = new List<MazeObject>();
-
+            // Get a first possible move or random moves 
             if (mos.Count != 0)
             {
                 for (int i = 0; i < pan_array.Length; i += 2)
@@ -917,12 +929,13 @@ namespace MouseAI
                     }
                 }
             }
-
+            // If random - select a move
             if (isRandomSearch && mos_selections.Count != 0)
             {
                 mo = mos_selections[r.Next(0, mos_selections.Count)];
             }
 
+            // If valid: mouse moves and searches along the path
             if (mo != null)
             {
                 UpdatePathObject(mazeobjects, mazeobjects_de, mo, mouse);
@@ -931,6 +944,7 @@ namespace MouseAI
                 return true;
             }
 
+            // Otherwise: No valid moves as the mouse is at a deadend: mouse reverts along a path
             ProcessOldestPath(mazeobjects, mouse);
             if (mouse.isDeadEnd && !badNodes.Any(o => isMouseNode(mouse, o)))
             {
@@ -940,15 +954,17 @@ namespace MouseAI
             return false;
         }
 
+        // Mouse movement processing for path solving a new maze
         public bool ProcessMouseMove()
         {
             int x = mouseObject.x;
             int y = mouseObject.y;
 
-            // Scan Check if mouse can see the cheese
+            // Check if mouse can see the cheese
             if (!isCheesePath)
                 isCheesePath = ScanObjects(x, y);
 
+            // Retrieve visible objects and the mouse
             List<MazeObject> mazeobjects = CheckNode(x, y, false);
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
 
@@ -957,32 +973,33 @@ namespace MouseAI
                 throw new Exception("Mouse Object Null!");
             }
 
+            // If moving towards the cheese: override search movement
             if (isCheesePath)
             {
+                // Return true if cheese reached
                 if (ProcessCheeseMove(mouse, mazeobjects))
                 {
                     CleanPathObjects();
                     FinalizePathObjects();
                     return true;
                 }
-
                 return false;
             }
 
-            ProcessMove(mazeobjects, mouse);
+            // Get possible moves
+            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
+                                                            o.object_state != OBJECT_STATE.MOUSE);
+            // If there is a valid move to be made
+            if (mo != null)
+                UpdatePathObject(mazeobjects, null, mo, mouse);
+            // Mouse is in deadend: revert the path
+            else
+                ProcessOldestPath(mazeobjects, mouse);
+
             return false;
         }
 
-        private void ProcessMove(IReadOnlyCollection<MazeObject> mazeobjects, MazeObject mouse)
-        {
-            MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
-                                                            o.object_state != OBJECT_STATE.MOUSE);
-            if (mo != null)
-                UpdatePathObject(mazeobjects, null, mo, mouse);
-            else
-                ProcessOldestPath(mazeobjects, mouse);
-        }
-
+        // Move mouse along a searched path
         private void UpdatePathObject(IReadOnlyCollection<MazeObject> mazeobjects,
             IReadOnlyCollection<MazeObject> mazeobjects_de, MazeObject mo, MazeObject mouse)
         {
@@ -1009,6 +1026,8 @@ namespace MouseAI
             pathObjects.Add(mo);
         }
 
+        // Reverts mouse out of a deadend until a non-visited path is reached
+        // Uses a succession of earlier datetimes for path calculations
         private static void ProcessOldestPath(IEnumerable<MazeObject> mazeobjects, MazeObject mouse)
         {
             DateTime dtOldest = DateTime.UtcNow;
@@ -1035,28 +1054,6 @@ namespace MouseAI
             mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
             mouse.isVisited = true;
             mouse.object_state = OBJECT_STATE.VISITED;
-        }
-
-        public List<MazeObject> CheckNode(int x, int y, bool isDeadends)
-        {
-            List<MazeObject> mazeobjects = new List<MazeObject>
-            {
-                mazeObjects[x, y]
-            };
-
-            for (int x_idx = x - 1; x_idx < x + 2; x_idx += 2)
-            {
-                if (isNode(x_idx, y, isDeadends))
-                    mazeobjects.Add(mazeObjects[x_idx, y]);
-            }
-
-            for (int y_idx = y - 1; y_idx < y + 2; y_idx += 2)
-            {
-                if (isNode(x, y_idx, isDeadends))
-                    mazeobjects.Add(mazeObjects[x, y_idx]);
-            }
-
-            return mazeobjects;
         }
 
         #endregion
@@ -2056,6 +2053,28 @@ namespace MouseAI
         #endregion
 
         #region Maze Object Helpers
+
+        public List<MazeObject> CheckNode(int x, int y, bool isDeadends)
+        {
+            List<MazeObject> mazeobjects = new List<MazeObject>
+            {
+                mazeObjects[x, y]
+            };
+
+            for (int x_idx = x - 1; x_idx < x + 2; x_idx += 2)
+            {
+                if (isNode(x_idx, y, isDeadends))
+                    mazeobjects.Add(mazeObjects[x_idx, y]);
+            }
+
+            for (int y_idx = y - 1; y_idx < y + 2; y_idx += 2)
+            {
+                if (isNode(x, y_idx, isDeadends))
+                    mazeobjects.Add(mazeObjects[x, y_idx]);
+            }
+
+            return mazeobjects;
+        }
 
         private static MazeObject GetMazeObject(DIRECTION dir)
         {
