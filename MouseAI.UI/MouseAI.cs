@@ -323,7 +323,7 @@ namespace MouseAI.UI
             SetMenuItems(true);
             maze.CleanNetwork();
 
-            // The invoked Python via .NET libraries occasionally enter unpredictable states after training calls
+            // The invoked Python via .NET libraries occasionally enters an unpredictable state with repeated training calls
             // Restart the debugger/application just in case! 
             if (Debugger.IsAttached)
                 Debugger.Launch();
@@ -869,12 +869,13 @@ namespace MouseAI.UI
             try
             {
                 modelPredict.txtResults.Text = string.Empty;
-
                 ImageDatas ids = maze.Predict(modelLoad.GetSelectedModel());
+                
                 if (ids == null)
                     throw new Exception("Prediction result error!");
+                if (!maze.CalculateAccuracies(ids))
+                    throw new Exception("Error Calculating Accuracies!");
 
-                maze.UpdateAccuracies(ids);
                 modelPredict.txtResults.Text = ids.GetResults();
                 modelPredict.SetImages(ids);
             }
@@ -1225,7 +1226,6 @@ namespace MouseAI.UI
         {
             m.MazeReset();
             m.GenerateMazes();
-            m.Update();
             if (!m.AddCharacters_Random())
                 return false;
             m.AddMazeModel();

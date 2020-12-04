@@ -25,7 +25,6 @@ namespace MouseAI
         // Objects
         private NeuralNet neuralNet;
         private static byte[,] mazedata;
-        //private MazeGenerator mazeGenerator;
         private static MazeObject[,] mazeObjects;
         private static MazeModels mazeModels;
         private static MazeModel mazeModel;
@@ -291,48 +290,32 @@ namespace MouseAI
             return true;
         }
 
-        public void MazeReset()
-        {
-            sb.Clear();
-            pathObjects.Clear();
-            mazePaths.ClearPath(mazeModel.guid);
-            isCheesePath = false;
-            isSmellPath = false;
-        }
-
-        public void ResetRun()
-        {
-            sb.Clear();
-            pathObjects.Clear();
-            isCheesePath = false;
-            isSmellPath = false;
-        }
-
-        // Call random maze generation function
+        // Random maze generation function
         public void GenerateMazes()
         {
             GeneratorReset();
             Generate();
-            isCheesePath = false;
-            isSmellPath = false;
-        }
 
-        public void Update()
-        {
             for (int y = 0; y < maze_height; y++)
             {
                 for (int x = 0; x < maze_width; x++)
                 {
-                    mazedata[x, y] = MazeGenerator.GetObjectByte(x, y);
+                    mazedata[x, y] = GetObjectByte(x, y);
                     mazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
             }
+
+            isCheesePath = false;
+            isSmellPath = false;
         }
 
         #endregion
 
         #region Neural Network Training
 
+        // Perform neural net model training:
+        // Create a neural model with the given config parameters
+        // Train with a data set initialized from the current projects maze model image segments
         public void Train(string guid)
         {
             if (config == null)
@@ -352,6 +335,7 @@ namespace MouseAI
             neuralNet.Process(config, mazeModels.Count());
         }
 
+        // Load a trained neural net model from file 
         public void LoadModel(string modelName)
         {
             if (string.IsNullOrEmpty(modelName))
@@ -361,6 +345,9 @@ namespace MouseAI
             neuralNet.LoadModel(modelName);
         }
 
+        // Save a trained neural model:
+        // Create and insert SQLite db record
+        // Save model files and plot image
         public void SaveResults()
         {
             dbtblProjects = new DbTable_Projects
@@ -374,11 +361,12 @@ namespace MouseAI
                 throw new Exception("Failed to insert db record");
 
             mazeDb.UpdateModelLast(mazeModels.Guid, dbtblProjects.Log);
-
             neuralNet.SaveFiles();
             mazeModels.StartTime = config.StartTime;
             SavePlot(config.StartTime);
         }
+
+        // Misc Get/Sets and helpers
 
         public void CleanNetwork()
         {
@@ -404,6 +392,9 @@ namespace MouseAI
 
         #region Neural Network Prediction
 
+        // Perform neural net predictions using a model config from file:
+        // Initialize a dataset from the current projects image segments
+        // Perform predictions with loaded model
         public ImageDatas Predict(string starttime)
         {
             if (string.IsNullOrEmpty(starttime))
@@ -421,7 +412,9 @@ namespace MouseAI
             return neuralNet.Predict(cfg.isCNN);
         }
 
-        public bool UpdateAccuracies(ImageDatas imageSegments)
+        // Iterate and calculate the prediction errors per maze model:
+        // Increment errors if Guid label is incorrect
+        public bool CalculateAccuracies(ImageDatas imageSegments)
         {
             if (imageSegments == null || imageSegments.Count == 0 || mazeModels == null || mazeModels.Count() == 0)
                 return false;
@@ -438,6 +431,9 @@ namespace MouseAI
 
         #region Neural Network Run Movement
 
+        // Initialize for a mouse to cheese run session:
+        // Clear lists, init values and statistics
+        // Init dataset for neural net from current projects image segments
         public void InitRunMove(bool isRandom)
         {
             if (!mazeModels.CheckPathNodes())
@@ -452,11 +448,12 @@ namespace MouseAI
             segmentCountLast = lastNode = moveCount = 0;
             isRandomSearch = isRandom;
             isFirstTime = true;
-            neuralNet.InitDataSets(mazeModels.GetImageSegments());
             mazeStatistic = null;
             mazeStatistic = new MazeStatistic(mazeModel.guid, neuralNet.GetLogName());
+            neuralNet.InitDataSets(mazeModels.GetImageSegments());
         }
 
+        // Calculate a single move action within a maze traversal session
         public bool ProcessRunMove(bool isdebug)
         {
             isDebug = isdebug;
@@ -472,30 +469,32 @@ namespace MouseAI
             mazeStatistic.SetPredictedLabels(neuralNet.GetPredicted());
             mazeStatistic.SetPredictedErrors(neuralNet.GetPredictedErrors());
 
-            // Object scan: set if mouse can see the cheese
+            // Object scan: Scan if mouse can see the cheese (if it hasn't been seen yet)
+            // If seen: override smell mode - set cheese path mode
             if (!isCheesePath && ScanObjects(x, y))
             {
-                isCheesePath = true;
                 isSmellPath = false;
+                isCheesePath = true;
             }
 
+            // Store visible deadend and non deadend objects from the mouse location
+            // Store current mouse position object from list
             List<MazeObject> mazeobjects_de = CheckNode(x, y, true);
             List<MazeObject> mazeobjects = mazeobjects_de.Where(o => !o.isDeadEnd).ToList();
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
 
+            // Validate the mouse is present!
             if (mouse == null)
             {
                 throw new Exception("Mouse Object Null!");
             }
 
-            if (!isSmellPath && !isCheesePath)
-                isSmellPath = (mouse.smell_level != 0);
-
-            if (isDebug)
-                Console.WriteLine("Mouse smell cheese: {0} see cheese: {1}", isSmellPath, isCheesePath);
-
+            // Check if the mouse has reached the cheese or can see or smell the cheese
+            // Return true on reached
             if (CheckForCheese(mouse, mazeobjects))
                 return true;
+
+            // Override neural move processing if seen or smelled 
             if (isCheesePath || isSmellPath)
             {
                 UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
@@ -507,7 +506,7 @@ namespace MouseAI
             if (isDebug)
                 Console.WriteLine("LastNode:{0} pathNodes: {1}", lastNode, pathNodes.Count);
 
-            if (!isFirstTime)
+            if (!isFirstTime) // Skip first iteration to ensure an image for neural prediction is generated
             {
                 // Process the mouses neural vision state:
                 // On false: Process a tree search move
@@ -530,8 +529,10 @@ namespace MouseAI
                     return false;
                 }
             }
-
-            // Create an image that represents the mouses visible path   
+            else
+                isFirstTime = false;
+            
+            // Create an image for neural prediction which represents the mouses visible path   
             isFirstTime = false;
             CreateVisionImage(mouse);
             UpdateVisionState();
@@ -539,45 +540,90 @@ namespace MouseAI
             return false;
         }
 
-        private static void UpdateMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
-        {
-            if (x_curr < x_last)
-                mouse_direction = DIRECTION.WEST;
-            else if (x_curr > x_last)
-                mouse_direction = DIRECTION.EAST;
-            else if (y_curr < y_last)
-                mouse_direction = DIRECTION.NORTH;
-            else if (y_curr > y_last)
-                mouse_direction = DIRECTION.SOUTH;    
-        }
-
         #endregion
 
         #region Cheese Movement
 
+        // Return true if the mouse has reached the cheese, otherwise process cheese path and smell detection movements
         private bool CheckForCheese(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
         {
+            if (isDebug)
+                Console.WriteLine("Mouse smell cheese: {0} see cheese: {1}", isSmellPath, isCheesePath);
+
+            // If mouse is at cheese: flag for end goal of maze traversal
             if (isMouseAtCheese(mouse))
             {
                 MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.DONE);
                 return true;
             }
 
+            // If true: move mouse towards the cheese
             if (isCheesePath)
             {
                 MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.FOUND);
                 if (ProcessCheeseMove(mouse, mazeobjects))
                     CleanPathObjects();
             }
-            else if (isSmellPath)
+            else
             {
-                MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SMELLED);
-                if (ProcessSmellMove(mouse, mazeobjects))
-                    CleanPathObjects();
+                // If no path yet: check if mouse can smell the cheese
+                if (!isSmellPath)
+                    isSmellPath = (mouse.smell_level != 0);
+
+                // If true: move mouse towards the cheese
+                if (isSmellPath)
+                {
+                    MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.SMELLED);
+                    if (ProcessSmellMove(mouse, mazeobjects))
+                        CleanPathObjects();
+                }
             }
             return false;
         }
 
+        // Mouse movement follows along a straight line visible path that leads to the cheese
+        private bool ProcessCheeseMove(MazeObject mouse, IEnumerable<MazeObject> mazeobjects)
+        {
+            int curr_x = mouse.x;
+            int curr_y = mouse.y;
+            int new_x = -1;
+            int new_y = -1;
+
+            if (isMouseAtCheese(mouse))
+            {
+                MazeObject m = mazeObjects[curr_x, curr_y];
+                m.object_state = OBJECT_STATE.CHEESE;
+                m.dtLastVisit = DateTime.UtcNow;
+                pathObjects.Add(m);
+                return true;
+            }
+
+            if (curr_x == cheese_x) // North or south
+            {
+                new_x = curr_x;
+                new_y = (curr_y > cheese_y) ? curr_y - 1 : curr_y + 1;
+            }
+            else if (curr_y == cheese_y) // West or East
+            {
+                new_y = curr_y;
+                new_x = (curr_x > cheese_x) ? curr_x - 1 : curr_x + 1;
+            }
+
+            if (new_x == -1 || new_y == -1 || !SetPathMove(curr_x, curr_y, new_x, new_y))
+                throw new Exception("Invalid Cheese Path Movement!");
+
+            MazeObject mo = mazeobjects.FirstOrDefault(o => o.x == curr_x && o.y == curr_y);
+            if (mo != null)
+            {
+                mo.isCheesePath = true;
+                pathObjects.Add(mo);
+                segmentPathObjects.Add(mo);
+            }
+
+            return false;
+        }
+
+        // Mouse movement follows along a smell path of descending levels that leads to the cheese
         private bool ProcessSmellMove(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
         {
             int curr_x = mouse.x;
@@ -606,7 +652,7 @@ namespace MouseAI
             }
 
             if (mo == null || !SetPathMove(curr_x, curr_y, mo.x, mo.y))
-                throw new Exception("Invalid Smell Move!");
+                throw new Exception("Invalid Smell Path Movement!");
 
             mo.isCheesePath = true;
             pathObjects.Add(mo);
@@ -615,54 +661,11 @@ namespace MouseAI
             return false;
         }
 
-        private bool ProcessCheeseMove(MazeObject mouse, IEnumerable<MazeObject> mazeobjects)
-        {
-            int curr_x = mouse.x;
-            int curr_y = mouse.y;
-            int new_x = -1;
-            int new_y = -1;
-
-            if (isMouseAtCheese(mouse))
-            {
-                MazeObject m = mazeObjects[curr_x, curr_y];
-                m.object_state = OBJECT_STATE.CHEESE;
-                m.dtLastVisit = DateTime.UtcNow;
-                pathObjects.Add(m);
-                return true;
-            }
-
-            if (curr_x == cheese_x) // Move North or south
-            {
-                new_x = curr_x;
-                new_y = (curr_y > cheese_y) ? curr_y - 1 : curr_y + 1;
-            }
-            else if (curr_y == cheese_y) // Move West or East
-            {
-                new_y = curr_y;
-                new_x = (curr_x > cheese_x) ? curr_x - 1 : curr_x + 1;
-            }
-
-            if (new_x == -1 || new_y == -1)
-                throw new Exception("Invalid Path Direction!");
-
-            if (!SetPathMove(curr_x, curr_y, new_x, new_y))
-                throw new Exception("Invalid Path Move!");
-
-            MazeObject mo = mazeobjects.FirstOrDefault(o => o.x == curr_x && o.y == curr_y);
-            if (mo != null)
-            {
-                mo.isCheesePath = true;
-                pathObjects.Add(mo);
-                segmentPathObjects.Add(mo);
-            }
-
-            return false;
-        }
-
         #endregion
 
         #region Neural Vision Movement
 
+        // Process the possible movements resulting from a given neural vision and associated path nodes
         private bool ProcessVisionState(MazeObject mouse, IReadOnlyCollection<MazeObject> mazeobjects)
         {
             if (mazeobjects.Count >= 4)
@@ -671,39 +674,46 @@ namespace MouseAI
                 CleanPathObjects();
             }
 
-            if (lastNode < pathNodes.Count - 1 || segment_current == INVALID) // If remaining moves
+            // If mouse is currently moving along a path or there is no vision segment to process
+            if (lastNode < pathNodes.Count - 1 || segment_current == INVALID) 
                 return true;
 
+            // Get a path node memory from the neural prediction 
             List<PathNode> pn = mazeModels.GetPathNodes(segment_current);
 
             if (pn == null || pn.Count == 0)
             {
-                throw new Exception("Invalid Path Nodes!");
+                throw new Exception("Invalid Vision Path Nodes!");
             }
 
             if (isDebug)
                 Console.WriteLine("Processing neural vision state from memory index: {0}", segment_current);
 
             PathNode p;
-            MazeObject mo;
+            //MazeObject mo;
             int count = 0;
             bool isMouse = false;
+
+            // Iterate and add nodes >= mouse and valid
             for (int i = 0; i < pn.Count; i++)
             {
                 p = pn[i];
-                mo = mazeObjects[p.x, p.y];
+                //mo = mazeObjects[p.x, p.y];
 
                 if (!isMouse && isMouseNode(mouse, p))
                     isMouse = true;
 
                 // If we've found the mouse and this is a valid path node 
-                if (isMouse && !mo.isVisited && !mo.isDeadEnd && CheckNode(p))
+                //if (isMouse && !mo.isVisited && !mo.isDeadEnd && CheckNode(p))
+
+                // If we've found the mouse and this is a valid path node 
+                if (isMouse && CheckNode(p))
                 {
                     pathNodes.Add(p);
                     count++;
                 }
             }
-            // Return if mouse was found and any neural vision nodes have been added to the list
+            // Return if the mouse was found and any neural vision nodes have been added to the list
             return (isMouse && count != 0);
         }
 
@@ -1507,6 +1517,7 @@ namespace MouseAI
             }
         }
 
+        // Path Tree Pruning
         private void CleanPathObjects()
         {
             for (int i = pathObjects.Count - 1; i > -1; i--)
@@ -2066,6 +2077,18 @@ namespace MouseAI
             return mos.Count == 0 ? null : mos.ElementAt(r.Next(mos.Count - 1));
         }
 
+        private static void UpdateMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
+        {
+            if (x_curr < x_last)
+                mouse_direction = DIRECTION.WEST;
+            else if (x_curr > x_last)
+                mouse_direction = DIRECTION.EAST;
+            else if (y_curr < y_last)
+                mouse_direction = DIRECTION.NORTH;
+            else if (y_curr > y_last)
+                mouse_direction = DIRECTION.SOUTH;
+        }
+
         private static DIRECTION OppositeDirection(DIRECTION dir)
         {
             if (dir == DIRECTION.EAST)
@@ -2212,6 +2235,23 @@ namespace MouseAI
             }
 
             return true;
+        }
+
+        public void MazeReset()
+        {
+            sb.Clear();
+            pathObjects.Clear();
+            mazePaths.ClearPath(mazeModel.guid);
+            isCheesePath = false;
+            isSmellPath = false;
+        }
+
+        public void ResetRun()
+        {
+            sb.Clear();
+            pathObjects.Clear();
+            isCheesePath = false;
+            isSmellPath = false;
         }
 
         public int GetMazeModelSize()
