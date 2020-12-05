@@ -659,7 +659,6 @@ namespace MouseAI
                     mazeStatistic.IncrementNeuralMoves();
                     MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
                     UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
-                    //return false;
                 }
             }
             else

@@ -57,7 +57,7 @@
             this.pnlPlot.Location = new System.Drawing.Point(364, 12);
             this.pnlPlot.Margin = new System.Windows.Forms.Padding(0);
             this.pnlPlot.Name = "pnlPlot";
-            this.pnlPlot.Size = new System.Drawing.Size(646, 318);
+            this.pnlPlot.Size = new System.Drawing.Size(501, 318);
             this.pnlPlot.TabIndex = 38;
             // 
             // label2
@@ -307,7 +307,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1019, 343);
+            this.ClientSize = new System.Drawing.Size(874, 339);
             this.ControlBox = false;
             this.Controls.Add(this.rdoOff);
             this.Controls.Add(this.rdoNeural);

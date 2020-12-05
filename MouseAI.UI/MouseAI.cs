@@ -760,6 +760,7 @@ namespace MouseAI.UI
                             isStep = false;
                             SetRunMode(RUN_MODE.STEP);
                             isProcess = true;
+                            UpdateMaze(true, true);
                         }
                     }
                     else
