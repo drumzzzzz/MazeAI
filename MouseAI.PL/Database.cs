@@ -115,55 +115,6 @@ namespace MouseAI.PL
             }
         }
 
-        public object ReadRow(string table, string column, string value, object obj)
-        {
-            SQLiteConnection conn = new SQLiteConnection(db_file);
-
-            try
-            {
-                conn.Open();
-                SQLiteCommand cmd = new SQLiteCommand(conn)
-                {
-                    CommandText = string.Format("SELECT * FROM {0} WHERE {1} = '{2}'", table, column, value)
-                };
-
-                SQLiteDataReader rdr = cmd.ExecuteReader();
-                Type ObjType = obj.GetType();
-                bool isFound;
-
-                rdr.Read();
-                if (!rdr.HasRows || rdr.FieldCount <= 0)
-                    throw new Exception("No Row Returned");
-
-                foreach (FieldInfo item in ObjType.GetRuntimeFields().Where(x=>x.IsStatic == false))
-                {
-                    isFound = false;
-                    for (int i = 0; i < rdr.FieldCount; i++)
-                    {
-                        if (item.Name.Contains(string.Format("<{0}>",rdr.GetName(i))) && rdr.GetFieldType(i) == item.FieldType)
-                        {
-                            var v = rdr.GetValue(i);
-                            item.SetValue(obj, v);
-                            isFound = true;
-                            break;
-                        }
-                    }
-                    if(!isFound)
-                        throw new Exception("Error Reading Fields");
-                }
-                rdr.Close();
-                CloseConnection(conn);
-
-                return obj;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                CloseConnection(conn);
-                return null;
-            }
-        }
-
         public List<object> ReadRows(string table, string column, string value, object obj)
         {
             SQLiteConnection conn = new SQLiteConnection(db_file);
@@ -318,35 +269,6 @@ namespace MouseAI.PL
             {
                 Console.WriteLine(e);
                 CloseConnection(conn);
-            }
-        }
-
-        public int RowCount(string table, string column, List<string> values)
-        {
-            SQLiteConnection conn = new SQLiteConnection(db_file);
-            int rowcount = 0;
-            object result;
-
-            try
-            {
-                conn.Open();
-
-                SQLiteCommand cmd = new SQLiteCommand(conn);
-
-                foreach (string value in values)
-                {
-                    cmd.CommandText = string.Format("SELECT COUNT(*) FROM {0} WHERE {1} = '{2}'", table, column, value);
-                    result = cmd.ExecuteScalar();
-                    rowcount += (result != null) ? Convert.ToInt32(result) : 0;
-                }
-                CloseConnection(conn);
-                return rowcount;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                CloseConnection(conn);
-                return -1;
             }
         }
 

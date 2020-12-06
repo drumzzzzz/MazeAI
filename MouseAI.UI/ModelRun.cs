@@ -127,15 +127,6 @@ namespace MouseAI.UI
             maze_plot.Render();
         }
 
-        public void ClearTotalPlot()
-        {
-            if (total_plot == null)
-                return;
-
-            total_plot.plt.Clear();
-            total_plot.Render();
-        }
-
         public void UpdateTimer()
         {
             tbxTime.Text = maze.GetMazeStatisticTime();

@@ -16,12 +16,6 @@ namespace MouseAI.PL
 {
     public class FileIO
     {
-        #region Declarations
-
-        private static int FileCount { get; set; }
-
-        #endregion
-
         #region File Dialogs
 
         public static string SaveFileAs_Dialog(string directory, string extension)
@@ -71,7 +65,6 @@ namespace MouseAI.PL
                 return string.Empty;
             return result == DialogResult.OK ? ofd.FileName : null;
         }
-
 
         #endregion
 

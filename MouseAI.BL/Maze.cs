@@ -1,4 +1,6 @@
-﻿#region Using Statements
+﻿// Maze class : Inherits MazeGenerator
+
+#region Using Statements
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
-using System.Xml.XPath;
 using MouseAI.BL;
 using MouseAI.ML;
 using MouseAI.PL;
@@ -101,7 +102,7 @@ namespace MouseAI
         private bool isFirstTime;
         private static string model_info;
 
-        // Graphic object display related
+        // Object location points
         private readonly List<Point> pnVisible;
         private readonly List<Point> pnDeadends;
         private readonly List<Point> pnSmell;
@@ -1189,6 +1190,7 @@ namespace MouseAI
 
         #region Path Segment Building
 
+        // Path image segment calculations 
         public void CalculateSegments()
         {
             MazeObject mouse = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
@@ -1210,6 +1212,8 @@ namespace MouseAI
             GeneratePathNodes(pathobjects);
         }
 
+        // Calculate segments from starting mouse position forward:
+        // Concatenate sequential visible sections from the mouse perspective
         private static void CalculateForwardSegments(MazeObjectSegments mazeObjectSegments, MazeObjects pathobjects)
         {
             MazeObjects segmentObjects = new MazeObjects();
@@ -1253,6 +1257,7 @@ namespace MouseAI
             }
         }
 
+        // Scan and search the visible objects per direction
         private static MazeObjects SearchObjects(int x, int y)
         {
             MazeObjects pathobjects = new MazeObjects();
@@ -1263,31 +1268,28 @@ namespace MouseAI
                 if (!SearchObject(x_idx, y, pathobjects))
                     break;
             }
-
             // Scan East
             for (int x_idx = x + 1; x_idx < maze_width; x_idx++)
             {
                 if (!SearchObject(x_idx, y, pathobjects))
                     break;
             }
-
             // Scan North
             for (int y_idx = y - 1; y_idx > 0; y_idx--)
             {
                 if (!SearchObject(x, y_idx, pathobjects))
                     break;
             }
-
             // Scan South
             for (int y_idx = y + 1; y_idx < maze_height; y_idx++)
             {
                 if (!SearchObject(x, y_idx, pathobjects))
                     break;
             }
-
             return pathobjects;
         }
 
+        // Add object and extend past one space to indicate ambiguous turns or junctions
         private static bool SearchObject(int x, int y, MazeObjects pathobjects)
         {
             if (!isScanValid(x, y))
@@ -1308,10 +1310,10 @@ namespace MouseAI
                     pathobjects.Add(mazeObjects[x, y]);
                 }
             }
-
             return true;
         }
 
+        // Iterate and remove any empty lists
         private static void ValidateSegments(MazeObjectSegments mazeObjectSegments)
         {
             for (int idx = mazeObjectSegments.Count - 1; idx > -1; idx--)
@@ -1321,6 +1323,7 @@ namespace MouseAI
             }
         }
 
+        // Generate Bitmap image for a given path sequence 
         private static void GenerateSegmentImages(MazeObjectSegments mazeObjectSegments)
         {
             Bitmap bmp = new Bitmap(maze_width, maze_height);
@@ -1347,6 +1350,7 @@ namespace MouseAI
             }
         }
 
+        // Generate the sequential path node memory for a given maze
         private static void GeneratePathNodes(MazeObjects mos)
         {
             mazeModel.pathnodes = null;
@@ -1402,7 +1406,6 @@ namespace MouseAI
                 mouseObject.y = new_y;
                 return true;
             }
-
             return false;
         }
 

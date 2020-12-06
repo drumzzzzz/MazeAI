@@ -1,5 +1,4 @@
 ﻿
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace MouseAI.UI
@@ -12,16 +11,6 @@ namespace MouseAI.UI
 
             btnProgressCancel.Visible = isCancelVisible;
             Text = message;
-        }
-
-        public void SetCancel(bool isCancel)
-        {
-            btnProgressCancel.Enabled = isCancel;
-        }
-
-        public bool isCancel()
-        {
-            return btnProgressCancel.Enabled;
         }
     }
 }

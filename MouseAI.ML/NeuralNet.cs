@@ -90,15 +90,13 @@ namespace MouseAI.ML
                                                   "The systems path variable may need to be set and restarted.",
                     PYTHON_VERSION));
             }
-            else if (result != string.Empty)
+            if (result != string.Empty)
             {
                 throw new Exception(string.Format("{0} appears to be installed,\n" +
                                                   "however packages {1} could not be found.", PYTHON_VERSION, result));
             }
-            else
-            {
-                Console.WriteLine("{0} the installation and packages were found!", PYTHON_VERSION);
-            }
+
+            Console.WriteLine("{0} the installation and packages were found!", PYTHON_VERSION);
 
             return string.Empty;
         }

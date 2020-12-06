@@ -4,12 +4,18 @@ namespace MouseAI.BL
 {
     public class MazeGenerator
     {
+        #region Declarations
+
         private static byte[] maze;
         private static int maze_width;
         private static int maze_height;
         private readonly DIRECTION[] dirs;
         private readonly Random r;
 
+        #endregion
+
+
+        // Constructor
         public MazeGenerator(int _maze_width, int _maze_height)
         {
             maze_width = _maze_width;
@@ -17,20 +23,12 @@ namespace MouseAI.BL
             r= new Random();
 
             dirs = new DIRECTION[4];
-            dirs[0] = DIRECTION.NORTH; // NORTH;
-            dirs[1] = DIRECTION.EAST; // EAST;
-            dirs[2] = DIRECTION.SOUTH; // SOUTH;
-            dirs[3] = DIRECTION.WEST; // WEST;
+            dirs[0] = DIRECTION.NORTH; 
+            dirs[1] = DIRECTION.EAST; 
+            dirs[2] = DIRECTION.SOUTH; 
+            dirs[3] = DIRECTION.WEST; 
 
             maze = new byte[maze_width * maze_height];
-        }
-
-        public void GeneratorReset()
-        {
-            for (int i = 0; i < maze_width * maze_height; i++)
-            {
-                maze[i] = Maze.BLACK;
-            }
         }
 
         // Starting at the given index, recursively visit every direction randomly
@@ -85,6 +83,14 @@ namespace MouseAI.BL
                         Generate(x2, y2);
                     }
                 }
+            }
+        }
+
+        public void GeneratorReset()
+        {
+            for (int i = 0; i < maze_width * maze_height; i++)
+            {
+                maze[i] = Maze.BLACK;
             }
         }
 

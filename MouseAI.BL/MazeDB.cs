@@ -1,4 +1,6 @@
-﻿#region Using Statements
+﻿// SQLite Database model and helpers
+
+#region Using Statements
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,19 @@ using MouseAI.PL;
 
 namespace MouseAI.BL
 {
+    // Dd Model
+    public class DbTable_Projects
+    {
+        public long Id { get; set; }
+        public string Guid { get; set; }
+        public string Log { get; set; }
+        public string isLast { get; set; }
+
+        public static readonly string TABLE = "projects";
+        public static readonly string COLUMNS = "Guid, Log, isLast";
+    }
+
+    // Db Helpers
     public class MazeDb
     {
         private readonly Database db;
@@ -73,25 +88,9 @@ namespace MouseAI.BL
             db.DeleteRows(DbTable_Projects.TABLE, "Log", starttime);
         }
 
-        public int GetProjectCounts(string guid)
-        {
-            return db.RowCount(DbTable_Projects.TABLE, "Guid", guid);
-        }
-
         public int GetProjectRecordCount(string starttime)
         {
             return db.RowCount(DbTable_Projects.TABLE, "Log", starttime);
         }
-    }
-
-    public class DbTable_Projects
-    {
-        public long Id { get; set; }
-        public string Guid { get; set; }
-        public string Log { get; set; }
-        public string isLast { get; set; }
-
-        public static readonly string TABLE = "projects";
-        public static readonly string COLUMNS = "Guid, Log, isLast";
     }
 }
