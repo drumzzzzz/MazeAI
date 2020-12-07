@@ -34,12 +34,10 @@ namespace MouseAI
         private List<MazeObject> searchObjects;
         private static MazeObject mouseObject;
         private static MazePaths mazePaths;
-        private readonly List<MazeObject>[] scanObjects;// = new List<MazeObject>[4];
+        private readonly List<MazeObject>[] scanObjects;
         private Config config;
         private static MazeDb mazeDb;
         private static DbTable_Projects dbtblProjects;
-        private static Random r;
-        private static StringBuilder sb;
         private readonly MazeObjects segmentPathObjects;
         private MazeStatistic mazeStatistic;
         private readonly List<PathNode> pathNodes;
@@ -48,6 +46,8 @@ namespace MouseAI
         private static Bitmap visualbmp;
         private List<byte[]> imagebytes;
         private List<byte[]> imagebytes_last;
+        private static Random r;
+        private static StringBuilder sb;
 
         // Constants
         private const int SMELL_DISTANCE = 10;
@@ -389,6 +389,111 @@ namespace MouseAI
         public string GetLogName()
         {
             return neuralNet.GetLogName();
+        }
+
+        #endregion
+
+        #region Neural Network Model Selection
+
+        // Retrieve a projects trained neural models from db records
+        public List<string> GetProjectModels()
+        {
+            if (string.IsNullOrEmpty(mazeModels.Guid))
+                return null;
+
+            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
+
+            if (oList == null)
+                return null;
+
+            DbTable_Projects dbTableProjects;
+            List<string> starttimes = new List<string>();
+
+            foreach (DbTable_Projects obj in oList)
+            {
+                dbTableProjects = obj;
+                starttimes.Add(dbTableProjects.Log);
+            }
+
+            return starttimes;
+        }
+
+        // Summary generation
+        public static string GetModelSummary(string starttime)
+        {
+            string filename = Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT);
+
+            try
+            {
+                XDocument xdoc = FileIO.ReadXml(filename);
+                XElement root = xdoc.Root;
+
+                if (root == null)
+                    throw new Exception("Failed to read XML config");
+
+                int layers = (int)root.Element("Layers");
+                int[] Nodes = root.Element("Nodes")?.Elements("int").Select(x => (int)x).ToArray();
+                double[] DropOut = root.Element("DropOut")?.Elements("double").Select(x => (double)x).ToArray();
+                model_info = (string)root.Element("Model");
+
+                if (Nodes == null || DropOut == null || layers > Nodes.Length + 1 || layers > DropOut.Length + 1)
+                {
+                    throw new Exception("Invalid XML config values");
+                }
+
+                sb.Clear();
+
+                foreach (XElement element in xdoc.Descendants())
+                {
+                    if (!IGNORE_VALUES.Contains(element.Name.ToString()))
+                    {
+                        sb.Append(string.Format("{0}:{1}", element.Name, element.Value) + Environment.NewLine);
+                    }
+                }
+
+                sb.Append("Nodes: ");
+                for (int idx = layers - 1; idx > -1; idx--)
+                {
+                    sb.Append(Nodes[idx] + ((idx > 0) ? ", " : ""));
+                }
+                sb.Append(Environment.NewLine);
+
+                sb.Append("DropOut: ");
+                for (int idx = layers - 1; idx > -1; idx--)
+                {
+                    sb.Append(DropOut[idx] + ((idx > 0) ? ", " : ""));
+                }
+                sb.Append(Environment.NewLine);
+
+                return sb.ToString();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error reading summary: {0}", e.Message);
+            }
+
+            return null;
+        }
+
+        // Misc helpers
+
+        public bool CheckProjectModels()
+        {
+            if (string.IsNullOrEmpty(mazeModels.Guid))
+                return false;
+
+            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
+            return oList != null && oList.Any();
+        }
+
+        public string GetProjectModelName()
+        {
+            return mazeModels.StartTime;
+        }
+
+        public static string GetModelInfo()
+        {
+            return FileIO.ParseJson(model_info);
         }
 
         #endregion
@@ -1188,9 +1293,257 @@ namespace MouseAI
 
         #endregion
 
+        #region Path Solving
+
+        // Path solving routines for a given maze in entirety:
+        // From the mouse starting point to cheese end point
+
+        private static bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
+        {
+            if (CheckPathMove(new_x, new_y))
+            {
+                MazeObject mo = mazeObjects[curr_x, curr_y];
+                mo.object_state = OBJECT_STATE.VISITED;
+                mo.dtLastVisit = DateTime.UtcNow;
+                mo.isPath = true;
+                mo = mazeObjects[new_x, new_y];
+                mo.object_state = OBJECT_STATE.MOUSE;
+                mo.dtLastVisit = DateTime.UtcNow;
+                mo.isPath = true;
+                mouseObject.x = new_x;
+                mouseObject.y = new_y;
+                return true;
+            }
+            return false;
+        }
+
+        // Iterate solved path objects and scan each direction
+        private static void FinalizePathObjects()
+        {
+            List<MazeObject> pathobjects = new List<MazeObject>();
+            List<MazeObject> pathsLast = new List<MazeObject>();
+
+            MazeObject m = new MazeObject(OBJECT_TYPE.SPACE, mouse_x, mouse_y)
+            {
+                dtLastVisit = DateTime.MinValue,
+                isPath = true,
+                isDeadEnd = false,
+                object_state = OBJECT_STATE.MOUSE
+            };
+            pathObjects.Insert(0, m);
+
+            foreach (MazeObject mo in pathObjects)
+            {
+                if (mo.x == cheese_x && mo.y == cheese_y)
+                    break;
+
+                pathsLast.Clear();
+                for (int x = mo.x - 1; x > 0; x--)
+                {
+                    if (!CheckPathValid(x, mo.y, pathobjects, pathsLast))
+                    {
+                        CheckPathTurn(pathobjects, pathsLast);
+                        break;
+                    }
+                }
+
+                pathsLast.Clear();
+                for (int x = mo.x + 1; x < maze_width; x++)
+                {
+                    if (!CheckPathValid(x, mo.y, pathobjects, pathsLast))
+                    {
+                        CheckPathTurn(pathobjects, pathsLast);
+                        break;
+                    }
+                }
+
+                pathsLast.Clear();
+                for (int y = mo.y - 1; y > 0; y--)
+                {
+                    if (!CheckPathValid(mo.x, y, pathobjects, pathsLast))
+                    {
+                        CheckPathTurn(pathobjects, pathsLast);
+                        break;
+                    }
+                }
+
+                pathsLast.Clear();
+                for (int y = mo.y + 1; y < maze_height; y++)
+                {
+                    if (!CheckPathValid(mo.x, y, pathobjects, pathsLast))
+                    {
+                        CheckPathTurn(pathobjects, pathsLast);
+                        break;
+                    }
+                }
+            }
+
+            pathObjects.AddRange(pathobjects);
+            mouseObject.x = mouse_x;
+            mouseObject.y = mouse_y;
+        }
+
+        // On path valid: add object to lists
+        private static bool CheckPathValid(int x, int y, ICollection<MazeObject> pathobjects,
+            ICollection<MazeObject> pathsLast)
+        {
+            if (IsInBounds(x, y) && !mazeObjects[x, y].isPath &&
+                mazeObjects[x, y].object_type == OBJECT_TYPE.SPACE &&
+                !pathObjects.Any(o => o.x == x && o.y == y))
+            {
+                mazeObjects[x, y].isPath = true;
+                mazeObjects[x, y].isDeadEnd = true;
+                mazeObjects[x, y].dtLastVisit = DateTime.UtcNow;
+                pathobjects.Add(mazeObjects[x, y]);
+                pathsLast?.Add(pathobjects.Last());
+                return true;
+            }
+
+            return false;
+        }
+
+        // Extend path past one space to indicate any ambiguous turns or junctions
+        private static void CheckPathTurn(ICollection<MazeObject> pathobjects,
+            IReadOnlyCollection<MazeObject> pathsLast)
+        {
+            if (pathsLast.Count == 0)
+                return;
+
+            int[,] panArray;
+
+            foreach (MazeObject pathLast in pathsLast)
+            {
+                panArray = GetXYPan(pathLast.x, pathLast.y);
+
+                for (int i = 0; i < panArray.Length / 2; i++)
+                {
+                    CheckPathValid(panArray[i, 0], panArray[i, 1], pathobjects, null);
+                }
+            }
+        }
+
+        // Path tree dead end pruning
+        private void CleanPathObjects()
+        {
+            for (int i = pathObjects.Count - 1; i > -1; i--)
+            {
+                if (pathObjects[i].isDeadEnd)
+                {
+                    pathObjects[i].isPath = false;
+                    pathObjects.RemoveAt(i);
+                }
+                else if (pathObjects[i].isJunction)
+                {
+                    List<MazeObject> mo = CheckNode(pathObjects[i].x, pathObjects[i].y, false);
+
+                    if (mo == null)
+                        throw new Exception("Objects is null!");
+
+                    if (mo.Count(x => x.isDeadEnd) == mo.Count - 1)
+                    {
+                        pathObjects[i].isDeadEnd = true;
+                        pathObjects[i].isPath = false;
+                        pathObjects.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
+        // Image and byte array creation and conversion methods
+
+        public void UpdateMazeModelPaths()
+        {
+            if (mazeModels.Count() == 0 || mazePaths.Count == 0)
+                return;
+
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
+            {
+                MazePath mp = mazePaths.GetAddPath(mm.guid);
+
+                if (mp?.mazepath != null && mp.bmp != null)
+                {
+                    mm.mazepath = (byte[][])mp.mazepath.Clone();
+
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        mp.bmp.Save(memoryStream, ImageFormat.Bmp);
+                        mm.maze = memoryStream.ToArray();
+                    }
+                }
+            }
+        }
+
+        public void UpdateMazePaths()
+        {
+            if (mazeModels.Count() == 0)
+                return;
+
+            MemoryStream ms;
+            MazePath mp;
+
+            foreach (MazeModel mm in mazeModels.GetMazeModels())
+            {
+                mp = mazePaths.GetAddPath(mm.guid);
+
+                if (mp != null && mm.maze != null && mm.mazepath != null)
+                {
+                    mp.mazepath = (byte[][])mm.mazepath.Clone();
+                    ms = new MemoryStream(mm.maze);
+                    mp.bmp = (Bitmap)Image.FromStream(ms);
+                }
+            }
+        }
+
+        public void GeneratePathImage()
+        {
+            pathObjects = pathObjects.OrderBy(x => x.dtLastVisit).ToList();
+            MazePath mp = mazePaths.GetAddPath(mazeModel.guid);
+
+            if (mp == null)
+                throw new Exception("Maze path was null!");
+
+            mp.bmp = new Bitmap(maze_width, maze_height);
+            Graphics g = Graphics.FromImage(mp.bmp);
+            g.Clear(GetColor(WHITE));
+
+            foreach (MazeObject mo in pathObjects)
+            {
+                mp.mazepath[mo.y][mo.x] = BLACK;
+                (mp.bmp).SetPixel(mo.x, mo.y, GetColor(BLACK));
+            }
+        }
+
+        private static Color GetColor(byte b)
+        {
+            return (b == BLACK) ? Color.Black : Color.White;
+        }
+
+        // Misc helpers
+
+        public Bitmap GetPathBMP(string guid)
+        {
+            return mazePaths.GetAddPath(guid).bmp;
+        }
+
+        public string GetMazeModelGUID()
+        {
+            return mazeModel?.guid;
+        }
+
+        public void SetTested(bool isTested)
+        {
+            if (mazeModel == null)
+                return;
+
+            mazeModel.isPath = isTested;
+        }
+
+        #endregion
+
         #region Path Segment Building
 
-        // Path image segment calculations 
+        // Path image segment calculations:
+        // Routines share the base functionality of path solving; however were created seperately to reduce debugging and complexity
         public void CalculateSegments()
         {
             MazeObject mouse = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
@@ -1369,350 +1722,11 @@ namespace MouseAI
 
         #endregion
 
-        #region Paths
-
-        public void CalculatePath()
-        {
-            pathObjects = pathObjects.OrderBy(x => x.dtLastVisit).ToList();
-            MazePath mp = mazePaths.GetAddPath(mazeModel.guid);
-
-            if (mp == null)
-                throw new Exception("Maze path was null!");
-
-            mp.bmp = new Bitmap(maze_width, maze_height);
-            Graphics g = Graphics.FromImage(mp.bmp);
-            g.Clear(GetColor(WHITE));
-
-            foreach (MazeObject mo in pathObjects)
-            {
-                mp.mazepath[mo.y][mo.x] = BLACK;
-                (mp.bmp).SetPixel(mo.x, mo.y, GetColor(BLACK));
-            }
-        }
-
-        private static bool SetPathMove(int curr_x, int curr_y, int new_x, int new_y)
-        {
-            if (CheckPathMove(new_x, new_y))
-            {
-                MazeObject mo = mazeObjects[curr_x, curr_y];
-                mo.object_state = OBJECT_STATE.VISITED;
-                mo.dtLastVisit = DateTime.UtcNow;
-                mo.isPath = true;
-                mo = mazeObjects[new_x, new_y];
-                mo.object_state = OBJECT_STATE.MOUSE;
-                mo.dtLastVisit = DateTime.UtcNow;
-                mo.isPath = true;
-                mouseObject.x = new_x;
-                mouseObject.y = new_y;
-                return true;
-            }
-            return false;
-        }
-
-        private static void FinalizePathObjects()
-        {
-            List<MazeObject> pathobjects = new List<MazeObject>();
-            List<MazeObject> pathsLast = new List<MazeObject>();
-
-            MazeObject m = new MazeObject(OBJECT_TYPE.SPACE, mouse_x, mouse_y)
-            {
-                dtLastVisit = DateTime.MinValue,
-                isPath = true,
-                isDeadEnd = false,
-                object_state = OBJECT_STATE.MOUSE
-            };
-            pathObjects.Insert(0, m);
-
-            foreach (MazeObject mo in pathObjects)
-            {
-                if (mo.x == cheese_x && mo.y == cheese_y)
-                    break;
-
-                pathsLast.Clear();
-                for (int x = mo.x - 1; x > 0; x--)
-                {
-                    if (!CheckPathValid(x, mo.y, pathobjects, pathsLast))
-                    {
-                        CheckPathTurn(pathobjects, pathsLast);
-                        break;
-                    }
-                }
-
-                pathsLast.Clear();
-                for (int x = mo.x + 1; x < maze_width; x++)
-                {
-                    if (!CheckPathValid(x, mo.y, pathobjects, pathsLast))
-                    {
-                        CheckPathTurn(pathobjects, pathsLast);
-                        break;
-                    }
-                }
-
-                pathsLast.Clear();
-                for (int y = mo.y - 1; y > 0; y--)
-                {
-                    if (!CheckPathValid(mo.x, y, pathobjects, pathsLast))
-                    {
-                        CheckPathTurn(pathobjects, pathsLast);
-                        break;
-                    }
-                }
-
-                pathsLast.Clear();
-                for (int y = mo.y + 1; y < maze_height; y++)
-                {
-                    if (!CheckPathValid(mo.x, y, pathobjects, pathsLast))
-                    {
-                        CheckPathTurn(pathobjects, pathsLast);
-                        break;
-                    }
-                }
-            }
-
-            pathObjects.AddRange(pathobjects);
-            mouseObject.x = mouse_x;
-            mouseObject.y = mouse_y;
-        }
-
-        private static bool CheckPathValid(int x, int y, ICollection<MazeObject> pathobjects,
-            ICollection<MazeObject> pathsLast)
-        {
-            if (IsInBounds(x, y) && !mazeObjects[x, y].isPath &&
-                mazeObjects[x, y].object_type == OBJECT_TYPE.SPACE &&
-                !pathObjects.Any(o => o.x == x && o.y == y))
-            {
-                mazeObjects[x, y].isPath = true;
-                mazeObjects[x, y].isDeadEnd = true;
-                mazeObjects[x, y].dtLastVisit = DateTime.UtcNow;
-                pathobjects.Add(mazeObjects[x, y]);
-                pathsLast?.Add(pathobjects.Last());
-                return true;
-            }
-
-            return false;
-        }
-
-        private static void CheckPathTurn(ICollection<MazeObject> pathobjects,
-            IReadOnlyCollection<MazeObject> pathsLast)
-        {
-            if (pathsLast.Count == 0)
-                return;
-
-            int[,] panArray;
-
-            foreach (MazeObject pathLast in pathsLast)
-            {
-                panArray = GetXYPan(pathLast.x, pathLast.y);
-
-                for (int i = 0; i < panArray.Length / 2; i++)
-                {
-                    CheckPathValid(panArray[i, 0], panArray[i, 1], pathobjects, null);
-                }
-            }
-        }
-
-        // Path Tree Pruning
-        private void CleanPathObjects()
-        {
-            for (int i = pathObjects.Count - 1; i > -1; i--)
-            {
-                if (pathObjects[i].isDeadEnd)
-                {
-                    pathObjects[i].isPath = false;
-                    pathObjects.RemoveAt(i);
-                }
-                else if (pathObjects[i].isJunction)
-                {
-                    List<MazeObject> mo = CheckNode(pathObjects[i].x, pathObjects[i].y, false);
-
-                    if (mo == null)
-                        throw new Exception("Objects is null!");
-
-                    if (mo.Count(x => x.isDeadEnd) == mo.Count - 1)
-                    {
-                        pathObjects[i].isDeadEnd = true;
-                        pathObjects[i].isPath = false;
-                        pathObjects.RemoveAt(i);
-                    }
-                }
-            }
-        }
-
-        public void UpdateMazeModelPaths()
-        {
-            if (mazeModels.Count() == 0 || mazePaths.Count == 0)
-                return;
-
-            foreach (MazeModel mm in mazeModels.GetMazeModels())
-            {
-                MazePath mp = mazePaths.GetAddPath(mm.guid);
-
-                if (mp?.mazepath != null && mp.bmp != null)
-                {
-                    mm.mazepath = (byte[][]) mp.mazepath.Clone();
-
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        mp.bmp.Save(memoryStream, ImageFormat.Bmp);
-                        mm.maze = memoryStream.ToArray();
-                    }
-                }
-            }
-        }
-
-        public void UpdateMazePaths()
-        {
-            if (mazeModels.Count() == 0)
-                return;
-
-            MemoryStream ms;
-            MazePath mp;
-
-            foreach (MazeModel mm in mazeModels.GetMazeModels())
-            {
-                mp = mazePaths.GetAddPath(mm.guid);
-
-                if (mp != null && mm.maze != null && mm.mazepath != null)
-                {
-                    mp.mazepath = (byte[][]) mm.mazepath.Clone();
-                    ms = new MemoryStream(mm.maze);
-                    mp.bmp = (Bitmap) Image.FromStream(ms);
-                }
-            }
-        }
-
-        public Bitmap GetPathBMP(string guid)
-        {
-            return mazePaths.GetAddPath(guid).bmp;
-        }
-
-        public string GetMazeModelGUID()
-        {
-            return mazeModel?.guid;
-        }
-
-        public void SetTested(bool isTested)
-        {
-            if (mazeModel == null)
-                return;
-
-            mazeModel.isPath = isTested;
-        }
-
-        private static Color GetColor(byte b)
-        {
-            switch (b)
-            {
-                case BLACK: return Color.Black;
-                case WHITE: return Color.White;
-                default: return Color.White;
-            }
-        }
-
-        #endregion
-
-        #region Test
-
-        public List<string> GetProjectModels()
-        {
-            if (string.IsNullOrEmpty(mazeModels.Guid))
-                return null;
-
-            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
-
-            if (oList == null)
-                return null;
-
-            DbTable_Projects dbTableProjects;
-            List<string> starttimes = new List<string>();
-
-            foreach (DbTable_Projects obj in oList)
-            {
-                dbTableProjects = obj;
-                starttimes.Add(dbTableProjects.Log);
-            }
-
-            return starttimes;
-        }
-
-        public bool CheckProjectModels()
-        {
-            if (string.IsNullOrEmpty(mazeModels.Guid))
-                return false;
-
-            IEnumerable<object> oList = mazeDb.ReadProjectGuids(mazeModels.Guid);
-            return oList != null && oList.Any();
-        }
-
-        public string GetProjectModelName()
-        {
-            return mazeModels.StartTime;
-        }
-
-        public static string GetModelSummary(string starttime)
-        {
-            string filename = Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT);
-
-            try
-            {
-                XDocument xdoc = FileIO.ReadXml(filename);
-                XElement root = xdoc.Root;
-                
-                if (root == null)
-                    throw new Exception("Failed to read XML config");
-
-                int layers = (int) root.Element("Layers");
-                int[] Nodes = root.Element("Nodes")?.Elements("int").Select(x => (int) x).ToArray();
-                double[] DropOut = root.Element("DropOut")?.Elements("double").Select(x => (double)x).ToArray();
-                model_info = (string) root.Element("Model");
-
-                if (Nodes == null || DropOut == null || layers > Nodes.Length + 1 || layers > DropOut.Length + 1)
-                {
-                    throw new Exception("Invalid XML config values");
-                }
-
-                sb.Clear();
-
-                foreach (XElement element in xdoc.Descendants())
-                {
-                    if (!IGNORE_VALUES.Contains(element.Name.ToString()))
-                    {
-                        sb.Append(string.Format("{0}:{1}", element.Name, element.Value) + Environment.NewLine);
-                    }
-                }
-
-                sb.Append("Nodes: ");
-                for (int idx = layers - 1; idx > -1; idx--)
-                {
-                    sb.Append(Nodes[idx] + ((idx > 0) ? ", " : ""));
-                }
-                sb.Append(Environment.NewLine);
-
-                sb.Append("DropOut: ");
-                for (int idx = layers - 1; idx > -1; idx--)
-                {
-                    sb.Append(DropOut[idx] + ((idx > 0) ? ", " : ""));
-                }
-                sb.Append(Environment.NewLine);
-
-                return sb.ToString();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error reading summary: {0}", e.Message);
-            }
-
-            return null;
-        }
-
-        public static string GetModelInfo()
-        {
-            return FileIO.ParseJson(model_info);
-        }
-
-        #endregion
-
         #region Plotting
+
+        // Plot image generation and retrieval routines for a given trained neural network models performance:
+        // Values are retrieved and plotted from a saved csv log file generated during neural training
+        // Data is selected and formatted via column constants
 
         public void SavePlot(string plotname)
         {
@@ -1813,6 +1827,8 @@ namespace MouseAI
 
         #region Statistics
 
+        // Statistic logging helpers
+
         public MazeStatistic GetMazeStatistic()
         {
             return mazeStatistic;
@@ -1856,6 +1872,8 @@ namespace MouseAI
         #endregion
 
         #region Graphic Point Lists
+
+        // Maze object point location lists used for UI rendering
 
         public void UpdatePointLists(Point mp, RUN_VISIBLE run_visible)
         {
@@ -1925,10 +1943,7 @@ namespace MouseAI
 
         #region File Related
 
-        public string GetModelName()
-        {
-            return neuralNet.GetLogName();
-        }
+        // File IO Saving and Loading helpers
 
         public void SaveMazeModels(string filename)
         {
@@ -1967,6 +1982,27 @@ namespace MouseAI
             return true;
         }
 
+        public string GetProjectLast(string guid)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return string.Empty;
+
+            try
+            {
+                return mazeDb.ReadModelLast(guid);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error reading last project model: {0}", e.Message);
+                return string.Empty;
+            }
+        }
+
+        public string GetFileName()
+        {
+            return string.IsNullOrEmpty(FileName) ? string.Empty : FileName;
+        }
+
         public string GetSaveName()
         {
             return FileIO.SaveFileAs_Dialog(maze_dir, MAZE_EXT);
@@ -1997,20 +2033,9 @@ namespace MouseAI
             return string.Format(@"{0}.{1}", starttime, LOG_EXT);
         }
 
-        public string GetProjectLast(string guid)
+        public string GetModelName()
         {
-            if (string.IsNullOrEmpty(guid))
-                return string.Empty;
-
-            try
-            {
-                return mazeDb.ReadModelLast(guid);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error reading last project model: {0}", e.Message);
-                return string.Empty;
-            }
+            return neuralNet.GetLogName();
         }
 
         public void CheckPythonPath()
@@ -2022,6 +2047,7 @@ namespace MouseAI
 
         #region Record Removal
 
+        // Remove a selected project trained neural model record
         public static bool RemoveProjectRecord(string starttime)
         {
             int startcount = mazeDb.GetProjectRecordCount(starttime);
@@ -2034,6 +2060,7 @@ namespace MouseAI
             return (startcount - endcount) == 1;
         }
 
+        // Move assoicated project files to the backup directory
         private static void MoveProjectFiles(string starttime)
         {
             List<string> files = new List<string>
@@ -2043,13 +2070,14 @@ namespace MouseAI
                 Utils.GetFileWithExtension(model_dir, starttime, CONFIG_EXT),
                 Utils.GetFileWithExtension(model_dir, starttime, MODELS_EXT)
             };
-
             FileIO.MoveFiles(files, backup_dir);
         }
 
         #endregion
 
         #region Maze Object Helpers
+
+        // Various maze object helper methods and routines
 
         public List<MazeObject> CheckNode(int x, int y, bool isDeadends)
         {
@@ -2114,28 +2142,6 @@ namespace MouseAI
             return dir == DIRECTION.NORTH ? DIRECTION.SOUTH : DIRECTION.NORTH;
         }
 
-        public int GetMouseDirection()
-        {
-            return (int)mouse_direction;
-        }
-
-        private static bool isNode(int x, int y, bool isDeadEnds)
-        {
-            if (!isDeadEnds)
-                return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
-        }
-
-        private static int[,] GetXYPan(int x, int y)
-        {
-            return new[,] { { x - 1, y }, { x + 1, y }, { x, y - 1 }, { x, y + 1 } };
-        }
-
-        private static int[] GetXYPanArray(int x, int y)
-        {
-            return new[] { x - 1, y, x + 1, y, x, y - 1, x, y + 1 };
-        }
-
         private static byte[,] ConvertArray(IReadOnlyList<byte[]> ibytes)
         {
             int length = ibytes.Count;
@@ -2165,6 +2171,28 @@ namespace MouseAI
             }
 
             return false;
+        }
+
+        public int GetMouseDirection()
+        {
+            return (int)mouse_direction;
+        }
+
+        private static bool isNode(int x, int y, bool isDeadEnds)
+        {
+            if (!isDeadEnds)
+                return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+        }
+
+        private static int[,] GetXYPan(int x, int y)
+        {
+            return new[,] { { x - 1, y }, { x + 1, y }, { x, y - 1 }, { x, y + 1 } };
+        }
+
+        private static int[] GetXYPanArray(int x, int y)
+        {
+            return new[] { x - 1, y, x + 1, y, x, y - 1, x, y + 1 };
         }
 
         private static bool isMouseNode(MazeObject mouse, PathNode pn)
@@ -2220,11 +2248,6 @@ namespace MouseAI
             return (mazeObjects[x, y].object_state);
         }
 
-        public string GetFileName()
-        {
-            return string.IsNullOrEmpty(FileName) ? string.Empty : FileName;
-        }
-
         #endregion
 
         #region Misc Tools
@@ -2249,7 +2272,6 @@ namespace MouseAI
                     mazeObjects[x, y] = new MazeObject(GetObjectDataType(x, y), x, y);
                 }
             }
-
             return true;
         }
 

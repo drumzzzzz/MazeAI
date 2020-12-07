@@ -229,7 +229,7 @@ namespace MouseAI.UI
 
             if (isCheese)
             {
-                maze.CalculatePath();
+                maze.GeneratePathImage();
                 maze.CalculateSegments();
                 mazeSegments.ShowImages();
                 DrawPath();
