@@ -1880,6 +1880,9 @@ namespace MouseAI
             pnDeadends.Clear();
             pnVisible.Clear();
 
+            pnDeadends.Clear();
+            pnVisible.Clear();
+
             if (run_visible == RUN_VISIBLE.PATHS)
             {
                 foreach (MazeObject mo in mazeObjects)
@@ -1895,7 +1898,6 @@ namespace MouseAI
                 {
                     UpdatePointList(mp, mo);
                 }
-                return;
             }
 
             Point _mp = new Point();
@@ -1905,7 +1907,9 @@ namespace MouseAI
                 {
                     _mp.X = mo.x;
                     _mp.Y = mo.y;
-                    if (_mp != mp)
+                    if (_mp != mp && run_visible != RUN_VISIBLE.VISIBLE && 
+                        !pnDeadends.Any(o=>o.X == mo.x && o.Y == mo.y) && 
+                        !pnVisible.Any(o => o.X == mo.x && o.Y == mo.y))
                         pnVisible.Add(new Point(mo.x, mo.y));
                 }
             }
