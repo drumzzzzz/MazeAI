@@ -77,7 +77,7 @@ namespace MouseAI.BL
 
         public int Count()
         {
-            return mazeModels.Count();
+            return mazeModels.Count;
         }
 
         public int GetSegmentCount()

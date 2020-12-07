@@ -81,7 +81,6 @@ namespace MouseAI.UI
         private bool isThreadCancel;
         private const int SEARCH_DELAY = 1;
         private const int RUN_DELAY = 50;
-        private const int RUN_DELAY_MIN = 5;
         private const int PLOT_TIME = 500;
         private const int RENDER_TIME = 5;
         private DateTime dtRenderTime;
@@ -175,10 +174,12 @@ namespace MouseAI.UI
             if (!maze.isMazeModels())
                 return;
 
-            if (MessageBox.Show(string.Format("Calculate and solve maze paths?\n{0}", 
-                        (isNewMazes) ? "" : "this will clear any current build")
-                    , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                return;
+            if (!isNewMazes)
+            {
+                if (MessageBox.Show("Calculate and resolve the maze paths?\nAny previous values will be cleared when completed."
+                        , "Build Maze Paths", MessageBoxButtons.OKCancel) != DialogResult.OK)
+                    return;
+            }
 
             Console.Clear();
             isThreadCancel = false;

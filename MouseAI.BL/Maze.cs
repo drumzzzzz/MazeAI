@@ -590,6 +590,7 @@ namespace MouseAI
             // Store current mouse position object from list
             List<MazeObject> mazeobjects_de = CheckNode(x, y, true);
             List<MazeObject> mazeobjects = mazeobjects_de.Where(o => !o.isDeadEnd).ToList();
+
             MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == MazeObjects.OBJECT_STATE.MOUSE);
 
             // Validate the mouse is present!
@@ -635,7 +636,7 @@ namespace MouseAI
                     mazeStatistic.IncrementNeuralMoves();
                     MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.RECALLING);
                     UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
-                    return false;
+                    //return false;
                 }
             }
             else
@@ -643,8 +644,9 @@ namespace MouseAI
             
             // Create an image for neural prediction which represents the mouses visible path   
             isFirstTime = false;
-            CreateVisionImage(mouse);
-            InvalidateVisionState();
+            if (CreateVisionImage(mouse))
+                InvalidateVisionState();
+
             UpdateMouseDirection(x, y, mouseObject.x, mouseObject.y);
             return false;
         }
@@ -889,7 +891,7 @@ namespace MouseAI
         }
 
         // Create a image from the visible path of the mouse 
-        private void CreateVisionImage(MazeObject mouse) 
+        private bool CreateVisionImage(MazeObject mouse) 
         {
             if (isDebug)
                 Console.WriteLine("Creating vision image");
@@ -918,12 +920,14 @@ namespace MouseAI
                 imagebytes.Add(GenerateVisualImage(segmentPathObjects));
                 imagebytes_last.AddRange(imagebytes);
                 segmentCountLast = segmentPathObjects.Count;
+                return true;
             }
             // Otherwise: restore from buffer
             else
             {
                 imagebytes.Clear();
                 imagebytes.AddRange(imagebytes_last);
+                return false;
             }
         }
 
@@ -1175,6 +1179,9 @@ namespace MouseAI
         {
             bool? result;
 
+            foreach (List<MazeObject> mo in scanobjects)
+                mo.Clear();
+            
             // West
             for (int x_idx = x - 1; x_idx > 0; x_idx--)
             {
@@ -1219,12 +1226,8 @@ namespace MouseAI
                 scanobjects[(int)MazeObjects.DIRECTION.SOUTH].Add(mazeObjects[x, y_idx]);
             }
 
-            // Scan for endpoints and perimeters per visible object
-            for (int i = 0; i < scanobjects.Count; i++)
-            {
-                CheckDeadEnds(scanobjects[i]);
-                scanobjects[i].Clear();
-            }
+            foreach (List<MazeObject> mo in scanobjects)
+                CheckDeadEnds(mo);
 
             return false;
         }
@@ -1881,9 +1884,6 @@ namespace MouseAI
             pnDeadends.Clear();
             pnVisible.Clear();
 
-            pnDeadends.Clear();
-            pnVisible.Clear();
-
             if (run_visible == RUN_VISIBLE.PATHS)
             {
                 foreach (MazeObject mo in mazeObjects)
@@ -1908,9 +1908,9 @@ namespace MouseAI
                 {
                     _mp.X = mo.x;
                     _mp.Y = mo.y;
-                    if (_mp != mp && run_visible != RUN_VISIBLE.VISIBLE && 
-                        !pnDeadends.Any(o=>o.X == mo.x && o.Y == mo.y) && 
-                        !pnVisible.Any(o => o.X == mo.x && o.Y == mo.y))
+                    if (_mp != mp || (run_visible != RUN_VISIBLE.VISIBLE && 
+                                                                          !pnDeadends.Any(o=>o.X == mo.x && o.Y == mo.y) && 
+                                                                          !pnVisible.Any(o => o.X == mo.x && o.Y == mo.y)))
                         pnVisible.Add(new Point(mo.x, mo.y));
                 }
             }
