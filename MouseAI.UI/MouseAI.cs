@@ -1,4 +1,7 @@
-﻿#region Using Statements
+﻿// MouseAI Class:
+// Form containing the main UI controls and functions
+
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

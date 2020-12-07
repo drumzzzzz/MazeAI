@@ -1,4 +1,7 @@
-﻿using System;
+﻿// MazeNew Class:
+// Form for creating a new maze project 
+
+using System;
 using System.Windows.Forms;
 
 namespace MouseAI.UI

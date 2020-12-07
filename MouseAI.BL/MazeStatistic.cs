@@ -1,4 +1,8 @@
-﻿using System;
+﻿// MazeStatistic and MazeStatistics Class:
+// Neural model performance statistic logging properties and methods
+// MazeStatistic object list and methods associated to a running maze project 
+
+using System;
 using System.Collections.Generic;
 
 namespace MouseAI.BL

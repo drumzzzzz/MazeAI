@@ -1,4 +1,6 @@
-﻿
+﻿// Progress Class:
+// Form for displaying processing status
+
 using System.Windows.Forms;
 
 namespace MouseAI.UI

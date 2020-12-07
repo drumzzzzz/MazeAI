@@ -1,4 +1,7 @@
-﻿using System.Drawing;
+﻿// ModelPredict Class:
+// Form for displaying and selecting any image path predicition errors from a given neural model and associated mazes
+
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using MouseAI.ML;

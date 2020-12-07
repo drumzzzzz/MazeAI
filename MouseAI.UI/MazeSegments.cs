@@ -1,4 +1,6 @@
-﻿
+﻿// MazeSegments Class:
+// Form for displaying the maze path segments associated with a selected maze
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;

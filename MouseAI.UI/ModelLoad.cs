@@ -1,4 +1,8 @@
-﻿using System;
+﻿// ModelLoad Class:
+// Form for selecting and loading a trained neural model
+// Provides a method for viewing a selected CSV file on users system
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -45,7 +49,7 @@ namespace MouseAI.UI
             btnModel.Enabled = state;
         }
 
-        private void ModelLoad_Shown(object sender, System.EventArgs e)
+        private void ModelLoad_Shown(object sender, EventArgs e)
         {
             string modelast = maze.GetProjectLast(maze.GetModelProjectGuid());
             ListBox lbx = lbxModels;
@@ -61,13 +65,13 @@ namespace MouseAI.UI
             }
         }
 
-        private void btnModel_Click(object sender, System.EventArgs e)
+        private void btnModel_Click(object sender, EventArgs e)
         {
             ModelInfo model_info = new ModelInfo(Maze.GetModelInfo());
             model_info.ShowDialog();
         }
 
-        private void llblLog_Click(object sender, System.EventArgs e)
+        private void llblLog_Click(object sender, EventArgs e)
         {
             string link = (string)llblLog.Tag;
             if (string.IsNullOrEmpty(link))

@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿// MazePath, MazePathNode and MazePaths Class:
+// Byte array and bitmap image representing the solved path of a maze instance
+// Path node coordinates utilized in path vizualization and solving
+// MazePath object list associated to a maze project
+
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
@@ -20,6 +25,23 @@ namespace MouseAI
 
             this.mazepath = mazepath;
             this.guid = guid;
+        }
+    }
+
+    public class MazePathNode
+    {
+        public int x { get; set; }
+        public int y { get; set; }
+        public bool isJunction { get; set; }
+
+        public MazePathNode()
+        { }
+
+        public MazePathNode(int x, int y, bool isJunction)
+        {
+            this.x = x;
+            this.y = y;
+            this.isJunction = isJunction;
         }
     }
 
@@ -58,23 +80,6 @@ namespace MouseAI
             mp = new MazePath(width, height, guid);
             Add(mp);
             return mp;
-        }
-    }
-
-    public class PathNode
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public bool isJunction { get; set; }
-
-        public PathNode()
-        { }
-
-        public PathNode(int x, int y, bool isJunction)
-        {
-            this.x = x;
-            this.y = y;
-            this.isJunction = isJunction;
         }
     }
 }

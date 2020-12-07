@@ -1,4 +1,6 @@
-﻿
+﻿// ModleInfo Class:
+// Form for displaying the advanced information of a selected trained neural model
+
 using System.Windows.Forms;
 
 namespace MouseAI.UI

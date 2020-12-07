@@ -1,4 +1,8 @@
-﻿using System;
+﻿// ModelRun Class:
+// Form for running a mouse -> cheese session for a selected neural model and maze(s)
+// Local methods perform plotting related functions
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;

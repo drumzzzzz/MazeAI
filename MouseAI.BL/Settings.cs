@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Settings Class:
+// User application properties and methods 
+
+using System;
 using System.Xml.Serialization;
 using MouseAI.PL;
 
@@ -20,7 +23,6 @@ namespace MouseAI
         public bool isAutoRun { get; set; }
         public bool isDebugConsole { get; set; }
         public bool isMazeSegments { get; set; }
-        public string PythonPath { get; set; }
 
         public static bool isSettings()
         {
@@ -31,7 +33,7 @@ namespace MouseAI
         {
             try
             {
-                return (Settings)FileIO.DeSerializeXml(typeof(Settings), Settings.SETTINGS_FILE);
+                return (Settings)FileIO.DeSerializeXml(typeof(Settings), SETTINGS_FILE);
             }
             catch (Exception e)
             {
@@ -51,7 +53,7 @@ namespace MouseAI
                     isAutoRun = true
                 };
                 FileIO.SerializeXml(oSettings, SETTINGS_FILE);
-                return (Settings)FileIO.DeSerializeXml(typeof(Settings), Settings.SETTINGS_FILE);
+                return (Settings)FileIO.DeSerializeXml(typeof(Settings), SETTINGS_FILE);
             }
             catch (Exception e)
             {

@@ -1,4 +1,10 @@
-﻿#region Using Statements
+﻿// FileIO Class:
+// Misc file related utilities including:
+// File dialogs, loading and saving 
+// XML serialization/deserialization and document loading
+// JSON parsing
+
+#region Using Statements
 
 using System;
 using System.Collections.Generic;
@@ -84,24 +90,6 @@ namespace MouseAI.PL
             return strValues;
         }
 
-        public static bool CheckFileName(string Value)
-        {
-            return File.Exists(Value);
-        }
-
-        public static bool CheckDriveDirectory(string path)
-        {
-            return Directory.Exists(path);
-        }
-
-        public static bool CheckCreateDirectory(string path)
-        {
-            if(!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-
-            return Directory.Exists(path);
-        }
-
         public static bool MoveFiles(List<string> sources, string dest)
         {
             int count = 0;
@@ -131,6 +119,24 @@ namespace MouseAI.PL
             }
             Console.WriteLine("Moved {0} Files", count);
             return count == sources.Count;
+        }
+
+        public static bool CheckFileName(string Value)
+        {
+            return File.Exists(Value);
+        }
+
+        public static bool CheckDriveDirectory(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        public static bool CheckCreateDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            return Directory.Exists(path);
         }
 
         #endregion
@@ -213,5 +219,6 @@ namespace MouseAI.PL
         }
 
         #endregion
+
     }
 }

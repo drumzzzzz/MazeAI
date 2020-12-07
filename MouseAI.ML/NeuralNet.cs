@@ -1,4 +1,7 @@
-﻿#region Using Statements
+﻿// NeuralNet Class:
+// Performs Neural Network model training, predictions and file functions utilizing Keras.Net 
+
+#region Using Statements
 
 using System;
 using System.Collections.Generic;
@@ -48,6 +51,7 @@ namespace MouseAI.ML
         private int predicted;
         private int predictions;
 
+        // Python library checking
         private static readonly string[] PACKAGES = {"keras","numpy"};
         private const string SITE_PACKAGES = @"site-packages\";
         private const string SOFTWARE = "SOFTWARE";
@@ -57,6 +61,7 @@ namespace MouseAI.ML
 
         #region Initialization
 
+        // Constructor
         public NeuralNet(int width, int height, string log_dir, string log_ext, string model_dir, string model_ext, string config_ext)
         {
             this.width = width;
@@ -67,102 +72,10 @@ namespace MouseAI.ML
             this.model_ext = model_ext;
             this.config_ext = config_ext;
 
+            // Attempt to reset the invoked library
             K.DisableEager();
             K.ClearSession();
             K.ResetUids();
-        }
-
-        public static string CheckPythonPath()
-        {
-            string result = CheckPath();
-
-            if (result == null)
-            {
-                Console.WriteLine("{0} Path not found, trying registry search", PYTHON_VERSION);
-                result = GetPythonPath();
-
-                if (string.IsNullOrEmpty(result))
-                {
-                    throw new Exception(string.Format("{0} does not appear to be installed on system", PYTHON_VERSION));
-                }
-
-                throw new Exception(string.Format("{0} appears to be installed, however it cannot be found.\n" +
-                                                  "The systems path variable may need to be set and restarted.",
-                    PYTHON_VERSION));
-            }
-            if (result != string.Empty)
-            {
-                throw new Exception(string.Format("{0} appears to be installed,\n" +
-                                                  "however packages {1} could not be found.", PYTHON_VERSION, result));
-            }
-
-            Console.WriteLine("{0} the installation and packages were found!", PYTHON_VERSION);
-
-            return string.Empty;
-        }
-
-        private static string CheckPath()
-        {
-            StringBuilder sb = new StringBuilder();
-            try
-            {
-                string results = PythonEngine.PythonPath;
-
-                if (string.IsNullOrEmpty(results))
-                    throw new Exception();
-
-                string result = GetPythonPath();
-
-                result = result.Substring(0, result.LastIndexOf(@"\", StringComparison.Ordinal));
-                if (!FileIO.CheckDriveDirectory(result))
-                    throw new Exception(string.Format("Could not find {0} directory.", PYTHON_VERSION));
-
-                string[] paths = results.Split(';');
-                string path;
-                bool[] found = new bool[PACKAGES.Length];
-
-                for (int i = 0; i < paths.Length; i++)
-                {
-                    path = paths[i].Trim();
-                    if (!path.EndsWith(@"\"))
-                        path += @"\";
-                    
-                    for (int j = 0; j < PACKAGES.Length; j++)
-                    {
-                        if (!found[j])
-                        {
-                            found[j] = FileIO.CheckDriveDirectory(path + SITE_PACKAGES + PACKAGES[j]);
-                        }
-                    }
-                }
-
-                for (int i=0; i<PACKAGES.Length;i++)
-                {
-                    if (!found[i])
-                        sb.Append(string.Format("{0} ", PACKAGES[i]));
-                }
-
-                return sb.ToString();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("{0}", e.Message);
-                return null;
-            }
-        }
-
-        private static string GetPythonPath()
-        {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(SOFTWARE) ?? Registry.LocalMachine.OpenSubKey(SOFTWARE);
-            if (key == null)
-                return null;
-
-            RegistryKey pythonkey = key.OpenSubKey(@"Python\PythonCore") ?? key.OpenSubKey(@"Wow6432Node\Python\PythonCore");
-            if (pythonkey == null)
-                return null;
-
-            RegistryKey installPathKey = pythonkey.OpenSubKey(@"3.8\InstallPath");
-            return installPathKey == null ? null : (string)installPathKey.GetValue("ExecutablePath");
         }
 
         public void InitDataSets(ImageDatas imageDatas, double split, int seed)
@@ -191,28 +104,109 @@ namespace MouseAI.ML
 
         #endregion
 
-        #region Training
+        #region Python Checking
 
-        private Shape GetShape()
+        // Methods to verify Python system availability:
+        // The .NET libraries are finicky and tend to crash without warning regarding specific Python paths, version and libraries!
+
+        public static string CheckPythonPath()
         {
-            Shape shape;
+            string result = CheckPath();
 
-            if (K.ImageDataFormat() == "channels_first")
+            if (result == null)
             {
-                x_train = x_train.reshape(x_train.shape[0], 1, height, width);
-                x_test = x_test.reshape(x_test.shape[0], 1, height, width);
-                shape = (1, height, width);
+                Console.WriteLine("{0} Path not found, trying registry search", PYTHON_VERSION);
+                result = GetPythonPath();
+
+                if (string.IsNullOrEmpty(result))
+                {
+                    throw new Exception(string.Format("{0} does not appear to be installed on system", PYTHON_VERSION));
+                }
+
+                throw new Exception(string.Format("{0} appears to be installed, however it cannot be found.\n" +
+                                                  "The systems path variable may need to be set and restarted.",
+                    PYTHON_VERSION));
             }
-            else
+            if (result != string.Empty)
             {
-                x_train = x_train.reshape(x_train.shape[0], height, width, 1);
-                x_test = x_test.reshape(x_test.shape[0], height, width, 1);
-                shape = (height, width, 1);
+                throw new Exception(string.Format("{0} appears to be installed,\n" +
+                                                  "however packages {1} could not be found.", PYTHON_VERSION, result));
             }
 
-            return shape;
+            Console.WriteLine("{0} the installation and packages were found!", PYTHON_VERSION);
+            return string.Empty;
         }
 
+        private static string CheckPath()
+        {
+            StringBuilder sb = new StringBuilder();
+            try
+            {
+                string results = PythonEngine.PythonPath;
+
+                if (string.IsNullOrEmpty(results))
+                    throw new Exception();
+
+                string result = GetPythonPath();
+
+                result = result.Substring(0, result.LastIndexOf(@"\", StringComparison.Ordinal));
+                if (!FileIO.CheckDriveDirectory(result))
+                    throw new Exception(string.Format("Could not find {0} directory.", PYTHON_VERSION));
+
+                string[] paths = results.Split(';');
+                string path;
+                bool[] found = new bool[PACKAGES.Length];
+
+                for (int i = 0; i < paths.Length; i++)
+                {
+                    path = paths[i].Trim();
+                    if (!path.EndsWith(@"\"))
+                        path += @"\";
+
+                    for (int j = 0; j < PACKAGES.Length; j++)
+                    {
+                        if (!found[j])
+                        {
+                            found[j] = FileIO.CheckDriveDirectory(path + SITE_PACKAGES + PACKAGES[j]);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < PACKAGES.Length; i++)
+                {
+                    if (!found[i])
+                        sb.Append(string.Format("{0} ", PACKAGES[i]));
+                }
+
+                return sb.ToString();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("{0}", e.Message);
+                return null;
+            }
+        }
+
+        private static string GetPythonPath()
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(SOFTWARE) ?? Registry.LocalMachine.OpenSubKey(SOFTWARE);
+            if (key == null)
+                return null;
+
+            RegistryKey pythonkey = key.OpenSubKey(@"Python\PythonCore") ?? key.OpenSubKey(@"Wow6432Node\Python\PythonCore");
+            if (pythonkey == null)
+                return null;
+
+            RegistryKey installPathKey = pythonkey.OpenSubKey(@"3.8\InstallPath");
+            return installPathKey == null ? null : (string)installPathKey.GetValue("ExecutablePath");
+        }
+
+        #endregion
+
+        #region Training
+
+        // Training method and helper for a selectable SNN or CNN type network from a given config
+        // Resulting model and scores are stored for further use 
         public void Process(Config _config, int num_classes)
         {
             if (x_train == null || y_train == null || x_test == null || y_test == null)
@@ -246,7 +240,6 @@ namespace MouseAI.ML
             y_test = Util.ToCategorical(y_test, num_classes);
 
             starttime = Utils.GetDateTime_Formatted();
-            //log_file = log_dir + @"\" + starttime + "." + log_ext;
             log_file = Utils.GetFileWithExtension(log_dir, starttime, log_ext);
 
             if (!config.isCNN)
@@ -264,10 +257,31 @@ namespace MouseAI.ML
             Console.WriteLine("Loss: {0} Accuracy: {1}", score[0], score[1]);
         }
 
+        private Shape GetShape()
+        {
+            Shape shape;
+
+            if (K.ImageDataFormat() == "channels_first")
+            {
+                x_train = x_train.reshape(x_train.shape[0], 1, height, width);
+                x_test = x_test.reshape(x_test.shape[0], 1, height, width);
+                shape = (1, height, width);
+            }
+            else
+            {
+                x_train = x_train.reshape(x_train.shape[0], height, width, 1);
+                x_test = x_test.reshape(x_test.shape[0], height, width, 1);
+                shape = (height, width, 1);
+            }
+            return shape;
+        }
+
         #endregion
 
         #region Prediction
 
+        // Performs predictions on a supplied dataset and loaded neural model:
+        // Calculates prediction accuracies and errors relative to the expected labeling
         public ImageDatas Predict(bool isCNN)
         {
             if (model_loaded == null)
@@ -311,6 +325,8 @@ namespace MouseAI.ML
             return idf;
         }
 
+        // Performs a prediction on a single image and loaded neural model; returns a predicted index
+        // For unknown reasons these single instance invoked Python predictions only like single threading
         public int Predict(List<byte[]> image, string guid, bool isDebug)
         {
             if (model_loaded == null || dataSets == null)
@@ -356,15 +372,8 @@ namespace MouseAI.ML
 
         #region Models
 
-        private static Callback[] GetCallbacks(bool isEarlyStop, string logname)
-        {
-            CSVLogger csv_logger = new CSVLogger(logname);
-
-            return isEarlyStop 
-                ? new Callback[] { csv_logger, new EarlyStopping(monitor: "val_accuracy", 0, 50, 1, mode: "max", 1)} 
-                : new Callback[] { csv_logger };
-        }
-
+        // Performs simple neural network model training:
+        // Incorporated parameters include relu and softmax
         private static Sequential ProcessSnnModel(NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
             int num_classes, string logname, Config config)
         {
@@ -389,13 +398,14 @@ namespace MouseAI.ML
             return model;
         }
 
+        // Performs convolutional neural network model training:
+        // Incorporated parameters include relu and softmax
+        // Adds fixed preprocessing layers and pooling: could use further development with exposed parameters 
         private static Sequential ProcessCnnModel(Shape input_shape, NDarray x_train, NDarray y_train, NDarray x_test, NDarray y_test,
             int num_classes, string logname, Config config)
         {
             // Build CNN model
             Sequential model = new Sequential();
-            //model.Add(new Conv2D(32, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
-            //model.Add(new Conv2D(64, (3, 3).ToTuple(), activation: "relu"));
             model.Add(new Conv2D(16, kernel_size: (3, 3).ToTuple(), activation: "relu", input_shape: input_shape));
             model.Add(new Conv2D(32, (3, 3).ToTuple(), activation: "relu"));
             model.Add(new MaxPooling2D(pool_size: (2, 2).ToTuple()));
@@ -418,6 +428,8 @@ namespace MouseAI.ML
             return model;
         }
 
+        // Iterates supplied number of neural layers:
+        // Adds a selected number of nodes and optional amount of dropout per layer
         private static void AddNodes(Sequential model, Config config)
         {
             for (int i = config.Layers - 1; i > -1; i--)
@@ -432,9 +444,22 @@ namespace MouseAI.ML
             }
         }
 
+        // CSV logging and early stopping call backs:
+        // The early stopping parameters are not fully developed and could use improvement
+        private static Callback[] GetCallbacks(bool isEarlyStop, string logname)
+        {
+            CSVLogger csv_logger = new CSVLogger(logname);
+
+            return isEarlyStop
+                ? new Callback[] { csv_logger, new EarlyStopping(monitor: "val_accuracy", 0, 50, 1, mode: "max", 1) }
+                : new Callback[] { csv_logger };
+        }
+
         #endregion
 
         #region File Saving and Loading
+
+        // Neural model loading and saving routines 
 
         public void LoadModel(string stime)
         {
@@ -472,42 +497,12 @@ namespace MouseAI.ML
             return !string.IsNullOrEmpty(starttime) ? starttime : string.Empty;
         }
 
-        public double[] GetScore()
-        {
-            return score;
-        }
-
-        public string GetStartTime()
-        {
-            return dtStart.ToString();
-        }
-
-        public string GetEndTime()
-        {
-            return dtEnd.ToString();
-        }
-
-        public int GetEpochs()
-        {
-            if (score == null || score.Length != 2)
-                return -1;
-            return (int) score[0];
-        }
-
-        public double GetAccuracy()
-        {
-            if (score == null || score.Length != 2)
-                return -1;
-
-            return score[1];
-        }
-
         public double[] GetAccuracies()
         {
             if (score == null || score.Length != 2)
                 return null;
 
-            return new double[] {score[0], score[1]};
+            return new[] {score[0], score[1]};
         }
 
         #endregion

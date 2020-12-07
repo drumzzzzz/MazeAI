@@ -1,4 +1,6 @@
-﻿
+﻿// Utils Class:
+// Misc formatting helpers
+
 using System;
 
 namespace MouseAI.ML

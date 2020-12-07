@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Database Class:
+// SQLite generic database access utilities
+// Read queries utilize reflection for simplified model access
+
+#region Using Statements
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
@@ -6,12 +12,20 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
+#endregion
+
 namespace MouseAI.PL
 {
     public class Database
     {
+        #region Declarations
+
         private readonly string db_file;
         private const string DB_PATH = "URI=file:";
+
+        #endregion
+
+        #region Init
 
         public Database(string db_file)
         {
@@ -36,6 +50,10 @@ namespace MouseAI.PL
                 Console.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Methods
 
         public bool Insert(string table,string columns, string values)
         {
@@ -300,5 +318,8 @@ namespace MouseAI.PL
                 return -1;
             }
         }
+
+        #endregion
+
     }
 }

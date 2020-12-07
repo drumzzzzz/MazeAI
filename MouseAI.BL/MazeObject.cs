@@ -1,4 +1,7 @@
-﻿
+﻿// MazeObject and MazeObjects Class:
+// Space and block object properties and states that comprise of a maze
+// MazeObject lists which are associated to a given maze instance 
+
 using System;
 using System.Collections.Generic;
 

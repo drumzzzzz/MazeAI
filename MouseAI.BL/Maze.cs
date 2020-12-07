@@ -41,8 +41,8 @@ namespace MouseAI
         private static DbTable_Projects dbtblProjects;
         private readonly MazeObjects segmentPathObjects;
         private MazeStatistic mazeStatistic;
-        private readonly List<PathNode> pathNodes;
-        private readonly List<PathNode> badNodes;
+        private readonly List<MazePathNode> pathNodes;
+        private readonly List<MazePathNode> badNodes;
         private static List<MazeObject> visionObjects;
         private static Bitmap visualbmp;
         private List<byte[]> imagebytes;
@@ -135,8 +135,8 @@ namespace MouseAI
             pathObjects = new List<MazeObject>();
             visionObjects = new List<MazeObject>();
             mazePaths = new MazePaths(maze_width, maze_height);
-            pathNodes = new List<PathNode>();
-            badNodes = new List<PathNode>();
+            pathNodes = new List<MazePathNode>();
+            badNodes = new List<MazePathNode>();
             segmentPathObjects = new MazeObjects();
             pnVisible = new List<Point>();
             pnDeadends = new List<Point>();
@@ -789,7 +789,7 @@ namespace MouseAI
                 return true;
 
             // Get a path node memory from the neural prediction 
-            List<PathNode> pathnodes = mazeModels.GetPathNodes(segment_current);
+            List<MazePathNode> pathnodes = mazeModels.GetPathNodes(segment_current);
 
             if (pathnodes == null || pathnodes.Count == 0)
             {
@@ -824,7 +824,7 @@ namespace MouseAI
         }
 
         // Validate nodes: check bad, duplicate and within vision sight
-        private bool CheckNode(PathNode p)
+        private bool CheckNode(MazePathNode p)
         {
             return !badNodes.Any(o => o.x == p.x && o.y == p.y) &&
                    !pathNodes.Any(o => o.x == p.x && o.y == p.y) &&
@@ -850,7 +850,7 @@ namespace MouseAI
                 // If at the mouse and any nodes exist past the mouse
                 if (isMouseNode(mouse, pathNodes[i]) && (i < pathNodes.Count - 1))
                 {
-                    PathNode pn = pathNodes[i + 1]; // Get next node
+                    MazePathNode pn = pathNodes[i + 1]; // Get next node
                     
                     // If mouse can move onto the next node: move the mouse and return result
                     if (CheckPathMove(pn.x, pn.y) && CheckNodeNext(pn, mouse) && !isVisited(pn.x, pn.y))
@@ -1056,7 +1056,7 @@ namespace MouseAI
             ProcessOldestPath(mazeobjects, mouse);
             if (mouse.isDeadEnd && !badNodes.Any(o => isMouseNode(mouse, o)))
             {
-                badNodes.Add(new PathNode(mouse.x, mouse.y, false));
+                badNodes.Add(new MazePathNode(mouse.x, mouse.y, false));
             }
             MazeStatistics.SetMouseStatus(MazeStatistics.MOUSE_STATUS.REVERTING);
             return false;
@@ -1708,11 +1708,11 @@ namespace MouseAI
         private static void GeneratePathNodes(MazeObjects mos)
         {
             mazeModel.pathnodes = null;
-            mazeModel.pathnodes = new List<PathNode>();
+            mazeModel.pathnodes = new List<MazePathNode>();
 
             foreach (MazeObject mo in mos)
             {
-                mazeModel.pathnodes.Add(new PathNode(mo.x, mo.y, mo.isJunction));
+                mazeModel.pathnodes.Add(new MazePathNode(mo.x, mo.y, mo.isJunction));
             }
         }
 
@@ -2165,7 +2165,7 @@ namespace MouseAI
             return obytes;
         }
 
-        private static bool CheckNodeNext(PathNode pn, MazeObject mouse)
+        private static bool CheckNodeNext(MazePathNode pn, MazeObject mouse)
         {
             int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
 
@@ -2200,7 +2200,7 @@ namespace MouseAI
             return new[] { x - 1, y, x + 1, y, x, y - 1, x, y + 1 };
         }
 
-        private static bool isMouseNode(MazeObject mouse, PathNode pn)
+        private static bool isMouseNode(MazeObject mouse, MazePathNode pn)
         {
             return (pn.x == mouse.x && pn.y == mouse.y);
         }

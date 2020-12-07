@@ -1,5 +1,6 @@
-﻿// MazeModel Class:
-// Space and block properties and object lists that represent a maze instance
+﻿// MazeModel and MazeModels Class:
+// Maze properties and object arrays associated with a given maze instance
+// MazeModel object list of associated objects to a given maze project
 
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace MouseAI.BL
         public byte[][] mazepath { get; set; }
         public byte[] maze { get; set; }
         public List<byte[]> segments { get; set; }
-        public List<PathNode> pathnodes { get; set; }
+        public List<MazePathNode> pathnodes { get; set; }
         public int errors { get; set; }
 
         public MazeModel()
@@ -164,7 +165,7 @@ namespace MouseAI.BL
             return !mazeModels.Any(mm => mm.segments == null || mm.segments.Count == 0);
         }
 
-        public List<PathNode> GetPathNodes(int index)
+        public List<MazePathNode> GetPathNodes(int index)
         {
             if (index < 0 || index >= mazeModels.Count)
                 return null;

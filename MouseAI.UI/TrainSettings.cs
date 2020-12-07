@@ -1,4 +1,8 @@
-﻿using System;
+﻿// TrainSettings Class:
+// Form used for neural network training configuration
+// Local methods perform control updates based on a given config
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -8,6 +12,7 @@ namespace MouseAI.UI
 {
     public partial class TrainSettings : Form
     {
+        // Training defaults
         private readonly Config config;
         private const int EPOCHS = 50;
         private const int BATCH = 10;
