@@ -3,34 +3,11 @@ using System;
 using System.Collections.Generic;
 
 namespace MouseAI
-{
-    public enum DIRECTION
-    {
-        NORTH,
-        EAST,
-        SOUTH,
-        WEST
-    }
-
-    public enum OBJECT_TYPE
-    {
-        SPACE,
-        BLOCK
-    }
-
-    public enum OBJECT_STATE
-    {
-        NONE,
-        VISITED,
-        MOUSE,
-        CHEESE,
-        SCANNED
-    }
-
+{ 
     public class MazeObject
     {
-        public OBJECT_TYPE object_type { get; set; }
-        public OBJECT_STATE object_state { get; set; }
+        public MazeObjects.OBJECT_TYPE object_type { get; set; }
+        public MazeObjects.OBJECT_STATE object_state { get; set; }
         public int x { get; set; }
         public int y { get; set; }
         public bool isVisited { get; set; }
@@ -44,10 +21,10 @@ namespace MouseAI
         public int count { get; set; }
         public DateTime dtLastVisit { get; set; }
 
-        public MazeObject(OBJECT_TYPE element_type, int x, int y)
+        public MazeObject(MazeObjects.OBJECT_TYPE element_type, int x, int y)
         {
             object_type = element_type;
-            object_state = OBJECT_STATE.NONE;
+            object_state = MazeObjects.OBJECT_STATE.NONE;
             isVisited = false;
             isScanned = false;
             isDeadEnd = false;
@@ -61,6 +38,28 @@ namespace MouseAI
 
     public class MazeObjects : List<MazeObject>
     {
+        public enum DIRECTION
+        {
+            NORTH,
+            EAST,
+            SOUTH,
+            WEST
+        }
+
+        public enum OBJECT_TYPE
+        {
+            SPACE,
+            BLOCK
+        }
+
+        public enum OBJECT_STATE
+        {
+            NONE,
+            VISITED,
+            MOUSE,
+            CHEESE
+        }
+
         public MazeObjects()
         { }
 

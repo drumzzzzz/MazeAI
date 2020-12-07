@@ -972,10 +972,10 @@ namespace MouseAI.UI
             DeadEnd_Bitmap = GetBitmap(Resources.deadend, resizeInfo);
             Smell_Bitmap = GetBitmap(Resources.smell, resizeInfo);
             Mouse_Bitmap = new SKBitmap[MOUSE_BITMAPS];
-            Mouse_Bitmap[(int)DIRECTION.SOUTH] = GetBitmap(Resources.mouse_south, resizeInfo);
-            Mouse_Bitmap[(int)DIRECTION.NORTH] = GetBitmap(Resources.mouse_north, resizeInfo);
-            Mouse_Bitmap[(int)DIRECTION.WEST] = GetBitmap(Resources.mouse_west, resizeInfo);
-            Mouse_Bitmap[(int)DIRECTION.EAST] = GetBitmap(Resources.mouse_east, resizeInfo);
+            Mouse_Bitmap[(int)MazeObjects.DIRECTION.SOUTH] = GetBitmap(Resources.mouse_south, resizeInfo);
+            Mouse_Bitmap[(int)MazeObjects.DIRECTION.NORTH] = GetBitmap(Resources.mouse_north, resizeInfo);
+            Mouse_Bitmap[(int)MazeObjects.DIRECTION.WEST] = GetBitmap(Resources.mouse_west, resizeInfo);
+            Mouse_Bitmap[(int)MazeObjects.DIRECTION.EAST] = GetBitmap(Resources.mouse_east, resizeInfo);
 
             ClearColor = SKColor.Parse("#003366");
 
@@ -1045,7 +1045,7 @@ namespace MouseAI.UI
             offscreen.Clear(ClearColor);
 
             float x_pos, y_pos;
-            OBJECT_TYPE ot;
+            MazeObjects.OBJECT_TYPE ot;
 
             // Iterate height x width and render rectangles/character per object type
             for (int y_idx = 0; y_idx < MAZE_HEIGHT; y_idx++)
@@ -1058,9 +1058,9 @@ namespace MouseAI.UI
                     ot = Maze.GetObjectDataType(x_idx, y_idx);
 
                     offscreen.DrawRect(x_pos, y_pos, MAZE_SCALE_WIDTH_PX, MAZE_SCALE_HEIGHT_PX,
-                            (ot == OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
+                            (ot == MazeObjects.OBJECT_TYPE.BLOCK) ? BlockPaint : SpacePaint);
 
-                    if (Maze.GetObjectState(x_idx, y_idx) == OBJECT_STATE.CHEESE)
+                    if (Maze.GetObjectState(x_idx, y_idx) == MazeObjects.OBJECT_STATE.CHEESE)
                         offscreen.DrawBitmap(Cheese_Bitmap, x_pos, y_pos, DropShadow);
                 }
             }

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// MazeGenerator Class:
+// Recursively generates a random maze via a depth first search algorithm
+// Based on the Java implementation from https://algs4.cs.princeton.edu/41graph/Maze.java.html
+
+using System;
 
 namespace MouseAI.BL
 {
@@ -9,12 +13,12 @@ namespace MouseAI.BL
         private static byte[] maze;
         private static int maze_width;
         private static int maze_height;
-        private readonly DIRECTION[] dirs;
+        private readonly MazeObjects.DIRECTION[] dirs;
         private readonly Random r;
 
         #endregion
 
-
+        #region Generation Methods
         // Constructor
         public MazeGenerator(int _maze_width, int _maze_height)
         {
@@ -22,11 +26,11 @@ namespace MouseAI.BL
             maze_height = _maze_height;
             r= new Random();
 
-            dirs = new DIRECTION[4];
-            dirs[0] = DIRECTION.NORTH; 
-            dirs[1] = DIRECTION.EAST; 
-            dirs[2] = DIRECTION.SOUTH; 
-            dirs[3] = DIRECTION.WEST; 
+            dirs = new MazeObjects.DIRECTION[4];
+            dirs[0] = MazeObjects.DIRECTION.NORTH; 
+            dirs[1] = MazeObjects.DIRECTION.EAST; 
+            dirs[2] = MazeObjects.DIRECTION.SOUTH; 
+            dirs[3] = MazeObjects.DIRECTION.WEST; 
 
             maze = new byte[maze_width * maze_height];
         }
@@ -38,7 +42,7 @@ namespace MouseAI.BL
             maze[XYToIndex(x, y)] = Maze.WHITE;
 
             int rand;
-            DIRECTION dir_temp;
+            MazeObjects.DIRECTION dir_temp;
 
             for (int i = 0; i < 4; i++)
             {
@@ -57,16 +61,16 @@ namespace MouseAI.BL
 
                 switch (dirs[i])
                 {
-                    case DIRECTION.NORTH:
+                    case MazeObjects.DIRECTION.NORTH:
                         dy = -1;
                         break;
-                    case DIRECTION.SOUTH:
+                    case MazeObjects.DIRECTION.SOUTH:
                         dy = 1;
                         break;
-                    case DIRECTION.EAST:
+                    case MazeObjects.DIRECTION.EAST:
                         dx = 1;
                         break;
-                    case DIRECTION.WEST:
+                    case MazeObjects.DIRECTION.WEST:
                         dx = -1;
                         break;
                 }
@@ -103,5 +107,7 @@ namespace MouseAI.BL
         {
             return y * maze_width + x;
         }
+
+        #endregion
     }
 }

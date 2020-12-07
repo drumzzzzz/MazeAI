@@ -1,4 +1,7 @@
-﻿using System;
+﻿// MazeModel Class:
+// Space and block properties and object lists that represent a maze instance
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MouseAI.ML;

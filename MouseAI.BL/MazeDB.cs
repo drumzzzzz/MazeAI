@@ -1,4 +1,5 @@
-﻿// SQLite Database model and helpers
+﻿// MazeDb Class:
+// SQLite table model and database methods
 
 #region Using Statements
 

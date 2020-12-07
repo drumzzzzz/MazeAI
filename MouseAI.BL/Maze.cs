@@ -1,4 +1,5 @@
-﻿// Maze class : Inherits MazeGenerator
+﻿// Maze Class: Inherits MazeGenerator
+// Neural and non-neural maze traversion, path solving and utilities
 
 #region Using Statements
 
@@ -74,7 +75,7 @@ namespace MouseAI
         private static int maze_height;
         private static int mouse_x;
         private static int mouse_y;
-        private static DIRECTION mouse_direction;
+        private static MazeObjects.DIRECTION mouse_direction;
         private static int cheese_x;
         private static int cheese_y;
         private bool isCheesePath;
@@ -187,18 +188,18 @@ namespace MouseAI
 
             mouse_x = mx;
             mouse_y = my;
-            mouse_direction = DIRECTION.SOUTH;
-            mazeObjects[mx, my].object_state = OBJECT_STATE.MOUSE;
+            mouse_direction = MazeObjects.DIRECTION.SOUTH;
+            mazeObjects[mx, my].object_state = MazeObjects.OBJECT_STATE.MOUSE;
 
-            mouseObject = new MazeObject(OBJECT_TYPE.SPACE, mx, my)
+            mouseObject = new MazeObject(MazeObjects.OBJECT_TYPE.SPACE, mx, my)
             {
-                object_state = OBJECT_STATE.MOUSE,
+                object_state = MazeObjects.OBJECT_STATE.MOUSE,
                 isVisited = true,
                 dtLastVisit = DateTime.UtcNow
             };
 
-            mazeObjects[cx, cy].object_state = OBJECT_STATE.CHEESE;
-            mazeObjects[cx, cy].object_type = OBJECT_TYPE.SPACE;
+            mazeObjects[cx, cy].object_state = MazeObjects.OBJECT_STATE.CHEESE;
+            mazeObjects[cx, cy].object_type = MazeObjects.OBJECT_TYPE.SPACE;
             cheese_x = cx;
             cheese_y = cy;
 
@@ -229,7 +230,7 @@ namespace MouseAI
                     {
                         x = pan_array[j];
                         y = pan_array[j + 1];
-                        if (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE &&
+                        if (IsInBounds(x, y) && GetObjectDataType(x, y) == MazeObjects.OBJECT_TYPE.SPACE &&
                             !nodes.Any(o => o.x == x && o.y == y) && 
                             !newnodes.Any(o => o.x == x && o.y == y))
                         {
@@ -255,7 +256,7 @@ namespace MouseAI
         // Insert the mouse and cheese characters at random coordinates and opposing sides of a given maze 
         public bool AddCharacters_Random()
         {
-            DIRECTION dir = (DIRECTION) r.Next(1, 4);
+            MazeObjects.DIRECTION dir = (MazeObjects.DIRECTION) r.Next(1, 4);
 
             MazeObject mo_mouse = GetMazeObject(dir);
             if (mo_mouse == null)
@@ -271,13 +272,13 @@ namespace MouseAI
 
             mouse_x = x;
             mouse_y = y;
-            mouse_direction = DIRECTION.SOUTH;
-            mazeObjects[x, y].object_state = OBJECT_STATE.MOUSE;
+            mouse_direction = MazeObjects.DIRECTION.SOUTH;
+            mazeObjects[x, y].object_state = MazeObjects.OBJECT_STATE.MOUSE;
 
-            mouseObject = new MazeObject(OBJECT_TYPE.BLOCK, x, y)
+            mouseObject = new MazeObject(MazeObjects.OBJECT_TYPE.BLOCK, x, y)
             {
-                object_state = OBJECT_STATE.MOUSE,
-                object_type = OBJECT_TYPE.SPACE,
+                object_state = MazeObjects.OBJECT_STATE.MOUSE,
+                object_type = MazeObjects.OBJECT_TYPE.SPACE,
                 isVisited = true,
                 dtLastVisit = DateTime.UtcNow
             };
@@ -285,8 +286,8 @@ namespace MouseAI
             x = mo_cheese.x;
             y = mo_cheese.y;
 
-            mazeObjects[x, y].object_state = OBJECT_STATE.CHEESE;
-            mazeObjects[x, y].object_type = OBJECT_TYPE.SPACE;
+            mazeObjects[x, y].object_state = MazeObjects.OBJECT_STATE.CHEESE;
+            mazeObjects[x, y].object_type = MazeObjects.OBJECT_TYPE.SPACE;
             cheese_x = x;
             cheese_y = y;
 
@@ -589,7 +590,7 @@ namespace MouseAI
             // Store current mouse position object from list
             List<MazeObject> mazeobjects_de = CheckNode(x, y, true);
             List<MazeObject> mazeobjects = mazeobjects_de.Where(o => !o.isDeadEnd).ToList();
-            MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == MazeObjects.OBJECT_STATE.MOUSE);
 
             // Validate the mouse is present!
             if (mouse == null)
@@ -700,7 +701,7 @@ namespace MouseAI
             if (isMouseAtCheese(mouse))
             {
                 MazeObject m = mazeObjects[curr_x, curr_y];
-                m.object_state = OBJECT_STATE.CHEESE;
+                m.object_state = MazeObjects.OBJECT_STATE.CHEESE;
                 m.dtLastVisit = DateTime.UtcNow;
                 pathObjects.Add(m);
                 return true;
@@ -740,7 +741,7 @@ namespace MouseAI
             if (isMouseAtCheese(mouse))
             {
                 MazeObject m = mazeObjects[curr_x, curr_y];
-                m.object_state = OBJECT_STATE.CHEESE;
+                m.object_state = MazeObjects.OBJECT_STATE.CHEESE;
                 m.dtLastVisit = DateTime.UtcNow;
                 pathObjects.Add(m);
                 return true;
@@ -942,7 +943,7 @@ namespace MouseAI
             {
                 for (int i = 0; i < segmentPathObjects.Count; i++)
                 {
-                    if (segmentPathObjects[i].object_state == OBJECT_STATE.MOUSE)
+                    if (segmentPathObjects[i].object_state == MazeObjects.OBJECT_STATE.MOUSE)
                     {
                         if (isDebug)
                             Console.WriteLine("Pruning a dead end from search tree");
@@ -1016,7 +1017,7 @@ namespace MouseAI
         {
             // Init array and lists
             int[] pan_array = GetXYPanArray(mouse.x, mouse.y);
-            List<MazeObject> mos = mazeobjects.Where(o => o.isVisited == false && o.object_state != OBJECT_STATE.MOUSE)
+            List<MazeObject> mos = mazeobjects.Where(o => o.isVisited == false && o.object_state != MazeObjects.OBJECT_STATE.MOUSE)
                 .ToList();
             List<MazeObject> mos_selections = new List<MazeObject>();
             MazeObject mo = null;
@@ -1073,7 +1074,7 @@ namespace MouseAI
 
             // Retrieve visible objects and the mouse
             List<MazeObject> mazeobjects = CheckNode(x, y, false);
-            MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            MazeObject mouse = mazeobjects.FirstOrDefault(o => o.object_state == MazeObjects.OBJECT_STATE.MOUSE);
 
             if (mouse == null)
             {
@@ -1095,7 +1096,7 @@ namespace MouseAI
 
             // Get possible moves
             MazeObject mo = mazeobjects.FirstOrDefault(o => o.isVisited == false &&
-                                                            o.object_state != OBJECT_STATE.MOUSE);
+                                                            o.object_state != MazeObjects.OBJECT_STATE.MOUSE);
             // If there is a valid move to be made
             if (mo != null)
                 UpdatePathObject(mazeobjects, null, mo, mouse);
@@ -1125,11 +1126,11 @@ namespace MouseAI
 
             mouseObject.x = mo.x;
             mouseObject.y = mo.y;
-            mo.object_state = OBJECT_STATE.MOUSE;
+            mo.object_state = MazeObjects.OBJECT_STATE.MOUSE;
             mo.dtLastVisit = DateTime.UtcNow;
             mo.isPath = true;
             mouse.isVisited = true;
-            mouse.object_state = OBJECT_STATE.VISITED;
+            mouse.object_state = MazeObjects.OBJECT_STATE.VISITED;
             pathObjects.Add(mo);
         }
 
@@ -1140,7 +1141,7 @@ namespace MouseAI
             DateTime dtOldest = DateTime.UtcNow;
             MazeObject mo_oldest = null;
 
-            foreach (MazeObject m in mazeobjects.Where(m => m.object_state != OBJECT_STATE.MOUSE))
+            foreach (MazeObject m in mazeobjects.Where(m => m.object_state != MazeObjects.OBJECT_STATE.MOUSE))
             {
                 if (m.dtLastVisit < dtOldest)
                 {
@@ -1158,9 +1159,9 @@ namespace MouseAI
             if (!mouse.isJunction)
                 mouse.isDeadEnd = true;
 
-            mazeObjects[mo_oldest.x, mo_oldest.y].object_state = OBJECT_STATE.MOUSE;
+            mazeObjects[mo_oldest.x, mo_oldest.y].object_state = MazeObjects.OBJECT_STATE.MOUSE;
             mouse.isVisited = true;
-            mouse.object_state = OBJECT_STATE.VISITED;
+            mouse.object_state = MazeObjects.OBJECT_STATE.VISITED;
         }
 
         #endregion
@@ -1182,7 +1183,7 @@ namespace MouseAI
                     break;
                 if (result == true)
                     return true;
-                scanobjects[(int)DIRECTION.WEST].Add(mazeObjects[x_idx, y]);
+                scanobjects[(int)MazeObjects.DIRECTION.WEST].Add(mazeObjects[x_idx, y]);
             }
 
             // East
@@ -1193,7 +1194,7 @@ namespace MouseAI
                     break;
                 if (result == true)
                     return true;
-                scanobjects[(int)DIRECTION.EAST].Add(mazeObjects[x_idx, y]);
+                scanobjects[(int)MazeObjects.DIRECTION.EAST].Add(mazeObjects[x_idx, y]);
             }
 
             // North
@@ -1204,7 +1205,7 @@ namespace MouseAI
                     break;
                 if (result == true)
                     return true;
-                scanobjects[(int)DIRECTION.NORTH].Add(mazeObjects[x, y_idx]);
+                scanobjects[(int)MazeObjects.DIRECTION.NORTH].Add(mazeObjects[x, y_idx]);
             }
 
             // South
@@ -1215,7 +1216,7 @@ namespace MouseAI
                     break;
                 if (result == true)
                     return true;
-                scanobjects[(int)DIRECTION.SOUTH].Add(mazeObjects[x, y_idx]);
+                scanobjects[(int)MazeObjects.DIRECTION.SOUTH].Add(mazeObjects[x, y_idx]);
             }
 
             // Scan for endpoints and perimeters per visible object
@@ -1234,7 +1235,7 @@ namespace MouseAI
             if (!isScanValid(x, y) || mazeObjects[x, y].isDeadEnd)
                 return null;
 
-            return CheckScannedObject(x, y) == OBJECT_STATE.CHEESE;
+            return CheckScannedObject(x, y) == MazeObjects.OBJECT_STATE.CHEESE;
         }
 
         // Check a given path object list for a deadend 
@@ -1276,19 +1277,19 @@ namespace MouseAI
 
         // Misc scan utilities
 
-        private static OBJECT_STATE CheckScannedObject(int x, int y)
+        private static MazeObjects.OBJECT_STATE CheckScannedObject(int x, int y)
         {
-            return mazeObjects[x, y].object_state == OBJECT_STATE.CHEESE ? OBJECT_STATE.CHEESE : OBJECT_STATE.NONE;
+            return mazeObjects[x, y].object_state == MazeObjects.OBJECT_STATE.CHEESE ? MazeObjects.OBJECT_STATE.CHEESE : MazeObjects.OBJECT_STATE.NONE;
         }
 
         private static bool isScanValid(int x, int y)
         {
-            return (IsInBounds(x, y) && mazeObjects[x, y].object_type == OBJECT_TYPE.SPACE);
+            return (IsInBounds(x, y) && mazeObjects[x, y].object_type == MazeObjects.OBJECT_TYPE.SPACE);
         }
 
         private static int GetScanValid(int x, int y)
         {
-            return (IsInBounds(x, y) && mazeObjects[x, y].object_type == OBJECT_TYPE.SPACE) ? 1 : 0;
+            return (IsInBounds(x, y) && mazeObjects[x, y].object_type == MazeObjects.OBJECT_TYPE.SPACE) ? 1 : 0;
         }
 
         #endregion
@@ -1303,11 +1304,11 @@ namespace MouseAI
             if (CheckPathMove(new_x, new_y))
             {
                 MazeObject mo = mazeObjects[curr_x, curr_y];
-                mo.object_state = OBJECT_STATE.VISITED;
+                mo.object_state = MazeObjects.OBJECT_STATE.VISITED;
                 mo.dtLastVisit = DateTime.UtcNow;
                 mo.isPath = true;
                 mo = mazeObjects[new_x, new_y];
-                mo.object_state = OBJECT_STATE.MOUSE;
+                mo.object_state = MazeObjects.OBJECT_STATE.MOUSE;
                 mo.dtLastVisit = DateTime.UtcNow;
                 mo.isPath = true;
                 mouseObject.x = new_x;
@@ -1323,12 +1324,12 @@ namespace MouseAI
             List<MazeObject> pathobjects = new List<MazeObject>();
             List<MazeObject> pathsLast = new List<MazeObject>();
 
-            MazeObject m = new MazeObject(OBJECT_TYPE.SPACE, mouse_x, mouse_y)
+            MazeObject m = new MazeObject(MazeObjects.OBJECT_TYPE.SPACE, mouse_x, mouse_y)
             {
                 dtLastVisit = DateTime.MinValue,
                 isPath = true,
                 isDeadEnd = false,
-                object_state = OBJECT_STATE.MOUSE
+                object_state = MazeObjects.OBJECT_STATE.MOUSE
             };
             pathObjects.Insert(0, m);
 
@@ -1388,7 +1389,7 @@ namespace MouseAI
             ICollection<MazeObject> pathsLast)
         {
             if (IsInBounds(x, y) && !mazeObjects[x, y].isPath &&
-                mazeObjects[x, y].object_type == OBJECT_TYPE.SPACE &&
+                mazeObjects[x, y].object_type == MazeObjects.OBJECT_TYPE.SPACE &&
                 !pathObjects.Any(o => o.x == x && o.y == y))
             {
                 mazeObjects[x, y].isPath = true;
@@ -1546,8 +1547,8 @@ namespace MouseAI
         // Routines share the base functionality of path solving; however were created seperately to reduce debugging and complexity
         public void CalculateSegments()
         {
-            MazeObject mouse = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
-            MazeObject cheese = pathObjects.FirstOrDefault(o => o.object_state == OBJECT_STATE.MOUSE);
+            MazeObject mouse = pathObjects.FirstOrDefault(o => o.object_state == MazeObjects.OBJECT_STATE.MOUSE);
+            MazeObject cheese = pathObjects.FirstOrDefault(o => o.object_state == MazeObjects.OBJECT_STATE.MOUSE);
 
             if (mouse == null || cheese == null)
             {
@@ -2105,22 +2106,22 @@ namespace MouseAI
             return mazeobjects;
         }
 
-        private static MazeObject GetMazeObject(DIRECTION dir)
+        private static MazeObject GetMazeObject(MazeObjects.DIRECTION dir)
         {
             List<MazeObject> mos;
 
-            if (dir == DIRECTION.WEST)
-                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == 1)
+            if (dir == MazeObjects.DIRECTION.WEST)
+                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == MazeObjects.OBJECT_TYPE.SPACE && m.x == 1)
                     .ToList();
-            else if (dir == DIRECTION.NORTH)
-                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == 1)
+            else if (dir == MazeObjects.DIRECTION.NORTH)
+                mos = mazeObjects.Cast<MazeObject>().Where(m => m.object_type == MazeObjects.OBJECT_TYPE.SPACE && m.y == 1)
                     .ToList();
-            else if (dir == DIRECTION.EAST)
+            else if (dir == MazeObjects.DIRECTION.EAST)
                 mos = mazeObjects.Cast<MazeObject>()
-                    .Where(m => m.object_type == OBJECT_TYPE.SPACE && m.x == maze_width - 2).ToList();
+                    .Where(m => m.object_type == MazeObjects.OBJECT_TYPE.SPACE && m.x == maze_width - 2).ToList();
             else
                 mos = mazeObjects.Cast<MazeObject>()
-                    .Where(m => m.object_type == OBJECT_TYPE.SPACE && m.y == maze_height - 2).ToList();
+                    .Where(m => m.object_type == MazeObjects.OBJECT_TYPE.SPACE && m.y == maze_height - 2).ToList();
 
             return mos.Count == 0 ? null : mos.ElementAt(r.Next(mos.Count - 1));
         }
@@ -2128,22 +2129,22 @@ namespace MouseAI
         private static void UpdateMouseDirection(int x_last, int y_last, int x_curr, int y_curr)
         {
             if (x_curr < x_last)
-                mouse_direction = DIRECTION.WEST;
+                mouse_direction = MazeObjects.DIRECTION.WEST;
             else if (x_curr > x_last)
-                mouse_direction = DIRECTION.EAST;
+                mouse_direction = MazeObjects.DIRECTION.EAST;
             else if (y_curr < y_last)
-                mouse_direction = DIRECTION.NORTH;
+                mouse_direction = MazeObjects.DIRECTION.NORTH;
             else if (y_curr > y_last)
-                mouse_direction = DIRECTION.SOUTH;
+                mouse_direction = MazeObjects.DIRECTION.SOUTH;
         }
 
-        private static DIRECTION OppositeDirection(DIRECTION dir)
+        private static MazeObjects.DIRECTION OppositeDirection(MazeObjects.DIRECTION dir)
         {
-            if (dir == DIRECTION.EAST)
-                return DIRECTION.WEST;
-            if (dir == DIRECTION.WEST)
-                return DIRECTION.EAST;
-            return dir == DIRECTION.NORTH ? DIRECTION.SOUTH : DIRECTION.NORTH;
+            if (dir == MazeObjects.DIRECTION.EAST)
+                return MazeObjects.DIRECTION.WEST;
+            if (dir == MazeObjects.DIRECTION.WEST)
+                return MazeObjects.DIRECTION.EAST;
+            return dir == MazeObjects.DIRECTION.NORTH ? MazeObjects.DIRECTION.SOUTH : MazeObjects.DIRECTION.NORTH;
         }
 
         private static byte[,] ConvertArray(IReadOnlyList<byte[]> ibytes)
@@ -2185,8 +2186,8 @@ namespace MouseAI
         private static bool isNode(int x, int y, bool isDeadEnds)
         {
             if (!isDeadEnds)
-                return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE);
+                return (IsInBounds(x, y) && GetObjectDataType(x, y) == MazeObjects.OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == MazeObjects.OBJECT_TYPE.SPACE);
         }
 
         private static int[,] GetXYPan(int x, int y)
@@ -2239,15 +2240,15 @@ namespace MouseAI
 
         private static bool CheckPathMove(int x, int y)
         {
-            return (IsInBounds(x, y) && GetObjectDataType(x, y) == OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
+            return (IsInBounds(x, y) && GetObjectDataType(x, y) == MazeObjects.OBJECT_TYPE.SPACE && !isDeadEnd(x, y));
         }
 
-        public static OBJECT_TYPE GetObjectDataType(int x, int y)
+        public static MazeObjects.OBJECT_TYPE GetObjectDataType(int x, int y)
         {
-            return (mazedata[x, y] == WHITE) ? OBJECT_TYPE.SPACE : OBJECT_TYPE.BLOCK;
+            return (mazedata[x, y] == WHITE) ? MazeObjects.OBJECT_TYPE.SPACE : MazeObjects.OBJECT_TYPE.BLOCK;
         }
 
-        public static OBJECT_STATE GetObjectState(int x, int y)
+        public static MazeObjects.OBJECT_STATE GetObjectState(int x, int y)
         {
             return (mazeObjects[x, y].object_state);
         }
