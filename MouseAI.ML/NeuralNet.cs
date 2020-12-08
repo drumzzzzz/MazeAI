@@ -73,6 +73,8 @@ namespace MouseAI.ML
             this.config_ext = config_ext;
 
             // Attempt to reset the invoked library
+            //np.arange(1);
+            //PythonEngine.BeginAllowThreads();
             K.DisableEager();
             K.ClearSession();
             K.ResetUids();
@@ -205,6 +207,40 @@ namespace MouseAI.ML
 
         #region Training
 
+        public void ExportDataSets(Config _config, int num_classes)
+        {
+            if (x_train == null || y_train == null || x_test == null || y_test == null)
+                throw new Exception("Dataset was null!");
+
+            config = _config;
+            
+            //if (config.isNormalize)
+            //{
+            //    x_train = x_train.astype(np.float32);
+            //    x_test = x_test.astype(np.float32);
+            //    x_train /= 255;
+            //    x_test /= 255;
+            //}
+
+            string file_name = config.StartTime;
+            string x_train_name = Utils.GetFileWithExtension(model_dir, "x_train_" + file_name, "csv");
+            string x_test_name = Utils.GetFileWithExtension(model_dir, "x_test_" + file_name, "csv");
+            string y_train_name = Utils.GetFileWithExtension(model_dir, "y_train_" + file_name, "csv");
+            string y_test_name = Utils.GetFileWithExtension(model_dir, "y_test_" + file_name, "csv");
+
+            //y_train = Util.ToCategorical(y_train, num_classes);
+            //y_test = Util.ToCategorical(y_test, num_classes);
+
+            NDarray x_train_data = x_train.reshape(x_train.shape[0], -1);
+            np.savetxt(x_train_name, x_train_data, delimiter: ",");
+            NDarray x_test_data = x_test.reshape(x_test.shape[0], -1);
+            np.savetxt(x_test_name, x_test_data, delimiter: ",");
+            NDarray y_train_labels = y_train.reshape(y_train.shape[0], -1);
+            np.savetxt(y_train_name, y_train_labels, delimiter: ",");
+            NDarray y_test_labels = y_test.reshape(y_test.shape[0], -1);
+            np.savetxt(y_test_name, y_test_labels, delimiter: ",");
+        }
+
         // Training method and helper for a selectable SNN or CNN type network from a given config
         // Resulting model and scores are stored for further use 
         public void Process(Config _config, int num_classes)
@@ -238,10 +274,10 @@ namespace MouseAI.ML
 
             y_train = Util.ToCategorical(y_train, num_classes);
             y_test = Util.ToCategorical(y_test, num_classes);
-
+            
             starttime = Utils.GetDateTime_Formatted();
             log_file = Utils.GetFileWithExtension(log_dir, starttime, log_ext);
-
+            
             if (!config.isCNN)
                 model = ProcessSnnModel(x_train, y_train, x_test, y_test, num_classes, log_file, config);
             else
@@ -256,6 +292,7 @@ namespace MouseAI.ML
             Console.WriteLine("Test End: {0}  Duration: {1}:{2}.{3}", dtEnd, ts.Hours,ts.Minutes, ts.Seconds);
             Console.WriteLine("Loss: {0} Accuracy: {1}", score[0], score[1]);
         }
+
 
         private Shape GetShape()
         {
@@ -477,6 +514,18 @@ namespace MouseAI.ML
             model_loaded.LoadWeight(filename + model_ext);
             model_loaded.Summary();
             starttime = config.StartTime;
+        }
+
+        public Config LoadConfig(string stime)
+        {
+            string filename = Utils.GetFileWithoutExtension(model_dir, stime);
+            config = (Config)FileIO.DeSerializeXml(typeof(Config), filename + config_ext);
+
+            if (config == null || string.IsNullOrEmpty(config.Model))
+                throw new Exception("Invalid config file");
+
+            starttime = config.StartTime;
+            return config;
         }
 
         public void SaveFiles()

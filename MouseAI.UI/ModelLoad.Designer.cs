@@ -37,6 +37,7 @@
             this.llblLog = new System.Windows.Forms.LinkLabel();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnModel = new System.Windows.Forms.Button();
+            this.btnExport = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPlot)).BeginInit();
             this.SuspendLayout();
             // 
@@ -144,12 +145,25 @@
             this.btnModel.UseVisualStyleBackColor = true;
             this.btnModel.Click += new System.EventHandler(this.btnModel_Click);
             // 
+            // btnExport
+            // 
+            this.btnExport.Enabled = false;
+            this.btnExport.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExport.Location = new System.Drawing.Point(345, 308);
+            this.btnExport.Margin = new System.Windows.Forms.Padding(0);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(81, 33);
+            this.btnExport.TabIndex = 28;
+            this.btnExport.Text = "EXPORT";
+            this.btnExport.UseVisualStyleBackColor = true;
+            // 
             // ModelLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(725, 414);
+            this.ClientSize = new System.Drawing.Size(721, 410);
             this.ControlBox = false;
+            this.Controls.Add(this.btnExport);
             this.Controls.Add(this.btnModel);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.llblLog);
@@ -183,5 +197,6 @@
         public System.Windows.Forms.LinkLabel llblLog;
         public System.Windows.Forms.Button btnDelete;
         public System.Windows.Forms.Button btnModel;
+        public System.Windows.Forms.Button btnExport;
     }
 }

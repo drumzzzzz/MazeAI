@@ -47,6 +47,7 @@ namespace MouseAI.UI
             btnRun.Enabled = state;
             btnDelete.Enabled = state;
             btnModel.Enabled = state;
+            btnExport.Enabled = state;
         }
 
         private void ModelLoad_Shown(object sender, EventArgs e)

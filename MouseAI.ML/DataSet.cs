@@ -124,10 +124,12 @@ namespace MouseAI.ML
 
                 count = id.Count;
                 sum = 0;
-                indexes = GetRandomList(1, count - 1);
-                indexes.Insert(0, 0);
-                indexes.Insert(1, count - 1);
-                train_count = (int)((count) * split);
+                // Get random index 1 -> n - 1
+                indexes = GetRandomList(0, count);
+                // Insert first and last into training
+                //indexes.Insert(0, 0);
+                //indexes.Insert(1, count - 1);
+                train_count = (int)(count * split);
 
                 for (int i = 0; i < train_count; i++)
                 {
@@ -139,9 +141,9 @@ namespace MouseAI.ML
                     sum++;
                     set_count++;
                 }
-
-                indexes.RemoveAt(0);
-                indexes.RemoveRange(0, train_count - 1);
+                //indexes.RemoveAt(0);
+                //indexes.RemoveAt(0);
+                indexes.RemoveRange(0, train_count);
 
                 foreach (int idx in indexes)
                 {

@@ -307,7 +307,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1018, 328);
+            this.ClientSize = new System.Drawing.Size(1023, 347);
             this.ControlBox = false;
             this.Controls.Add(this.rdoOff);
             this.Controls.Add(this.rdoNeural);

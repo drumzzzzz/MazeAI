@@ -122,6 +122,7 @@ namespace MouseAI.BL
                 if (m.maze == null || m.maze.Length == 0 || m.segments == null || m.segments.Count == 0)
                     throw new Exception(string.Format("Invalid Image Data Found at Index {0}", i));
 
+                // Adds maze path
                 imageDatas.Add(new ImageData(m.maze, m.guid));
                 imageDatas.AddRange(m.segments.Select(t => new ImageData(t, m.guid)));
             }

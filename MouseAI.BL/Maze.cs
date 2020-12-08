@@ -318,6 +318,28 @@ namespace MouseAI
 
         #region Neural Network Training
 
+        public void ExportDataSets(string guid, string starttime)
+        {
+            if (mazeModels == null || mazeModels.Count() == 0)
+                throw new Exception("No MazeModels Found");
+
+            if (!mazeModels.CheckPaths() || mazeModels.GetSegmentCount() == 0)
+            {
+                throw new Exception("The path/segment data for model was not found");
+            }
+
+            neuralNet = new NeuralNet(maze_width, maze_height, log_dir, LOG_EXT, model_dir, MODELS_EXT, CONFIG_EXT);
+            config = neuralNet.LoadConfig(starttime);
+
+            if (config == null)
+                throw new Exception("Invalid Config!");
+
+            config.Guid = guid;
+
+            neuralNet.InitDataSets(mazeModels.GetImageDatas(), config.Split, config.Seed);
+            neuralNet.ExportDataSets(config, mazeModels.Count());
+        }
+
         // Perform neural net model training:
         // Create a neural model with the given config parameters
         // Train with a data set initialized from the current projects maze model image segments
@@ -526,7 +548,7 @@ namespace MouseAI
         // Increment errors if Guid label is incorrect
         public bool CalculateAccuracies(ImageDatas imageSegments)
         {
-            if (imageSegments == null || imageSegments.Count == 0 || mazeModels == null || mazeModels.Count() == 0)
+            if (imageSegments == null || mazeModels == null || mazeModels.Count() == 0)
                 return false;
 
             foreach (MazeModel mm in mazeModels.GetMazeModels())

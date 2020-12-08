@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -384,9 +385,34 @@ namespace MouseAI.UI
             modelLoad = new ModelLoad(maze, starttimes);
             modelLoad.btnPredict.Click += btnPredict_Click;
             modelLoad.btnRun.Click += btnRun_Click;
+            modelLoad.btnExport.Click += btnExport_Click;
             modelLoad.Closed += modelLoad_Closed;
             modelLoad.btnDelete.Click += btnDelete_Click;
             modelLoad.Show();
+        }
+
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            if (!modelLoad.isSelectedModel())
+                return;
+
+            string starttime = modelLoad.GetSelectedModel();
+
+            if (string.IsNullOrEmpty(starttime))
+                return;
+
+            modelLoad.Enabled = false;
+            try
+            {
+                Console.Clear();
+                maze.ExportDataSets(settings.Guid, starttime);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Export Error");
+                DisplayError("Export Error", ex, false);
+            }
+            modelLoad.Enabled = true;
         }
 
         private void modelLoad_Closed(object sender, EventArgs e)
@@ -434,7 +460,6 @@ namespace MouseAI.UI
                 Console.WriteLine(e);
                 DisplayError("Error Removing Record", e, false);
             }
-
             modelLoad.Close();
             RunTest();
         }
