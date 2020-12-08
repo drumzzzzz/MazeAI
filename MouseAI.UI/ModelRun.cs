@@ -133,7 +133,7 @@ namespace MouseAI.UI
 
         public void UpdateTimer()
         {
-            tbxTime.Text = maze.GetMazeStatisticTime();
+            tbxMoves.Text = maze.GetMazeStatisticMoves().ToString();
         }
 
         public void ResetButtons()

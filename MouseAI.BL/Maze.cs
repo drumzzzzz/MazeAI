@@ -104,15 +104,16 @@ namespace MouseAI
         private static string model_info;
 
         // Object location points
-        private readonly List<Point> pnVisible;
-        private readonly List<Point> pnDeadends;
+        private List<Point> pnVisible;
+        private List<Point> pnDeadends;
         private readonly List<Point> pnSmell;
         public enum RUN_VISIBLE
         {
-            NONE,
+            NORMAL,
             VISIBLE,
             NEURAL,
-            PATHS
+            PATHS,
+            OFF
         }
 
         #endregion
@@ -1858,9 +1859,9 @@ namespace MouseAI
             return mazeStatistic?.GetData();
         }
 
-        public string GetMazeStatisticTime()
+        public int GetMazeStatisticMoves()
         {
-            return mazeStatistic.GetTime();
+            return moveCount;
         }
 
         public string GetMouseStatus()
@@ -1891,6 +1892,7 @@ namespace MouseAI
                     UpdatePointList(mp, mo);
                 }
 
+                CleanPointLists();
                 return;
             }
             if (run_visible == RUN_VISIBLE.NEURAL)
@@ -1899,6 +1901,8 @@ namespace MouseAI
                 {
                     UpdatePointList(mp, mo);
                 }
+
+                CleanPointLists();
             }
 
             Point _mp = new Point();
@@ -1913,7 +1917,15 @@ namespace MouseAI
                                                                           !pnVisible.Any(o => o.X == mo.x && o.Y == mo.y)))
                         pnVisible.Add(new Point(mo.x, mo.y));
                 }
+
+                CleanPointLists();
             }
+        }
+
+        private void CleanPointLists()
+        {
+            pnVisible = pnVisible.Distinct().ToList();
+            pnDeadends = pnDeadends.Distinct().ToList();
         }
 
         private void UpdatePointList(Point mp, MazeObject mo)

@@ -80,9 +80,9 @@ namespace MouseAI.UI
         private bool isThreadDone;
         private bool isThreadCancel;
         private const int SEARCH_DELAY = 1;
-        private const int RUN_DELAY = 50;
+        private const int RUN_DELAY = 1;
         private const int PLOT_TIME = 500;
-        private const int RENDER_TIME = 5;
+        private const int RENDER_TIME = 10;
         private DateTime dtRenderTime;
         private DateTime dtPlotTime;
 
@@ -666,8 +666,10 @@ namespace MouseAI.UI
                     run_visible = Maze.RUN_VISIBLE.NEURAL;
                 else if (button.Name.Equals("rdoPaths"))
                     run_visible = Maze.RUN_VISIBLE.PATHS;
+                else if (button.Name.Equals("rdoNormal"))
+                    run_visible = Maze.RUN_VISIBLE.NORMAL;
                 else
-                    run_visible = Maze.RUN_VISIBLE.NONE;
+                    run_visible = Maze.RUN_VISIBLE.OFF;
             }
         }
 
@@ -1091,7 +1093,9 @@ namespace MouseAI.UI
                 return false;
 
             isVisible = isvisible;
-            skgMaze.Invalidate();
+
+            if (run_visible != Maze.RUN_VISIBLE.OFF)
+                skgMaze.Invalidate();
             return true;
         }
 
@@ -1104,7 +1108,7 @@ namespace MouseAI.UI
 
             e.Surface.Canvas.DrawImage(backimage, 0, 0);
 
-            if (isVisible && run_visible != Maze.RUN_VISIBLE.NONE)
+            if (isVisible && run_visible != Maze.RUN_VISIBLE.NORMAL)
             {
                 maze.UpdatePointLists(mouse_current, run_visible);
 

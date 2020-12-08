@@ -32,7 +32,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnExit = new System.Windows.Forms.Button();
             this.btnRun = new System.Windows.Forms.Button();
-            this.tbxTime = new System.Windows.Forms.TextBox();
+            this.tbxMoves = new System.Windows.Forms.TextBox();
             this.btnRunAll = new System.Windows.Forms.Button();
             this.chkRandomWander = new System.Windows.Forms.CheckBox();
             this.btnBack = new System.Windows.Forms.Button();
@@ -44,10 +44,11 @@
             this.chkDebug = new System.Windows.Forms.CheckBox();
             this.rdoPaths = new System.Windows.Forms.RadioButton();
             this.rdoVisible = new System.Windows.Forms.RadioButton();
-            this.rdoNone = new System.Windows.Forms.RadioButton();
+            this.rdoNormal = new System.Windows.Forms.RadioButton();
             this.nudRate = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.rdoNeural = new System.Windows.Forms.RadioButton();
+            this.rdoOff = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.nudRate)).BeginInit();
             this.SuspendLayout();
             // 
@@ -63,11 +64,11 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(14, 126);
+            this.label2.Location = new System.Drawing.Point(10, 126);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(40, 16);
+            this.label2.Size = new System.Drawing.Size(49, 16);
             this.label2.TabIndex = 49;
-            this.label2.Text = "Time:";
+            this.label2.Text = "Moves:";
             // 
             // btnExit
             // 
@@ -89,17 +90,17 @@
             this.btnRun.Text = "RUN";
             this.btnRun.UseVisualStyleBackColor = true;
             // 
-            // tbxTime
+            // tbxMoves
             // 
-            this.tbxTime.BackColor = System.Drawing.SystemColors.Window;
-            this.tbxTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tbxTime.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxTime.Location = new System.Drawing.Point(64, 124);
-            this.tbxTime.Name = "tbxTime";
-            this.tbxTime.ReadOnly = true;
-            this.tbxTime.Size = new System.Drawing.Size(100, 22);
-            this.tbxTime.TabIndex = 47;
-            this.tbxTime.WordWrap = false;
+            this.tbxMoves.BackColor = System.Drawing.SystemColors.Window;
+            this.tbxMoves.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tbxMoves.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbxMoves.Location = new System.Drawing.Point(61, 124);
+            this.tbxMoves.Name = "tbxMoves";
+            this.tbxMoves.ReadOnly = true;
+            this.tbxMoves.Size = new System.Drawing.Size(93, 22);
+            this.tbxMoves.TabIndex = 47;
+            this.tbxMoves.WordWrap = false;
             // 
             // btnRunAll
             // 
@@ -168,10 +169,10 @@
             this.tbxMouseStatus.BackColor = System.Drawing.SystemColors.Window;
             this.tbxMouseStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxMouseStatus.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbxMouseStatus.Location = new System.Drawing.Point(231, 124);
+            this.tbxMouseStatus.Location = new System.Drawing.Point(207, 124);
             this.tbxMouseStatus.Name = "tbxMouseStatus";
             this.tbxMouseStatus.ReadOnly = true;
-            this.tbxMouseStatus.Size = new System.Drawing.Size(122, 22);
+            this.tbxMouseStatus.Size = new System.Drawing.Size(146, 22);
             this.tbxMouseStatus.TabIndex = 48;
             this.tbxMouseStatus.WordWrap = false;
             // 
@@ -179,7 +180,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(178, 118);
+            this.label1.Location = new System.Drawing.Point(160, 119);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 32);
             this.label1.TabIndex = 46;
@@ -202,7 +203,7 @@
             this.rdoPaths.AutoSize = true;
             this.rdoPaths.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoPaths.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoPaths.Location = new System.Drawing.Point(250, 80);
+            this.rdoPaths.Location = new System.Drawing.Point(221, 80);
             this.rdoPaths.Margin = new System.Windows.Forms.Padding(0);
             this.rdoPaths.Name = "rdoPaths";
             this.rdoPaths.Size = new System.Drawing.Size(60, 20);
@@ -216,7 +217,7 @@
             this.rdoVisible.AutoSize = true;
             this.rdoVisible.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoVisible.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoVisible.Location = new System.Drawing.Point(96, 80);
+            this.rdoVisible.Location = new System.Drawing.Point(79, 80);
             this.rdoVisible.Margin = new System.Windows.Forms.Padding(0);
             this.rdoVisible.Name = "rdoVisible";
             this.rdoVisible.Size = new System.Drawing.Size(65, 20);
@@ -225,21 +226,21 @@
             this.rdoVisible.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoVisible.UseVisualStyleBackColor = true;
             // 
-            // rdoNone
+            // rdoNormal
             // 
-            this.rdoNone.AutoSize = true;
-            this.rdoNone.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.rdoNone.Checked = true;
-            this.rdoNone.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoNone.Location = new System.Drawing.Point(32, 80);
-            this.rdoNone.Margin = new System.Windows.Forms.Padding(0);
-            this.rdoNone.Name = "rdoNone";
-            this.rdoNone.Size = new System.Drawing.Size(56, 20);
-            this.rdoNone.TabIndex = 60;
-            this.rdoNone.TabStop = true;
-            this.rdoNone.Text = "None";
-            this.rdoNone.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.rdoNone.UseVisualStyleBackColor = true;
+            this.rdoNormal.AutoSize = true;
+            this.rdoNormal.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoNormal.Checked = true;
+            this.rdoNormal.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoNormal.Location = new System.Drawing.Point(7, 80);
+            this.rdoNormal.Margin = new System.Windows.Forms.Padding(0);
+            this.rdoNormal.Name = "rdoNormal";
+            this.rdoNormal.Size = new System.Drawing.Size(67, 20);
+            this.rdoNormal.TabIndex = 60;
+            this.rdoNormal.TabStop = true;
+            this.rdoNormal.Text = "Normal";
+            this.rdoNormal.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoNormal.UseVisualStyleBackColor = true;
             // 
             // nudRate
             // 
@@ -252,11 +253,6 @@
             this.nudRate.Location = new System.Drawing.Point(61, 31);
             this.nudRate.Maximum = new decimal(new int[] {
             500,
-            0,
-            0,
-            0});
-            this.nudRate.Minimum = new decimal(new int[] {
-            5,
             0,
             0,
             0});
@@ -284,7 +280,7 @@
             this.rdoNeural.AutoSize = true;
             this.rdoNeural.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoNeural.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoNeural.Location = new System.Drawing.Point(174, 80);
+            this.rdoNeural.Location = new System.Drawing.Point(149, 80);
             this.rdoNeural.Margin = new System.Windows.Forms.Padding(0);
             this.rdoNeural.Name = "rdoNeural";
             this.rdoNeural.Size = new System.Drawing.Size(63, 20);
@@ -293,24 +289,39 @@
             this.rdoNeural.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rdoNeural.UseVisualStyleBackColor = true;
             // 
+            // rdoOff
+            // 
+            this.rdoOff.AutoSize = true;
+            this.rdoOff.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoOff.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoOff.Location = new System.Drawing.Point(293, 80);
+            this.rdoOff.Margin = new System.Windows.Forms.Padding(0);
+            this.rdoOff.Name = "rdoOff";
+            this.rdoOff.Size = new System.Drawing.Size(42, 20);
+            this.rdoOff.TabIndex = 64;
+            this.rdoOff.Text = "Off";
+            this.rdoOff.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.rdoOff.UseVisualStyleBackColor = true;
+            // 
             // ModelRun
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1017, 336);
+            this.ClientSize = new System.Drawing.Size(1018, 328);
             this.ControlBox = false;
+            this.Controls.Add(this.rdoOff);
             this.Controls.Add(this.rdoNeural);
             this.Controls.Add(this.chkDebug);
             this.Controls.Add(this.rdoPaths);
             this.Controls.Add(this.chkRandomWander);
             this.Controls.Add(this.rdoVisible);
-            this.Controls.Add(this.rdoNone);
+            this.Controls.Add(this.rdoNormal);
             this.Controls.Add(this.nudRate);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnRun);
-            this.Controls.Add(this.tbxTime);
+            this.Controls.Add(this.tbxMoves);
             this.Controls.Add(this.btnRunAll);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnStep);
@@ -338,7 +349,7 @@
         private System.Windows.Forms.Label label2;
         public System.Windows.Forms.Button btnExit;
         public System.Windows.Forms.Button btnRun;
-        public System.Windows.Forms.TextBox tbxTime;
+        public System.Windows.Forms.TextBox tbxMoves;
         public System.Windows.Forms.Button btnRunAll;
         public System.Windows.Forms.CheckBox chkRandomWander;
         public System.Windows.Forms.Button btnBack;
@@ -350,9 +361,10 @@
         public System.Windows.Forms.CheckBox chkDebug;
         public System.Windows.Forms.RadioButton rdoPaths;
         public System.Windows.Forms.RadioButton rdoVisible;
-        public System.Windows.Forms.RadioButton rdoNone;
+        public System.Windows.Forms.RadioButton rdoNormal;
         public System.Windows.Forms.NumericUpDown nudRate;
         private System.Windows.Forms.Label label3;
         public System.Windows.Forms.RadioButton rdoNeural;
+        public System.Windows.Forms.RadioButton rdoOff;
     }
 }
