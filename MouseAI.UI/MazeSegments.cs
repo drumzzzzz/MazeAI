@@ -60,5 +60,10 @@ namespace MouseAI.UI
             }
             lvwSegments.LargeImageList = imglist;
         }
+
+        private void MazeSegments_Shown(object sender, EventArgs e)
+        {
+            ShowImages();
+        }
     }
 }

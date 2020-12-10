@@ -260,7 +260,7 @@
             this.nudRate.Size = new System.Drawing.Size(82, 22);
             this.nudRate.TabIndex = 58;
             this.nudRate.Value = new decimal(new int[] {
-            5,
+            50,
             0,
             0,
             0});
@@ -307,7 +307,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1023, 347);
+            this.ClientSize = new System.Drawing.Size(1019, 343);
             this.ControlBox = false;
             this.Controls.Add(this.rdoOff);
             this.Controls.Add(this.rdoNeural);

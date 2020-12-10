@@ -126,7 +126,6 @@ namespace MouseAI.BL
                 imageDatas.Add(new ImageData(m.maze, m.guid));
                 imageDatas.AddRange(m.segments.Select(t => new ImageData(t, m.guid)));
             }
-
             return imageDatas;
         }
 

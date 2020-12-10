@@ -45,13 +45,11 @@
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadLastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lvwMazes = new System.Windows.Forms.ListView();
             this.c1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pbxPath = new System.Windows.Forms.PictureBox();
             this.skgMaze = new SkiaSharp.Views.Desktop.SKGLControl();
-            this.mazeSegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stpStatus.SuspendLayout();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbxPath)).BeginInit();
@@ -97,8 +95,7 @@
             this.msMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.buildToolStripMenuItem,
-            this.editToolStripMenuItem,
-            this.helpToolStripMenuItem});
+            this.editToolStripMenuItem});
             this.msMain.Location = new System.Drawing.Point(0, 0);
             this.msMain.Name = "msMain";
             this.msMain.Size = new System.Drawing.Size(894, 35);
@@ -112,8 +109,8 @@
             this.closeToolStripMenuItem});
             this.fileToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(41, 31);
-            this.fileToolStripMenuItem.Text = "File";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(61, 31);
+            this.fileToolStripMenuItem.Text = "Project";
             // 
             // newToolStripMenuItem
             // 
@@ -205,6 +202,14 @@
             this.loadLastToolStripMenuItem.Text = "Load Last";
             this.loadLastToolStripMenuItem.Click += new System.EventHandler(this.loadLastToolStripMenuItem_Click);
             // 
+            // mazeSegmentsToolStripMenuItem
+            // 
+            this.mazeSegmentsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
+            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
+            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
+            // 
             // lvwMazes
             // 
             this.lvwMazes.Activation = System.Windows.Forms.ItemActivation.OneClick;
@@ -254,29 +259,6 @@
             this.skgMaze.VSync = false;
             this.skgMaze.MouseClick += new System.Windows.Forms.MouseEventHandler(this.skgMaze_MouseClick);
             // 
-            // mazeSegmentsToolStripMenuItem
-            // 
-            this.mazeSegmentsToolStripMenuItem.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.mazeSegmentsToolStripMenuItem.Name = "mazeSegmentsToolStripMenuItem";
-            this.mazeSegmentsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.mazeSegmentsToolStripMenuItem.Text = "Maze Segments";
-            this.mazeSegmentsToolStripMenuItem.Click += new System.EventHandler(this.mazeSegmentsToolStripMenuItem_Click);
-            // 
-            // helpToolStripMenuItem
-            // 
-            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.viewHelpToolStripMenuItem});
-            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(46, 31);
-            this.helpToolStripMenuItem.Text = "Help";
-            // 
-            // viewHelpToolStripMenuItem
-            // 
-            this.viewHelpToolStripMenuItem.Name = "viewHelpToolStripMenuItem";
-            this.viewHelpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.viewHelpToolStripMenuItem.Text = "View Help";
-            this.viewHelpToolStripMenuItem.Click += new System.EventHandler(this.viewHelpToolStripMenuItem_Click);
-            // 
             // MouseAI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
@@ -293,7 +275,7 @@
             this.MaximizeBox = false;
             this.Name = "MouseAI";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "MouseAI";
+            this.Text = "Mouse AI";
             this.Shown += new System.EventHandler(this.MazeAI_Shown);
             this.stpStatus.ResumeLayout(false);
             this.stpStatus.PerformLayout();
@@ -327,8 +309,6 @@
         private System.Windows.Forms.ToolStripStatusLabel tsCoords;
         private SkiaSharp.Views.Desktop.SKGLControl skgMaze;
         private System.Windows.Forms.ToolStripMenuItem mazeSegmentsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem viewHelpToolStripMenuItem;
     }
 }
 

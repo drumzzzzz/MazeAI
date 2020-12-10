@@ -39,7 +39,7 @@
             this.lvwSegments.Location = new System.Drawing.Point(0, 0);
             this.lvwSegments.MultiSelect = false;
             this.lvwSegments.Name = "lvwSegments";
-            this.lvwSegments.Size = new System.Drawing.Size(778, 510);
+            this.lvwSegments.Size = new System.Drawing.Size(774, 506);
             this.lvwSegments.TabIndex = 0;
             this.lvwSegments.UseCompatibleStateImageBehavior = false;
             // 
@@ -47,7 +47,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(778, 510);
+            this.ClientSize = new System.Drawing.Size(774, 506);
             this.ControlBox = false;
             this.Controls.Add(this.lvwSegments);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -55,6 +55,7 @@
             this.ShowIcon = false;
             this.Text = "Maze Segments";
             this.TopMost = true;
+            this.Shown += new System.EventHandler(this.MazeSegments_Shown);
             this.ResumeLayout(false);
 
         }

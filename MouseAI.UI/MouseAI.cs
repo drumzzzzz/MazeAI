@@ -81,7 +81,7 @@ namespace MouseAI.UI
         private bool isThreadDone;
         private bool isThreadCancel;
         private const int SEARCH_DELAY = 1;
-        private const int RUN_DELAY = 1;
+        private const int RUN_DELAY = 100;
         private const int PLOT_TIME = 500;
         private const int RENDER_TIME = 10;
         private DateTime dtRenderTime;
@@ -696,6 +696,7 @@ namespace MouseAI.UI
                 else
                     run_visible = Maze.RUN_VISIBLE.OFF;
             }
+            UpdateMaze(true, true);
         }
 
         private void chkRandomWander_CheckedChanged(object sender, EventArgs e)
@@ -731,7 +732,7 @@ namespace MouseAI.UI
 
         // Performs mouse maze movement iteration for a loaded model:
         // Asynchronous maze AI movement processing and vision image generation
-        // Synchronous neural net predicitions of supplied vision images
+        // Synchronous neural net predictions of supplied vision images
         // Statistic plot generation
         private async void RunModel()
         {
@@ -1114,7 +1115,7 @@ namespace MouseAI.UI
             }
 
             mouse_current = maze.GetMousePosition();
-            if (mouse_current == mouse_last)
+            if (!isImmediate && mouse_current == mouse_last)
                 return false;
 
             isVisible = isvisible;
@@ -1637,11 +1638,8 @@ namespace MouseAI.UI
                 return;
 
             mazeSegments.Visible = settings.isMazeSegments;
-        }
 
-        private void viewHelpToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
+            mazeSegments.ShowImages();
         }
 
         #endregion
