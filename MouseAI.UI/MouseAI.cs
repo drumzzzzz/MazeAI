@@ -2,13 +2,13 @@
 // Form containing the main UI controls and functions
 
 #region Using Statements
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,6 +17,7 @@ using MouseAI.ML;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using ThreadState = System.Threading.ThreadState;
+
 #endregion
 
 namespace MouseAI.UI
@@ -41,7 +42,7 @@ namespace MouseAI.UI
         private const int MAZE_WIDTH = 31;
         private const int MAZE_HEIGHT = 31;
         private const int MAZE_SCALE_WIDTH_PX = 28;
-        private const int MAZE_SCALE_HEIGHT_PX = 28;
+        private const int MAZE_SCALE_HEIGHT_PX = 24;
         private const int MAZE_WIDTH_PX = MAZE_WIDTH * MAZE_SCALE_WIDTH_PX;
         private const int MAZE_HEIGHT_PX = MAZE_HEIGHT * MAZE_SCALE_HEIGHT_PX;
         private const int MAZE_MARGIN_PX = 25;
@@ -997,7 +998,7 @@ namespace MouseAI.UI
             SKImageInfo resizeInfo = new SKImageInfo(1, 1)
             {
                 Width = (BITMAP_WIDTH / (MAZE_SCALE_WIDTH_PX + 2)) * 3,
-                Height = (BITMAP_HEIGHT / (MAZE_SCALE_HEIGHT_PX + 2)) * 3
+                Height = (BITMAP_HEIGHT / (MAZE_SCALE_HEIGHT_PX + 2)) * 2
             };
 
             Cheese_Bitmap = GetBitmap(Resources.cheese, resizeInfo);

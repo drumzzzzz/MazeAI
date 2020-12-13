@@ -76,6 +76,7 @@ namespace MouseAI.UI
                 maze_plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
                 maze_plot.Location = new Point(X_POSITION, Y_POSITION);
                 
+                
                 total_plot = GetPlot(xs, ys, columns, "Total %");
                 total_plot.Width = (pnlPlot.Width / 2) - X_MARGIN - X_POSITION;
                 total_plot.Height = pnlPlot.Height - Y_MARGIN - Y_POSITION;
